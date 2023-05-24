@@ -50,7 +50,7 @@ namespace cryptonote
   struct checkpoint_t;
 };
 
-namespace service_nodes
+namespace masternodes
 {
   struct testing_quorum;
 
@@ -113,14 +113,14 @@ namespace service_nodes
 
   quorum_vote_t            make_state_change_vote(uint64_t block_height, uint16_t index_in_group, uint16_t worker_index, new_state state, crypto::public_key const &pub_key, crypto::secret_key const &secret_key);
   quorum_vote_t            make_checkpointing_vote(uint8_t hf_version, crypto::hash const &block_hash, uint64_t block_height, uint16_t index_in_quorum, crypto::public_key const &pub_key, crypto::secret_key const &sec_key);
-  cryptonote::checkpoint_t make_empty_service_node_checkpoint(crypto::hash const &block_hash, uint64_t height);
+  cryptonote::checkpoint_t make_empty_masternode_checkpoint(crypto::hash const &block_hash, uint64_t height);
 
-  bool               verify_checkpoint                  (uint8_t hf_version, cryptonote::checkpoint_t const &checkpoint, service_nodes::testing_quorum const &quorum);
-  bool               verify_tx_state_change             (const cryptonote::tx_extra_service_node_state_change& state_change, uint64_t latest_height, cryptonote::tx_verification_context& vvc, const service_nodes::testing_quorum &quorum, uint8_t hf_version);
+  bool               verify_checkpoint                  (uint8_t hf_version, cryptonote::checkpoint_t const &checkpoint, masternodes::testing_quorum const &quorum);
+  bool               verify_tx_state_change             (const cryptonote::tx_extra_masternode_state_change& state_change, uint64_t latest_height, cryptonote::tx_verification_context& vvc, const masternodes::testing_quorum &quorum, uint8_t hf_version);
   bool               verify_vote_age                    (const quorum_vote_t& vote, uint64_t latest_height, cryptonote::vote_verification_context &vvc);
-  bool               verify_vote_signature              (uint8_t hf_version, const quorum_vote_t& vote, cryptonote::vote_verification_context &vvc, const service_nodes::testing_quorum &quorum);
+  bool               verify_vote_signature              (uint8_t hf_version, const quorum_vote_t& vote, cryptonote::vote_verification_context &vvc, const masternodes::testing_quorum &quorum);
   crypto::signature  make_signature_from_vote           (quorum_vote_t const &vote, const crypto::public_key& pub, const crypto::secret_key& sec);
-  crypto::signature  make_signature_from_tx_state_change(cryptonote::tx_extra_service_node_state_change const &state_change, crypto::public_key const &pub, crypto::secret_key const &sec);
+  crypto::signature  make_signature_from_tx_state_change(cryptonote::tx_extra_masternode_state_change const &state_change, crypto::public_key const &pub, crypto::secret_key const &sec);
 
   // NOTE: This preserves the deregister vote format pre-checkpointing so that
   // up to the hardfork, we can still deserialize and serialize until we switch
@@ -128,7 +128,7 @@ namespace service_nodes
   struct legacy_deregister_vote
   {
     uint64_t          block_height;
-    uint32_t          service_node_index;
+    uint32_t          masternode_index;
     uint32_t          voters_quorum_index;
     crypto::signature signature;
   };
@@ -158,8 +158,8 @@ namespace service_nodes
     {
       explicit obligations_pool_entry(const quorum_vote_t &vote)
           : height{vote.block_height}, worker_index{vote.state_change.worker_index}, state{vote.state_change.state} {}
-      obligations_pool_entry(const cryptonote::tx_extra_service_node_state_change &sc)
-          : height{sc.block_height}, worker_index{sc.service_node_index}, state{sc.state} {}
+      obligations_pool_entry(const cryptonote::tx_extra_masternode_state_change &sc)
+          : height{sc.block_height}, worker_index{sc.masternode_index}, state{sc.state} {}
 
       uint64_t                     height;
       uint32_t                     worker_index;
@@ -184,5 +184,5 @@ namespace service_nodes
 
     mutable epee::critical_section m_lock;
   };
-}; // namespace service_nodes
+}; // namespace masternodes
 

@@ -40,6 +40,7 @@ using namespace epee;
 #include "blockchain.h"
 #include "cryptonote_core/miner.h"
 #include "cryptonote_basic/tx_extra.h"
+#include "stake/stake.h"
 #include "crypto/crypto.h"
 #include "crypto/hash.h"
 #include "ringct/rctSigs.h"
@@ -134,7 +135,7 @@ namespace cryptonote
   }
 
   const int GOVERNANCE_BASE_REWARD_DIVISOR   = 20;
-  const int SERVICE_NODE_BASE_REWARD_DIVISOR = 2;
+  const int MASTERNODE_BASE_REWARD_DIVISOR = 2;
   uint64_t governance_reward_formula(uint64_t base_reward)
   {
     return base_reward / GOVERNANCE_BASE_REWARD_DIVISOR;
@@ -151,7 +152,7 @@ namespace cryptonote
     if (height == 0)
       return false;
 
-    if (hard_fork_version <= network_version_9_service_nodes)
+    if (hard_fork_version <= network_version_9)
       return true;
 
     const cryptonote::config_t &network = cryptonote::get_config(nettype, hard_fork_version);
@@ -178,15 +179,15 @@ namespace cryptonote
       snode_reward += output.amount;
     }
 
-    static_assert(SERVICE_NODE_BASE_REWARD_DIVISOR == 2 &&
+    static_assert(MASTERNODE_BASE_REWARD_DIVISOR == 2 &&
                   GOVERNANCE_BASE_REWARD_DIVISOR == 20,
                   "Anytime this changes, you should revisit this code and "
-                  "check, because we rely on the service node reward being 50\% "
+                  "check, because we rely on the masternode reward being 50\% "
                   "of the base reward, and does not receive any fees. This isn't "
                   "exactly intuitive and so changes to the reward structure may "
                   "make this assumption invalid.");
 
-    uint64_t base_reward  = snode_reward * SERVICE_NODE_BASE_REWARD_DIVISOR;
+    uint64_t base_reward  = snode_reward * MASTERNODE_BASE_REWARD_DIVISOR;
     uint64_t governance   = governance_reward_formula(base_reward);
     uint64_t block_reward = base_reward - governance;
 
@@ -194,7 +195,7 @@ namespace cryptonote
     for (tx_out const &output : block.miner_tx.vout) actual_reward += output.amount;
 
     CHECK_AND_ASSERT_MES(block_reward <= actual_reward, false,
-        "Rederiving the base block reward from the service node reward "
+        "Rederiving the base block reward from the masternode reward "
         "exceeded the actual amount paid in the block, derived block reward: "
         << block_reward << ", actual reward: " << actual_reward);
 
@@ -202,24 +203,24 @@ namespace cryptonote
     return result;
   }
 
-  uint64_t service_node_reward_formula(uint64_t base_reward, int hard_fork_version)
+  uint64_t masternode_reward_formula(uint64_t base_reward, int hard_fork_version)
   {
-    return hard_fork_version >= 9 ? (base_reward / SERVICE_NODE_BASE_REWARD_DIVISOR) : 0;
+    return hard_fork_version >= 9 ? (base_reward / MASTERNODE_BASE_REWARD_DIVISOR) : 0;
   }
 
-  uint64_t get_portion_of_reward(uint64_t portions, uint64_t total_service_node_reward)
+  uint64_t get_portion_of_reward(uint64_t portions, uint64_t total_masternode_reward)
   {
     uint64_t hi, lo, rewardhi, rewardlo;
-    lo = mul128(total_service_node_reward, portions, &hi);
+    lo = mul128(total_masternode_reward, portions, &hi);
     div128_64(hi, lo, STAKING_PORTIONS, &rewardhi, &rewardlo);
     return rewardlo;
   }
 
-  static uint64_t calculate_sum_of_portions(const std::vector<service_nodes::payout_entry>& payouts, uint64_t total_service_node_reward)
+  static uint64_t calculate_sum_of_portions(const std::vector<masternodes::payout_entry>& payouts, uint64_t total_masternode_reward)
   {
     uint64_t reward = 0;
     for (size_t i = 0; i < payouts.size(); i++)
-      reward += get_portion_of_reward(payouts[i].portions, total_service_node_reward);
+      reward += get_portion_of_reward(payouts[i].portions, total_masternode_reward);
     return reward;
   }
 
@@ -244,8 +245,8 @@ namespace cryptonote
     tx.type    = txtype::standard;
     tx.version = transaction::get_min_version_for_hf(hard_fork_version, nettype);
 
-    const crypto::public_key &service_node_key                        = miner_tx_context.block_winner.key;
-    const std::vector<service_nodes::payout_entry> &service_node_info = miner_tx_context.block_winner.payouts;
+    const crypto::public_key &masternode_key                        = miner_tx_context.block_winner.key;
+    const std::vector<masternodes::payout_entry> &masternode_info = miner_tx_context.block_winner.payouts;
 
     keypair txkey = keypair::generate(hw::get_device("default"));
     add_tx_pub_key_to_extra(tx, txkey.pub);
@@ -255,13 +256,13 @@ namespace cryptonote
     if (!sort_tx_extra(tx.extra, tx.extra))
       return false;
 
-    keypair gov_key = get_deterministic_keypair_from_height(height); // NOTE: Always need since we use same key for service node
+    keypair gov_key = get_deterministic_keypair_from_height(height); // NOTE: Always need since we use same key for masternode
     if (already_generated_coins != 0)
     {
       add_tx_pub_key_to_extra(tx, gov_key.pub);
     }
 
-    add_service_node_winner_to_tx_extra(tx.extra, service_node_key);
+    add_masternode_winner_to_tx_extra(tx.extra, masternode_key);
 
     txin_gen in;
     in.height = height;
@@ -269,7 +270,7 @@ namespace cryptonote
     loki_block_reward_context block_reward_context = {};
     block_reward_context.fee                       = fee;
     block_reward_context.height                    = height;
-    block_reward_context.service_node_payouts      = miner_tx_context.block_winner.payouts;
+    block_reward_context.masternode_payouts      = miner_tx_context.block_winner.payouts;
     block_reward_context.batched_governance        = miner_tx_context.batched_governance;
 
     block_reward_parts reward_parts;
@@ -305,11 +306,11 @@ namespace cryptonote
       tx.output_unlock_times.push_back(height + CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW);
     }
 
-    if (hard_fork_version >= network_version_9_service_nodes) // Service Node Reward
+    if (hard_fork_version >= network_version_9) // MasterNode Reward
     {
-      for (size_t i = 0; i < service_node_info.size(); i++)
+      for (size_t i = 0; i < masternode_info.size(); i++)
       {
-        service_nodes::payout_entry const &payout = service_node_info[i];
+        masternodes::payout_entry const &payout = masternode_info[i];
         crypto::key_derivation derivation         = AUTO_VAL_INIT(derivation);
         crypto::public_key out_eph_public_key     = AUTO_VAL_INIT(out_eph_public_key);
         bool r = crypto::generate_key_derivation(payout.address.m_view_public_key, gov_key.sec, derivation);
@@ -321,7 +322,7 @@ namespace cryptonote
         tk.key = out_eph_public_key;
 
         tx_out out;
-        summary_amounts += out.amount = get_portion_of_reward(payout.portions, reward_parts.service_node_total);
+        summary_amounts += out.amount = get_portion_of_reward(payout.portions, reward_parts.masternode_total);
         out.target = tk;
         tx.vout.push_back(out);
         tx.output_unlock_times.push_back(height + CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW);
@@ -333,7 +334,7 @@ namespace cryptonote
     {
       if (reward_parts.governance_paid == 0)
       {
-        CHECK_AND_ASSERT_MES(hard_fork_version >= network_version_10_bulletproofs, false, "Governance reward can NOT be 0 before hardfork 10, hard_fork_version: " << hard_fork_version);
+        CHECK_AND_ASSERT_MES(hard_fork_version >= network_version_10, false, "Governance reward can NOT be 0 before hardfork 10, hard_fork_version: " << hard_fork_version);
       }
       else
       {
@@ -358,7 +359,7 @@ namespace cryptonote
       }
     }
 
-    uint64_t expected_amount = reward_parts.miner_reward() + reward_parts.governance_paid + reward_parts.service_node_paid;
+    uint64_t expected_amount = reward_parts.miner_reward() + reward_parts.governance_paid + reward_parts.masternode_paid;
     CHECK_AND_ASSERT_MES(summary_amounts == expected_amount, false, "Failed to construct miner tx, summary_amounts = " << summary_amounts << " not equal total block_reward = " << expected_amount);
 
     //lock
@@ -397,23 +398,23 @@ namespace cryptonote
     // however, they were accidentally based on the block reward formula *after* subtracting a
     // potential penalty if the miner includes txes beyond the median size limit).
     result.original_base_reward =
-        hard_fork_version >= network_version_13_enforce_checkpoints ? base_reward_unpenalized : base_reward;
+        hard_fork_version >= network_version_13 ? base_reward_unpenalized : base_reward;
 
-    result.service_node_total = service_node_reward_formula(result.original_base_reward, hard_fork_version);
-    result.service_node_paid  = calculate_sum_of_portions(loki_context.service_node_payouts, result.service_node_total);
+    result.masternode_total = masternode_reward_formula(result.original_base_reward, hard_fork_version);
+    result.masternode_paid  = calculate_sum_of_portions(loki_context.masternode_payouts, result.masternode_total);
 
     // There is a goverance fee due every block.  Beginning in hardfork 10 this is still subtracted
     // from the block reward as if it was paid, but the actual payments get batched into rare, large
     // accumulated payments.  (Before hardfork 10 they are included in every block, unbatched).
     result.governance_due  = governance_reward_formula(result.original_base_reward);
-    result.governance_paid = hard_fork_version >= network_version_10_bulletproofs
+    result.governance_paid = hard_fork_version >= network_version_10
         ? loki_context.batched_governance
         : result.governance_due;
 
     // The base_miner amount is everything left in the base reward after subtracting off the service
     // node and governance fee amounts (the due amount in the latter case).  (Any penalty for
     // exceeding the block limit is already removed from base_reward, and so is paid by the miner).
-    uint64_t non_miner_amounts = result.governance_due + result.service_node_paid;
+    uint64_t non_miner_amounts = result.governance_due + result.masternode_paid;
     result.base_miner = base_reward > non_miner_amounts ? base_reward - non_miner_amounts : 0;
     result.base_miner_fee = loki_context.fee;
 
@@ -945,7 +946,7 @@ namespace cryptonote
      std::vector<tx_destination_entry> destinations_copy = destinations;
 
      rct::RCTConfig rct_config    = {};
-     rct_config.range_proof_type  = (hf_version < network_version_10_bulletproofs) ?  rct::RangeProofBorromean : rct::RangeProofPaddedBulletproof;
+     rct_config.range_proof_type  = (hf_version < network_version_10) ?  rct::RangeProofBorromean : rct::RangeProofPaddedBulletproof;
      rct_config.bp_version        = (hf_version < HF_VERSION_SMALLER_BP) ? 1 : 0;
 
      loki_construct_tx_params tx_params(hf_version);
@@ -993,7 +994,7 @@ namespace cryptonote
     const_cast<int &>(miners) = 0;
 #endif
 
-    if (hf_version >= network_version_12_checkpointing) {
+    if (hf_version >= network_version_12) {
       uint64_t seed_height, main_height;
       crypto::hash hash;
       if (pbc != NULL)
@@ -1011,7 +1012,7 @@ namespace cryptonote
       return true;
     }
 
-    if (hf_version >= network_version_11_infinite_staking)
+    if (hf_version >= network_version_11)
       cn_type = cn_slow_hash_type::turtle_lite_v2;
     else if (hf_version >= network_version_7)
       cn_type = crypto::cn_slow_hash_type::heavy_v2;

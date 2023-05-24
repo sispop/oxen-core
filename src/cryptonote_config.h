@@ -42,29 +42,10 @@
 #define CRYPTONOTE_MAX_TX_SIZE                          1000000
 #define CRYPTONOTE_MAX_TX_PER_BLOCK                     0x10000000
 #define CRYPTONOTE_PUBLIC_ADDRESS_TEXTBLOB_VER          0
-#define CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW            30
+#define CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW            60
 #define CRYPTONOTE_BLOCK_FUTURE_TIME_LIMIT_V2           60*10
 #define CRYPTONOTE_DEFAULT_TX_SPENDABLE_AGE             10
 #define CRYPTONOTE_DEFAULT_TX_MIXIN                     9
-
-#define STAKING_REQUIREMENT_LOCK_BLOCKS_EXCESS          20
-#define STAKING_PORTIONS                                UINT64_C(0xfffffffffffffffc)
-#define MAX_NUMBER_OF_CONTRIBUTORS                      4
-#define MIN_PORTIONS                                    (STAKING_PORTIONS / MAX_NUMBER_OF_CONTRIBUTORS)
-
-static_assert(STAKING_PORTIONS % MAX_NUMBER_OF_CONTRIBUTORS == 0, "Use a multiple of four, so that it divides easily by max number of contributors.");
-static_assert(STAKING_PORTIONS % 2 == 0, "Use a multiple of two, so that it divides easily by two contributors.");
-static_assert(STAKING_PORTIONS % 3 == 0, "Use a multiple of three, so that it divides easily by three contributors.");
-
-#define STAKING_AUTHORIZATION_EXPIRATION_WINDOW         (60*60*24*7*2)  // 2 weeks
-
-#define BLOCKCHAIN_TIMESTAMP_CHECK_WINDOW               11
-
-#define UPTIME_PROOF_BUFFER_IN_SECONDS                  (5*60) // The acceptable window of time to accept a peer's uptime proof from its reported timestamp
-#define UPTIME_PROOF_FREQUENCY_IN_SECONDS               (60*60)
-#define UPTIME_PROOF_MAX_TIME_IN_SECONDS                (UPTIME_PROOF_FREQUENCY_IN_SECONDS * 2 + UPTIME_PROOF_BUFFER_IN_SECONDS)
-
-#define STORAGE_SERVER_PING_LIFETIME                    UPTIME_PROOF_FREQUENCY_IN_SECONDS
 
 // MONEY_SUPPLY - total number coins to be generated
 #define MONEY_SUPPLY                                    ((uint64_t)(-1))
@@ -92,7 +73,7 @@ static_assert(STAKING_PORTIONS % 3 == 0, "Use a multiple of three, so that it di
 #define DYNAMIC_FEE_REFERENCE_TRANSACTION_WEIGHT        ((uint64_t)3000)
 #define DYNAMIC_FEE_REFERENCE_TRANSACTION_WEIGHT_V12    ((uint64_t)240000) // Only v12 (v13 switches back)
 
-#define DIFFICULTY_TARGET_V2                            120  // seconds
+#define DIFFICULTY_TARGET_V2                            720  // seconds
 #define DIFFICULTY_WINDOW_V2                            60
 #define DIFFICULTY_BLOCKS_COUNT_V2                      (DIFFICULTY_WINDOW_V2 + 1) // added +1 to make N=N
 
@@ -147,7 +128,7 @@ static_assert(STAKING_PORTIONS % 3 == 0, "Use a multiple of three, so that it di
 #define P2P_SUPPORT_FLAG_FLUFFY_BLOCKS                  0x01
 #define P2P_SUPPORT_FLAGS                               P2P_SUPPORT_FLAG_FLUFFY_BLOCKS
 
-#define CRYPTONOTE_NAME                         "loki"
+#define CRYPTONOTE_NAME                         "sispop"
 #define CRYPTONOTE_POOLDATA_FILENAME            "poolstate.bin"
 #define CRYPTONOTE_BLOCKCHAINDATA_FILENAME      "data.mdb"
 #define CRYPTONOTE_BLOCKCHAINDATA_LOCK_FILENAME "lock.mdb"
@@ -156,19 +137,19 @@ static_assert(STAKING_PORTIONS % 3 == 0, "Use a multiple of three, so that it di
 
 #define THREAD_STACK_SIZE                       5 * 1024 * 1024
 
-#define HF_VERSION_PER_BYTE_FEE                 cryptonote::network_version_10_bulletproofs
-#define HF_VERSION_SMALLER_BP                   cryptonote::network_version_11_infinite_staking
-#define HF_VERSION_LONG_TERM_BLOCK_WEIGHT       cryptonote::network_version_11_infinite_staking
-#define HF_VERSION_INCREASE_FEE                 cryptonote::network_version_12_checkpointing
-#define HF_VERSION_PER_OUTPUT_FEE               cryptonote::network_version_13_enforce_checkpoints
+#define HF_VERSION_PER_BYTE_FEE                 10
+#define HF_VERSION_SMALLER_BP                   11
+#define HF_VERSION_LONG_TERM_BLOCK_WEIGHT       11
+#define HF_VERSION_INCREASE_FEE                 12
+#define HF_VERSION_PER_OUTPUT_FEE               13
 
 #define PER_KB_FEE_QUANTIZATION_DECIMALS        8
 
-#define HASH_OF_HASHES_STEP                     256
+#define HASH_OF_HASHES_STEP                     512
 
 #define DEFAULT_TXPOOL_MAX_WEIGHT               648000000ull // 3 days at 300000, in bytes
 
-#define BULLETPROOF_MAX_OUTPUTS                 16
+#define BULLETPROOF_MAX_OUTPUTS                 32
 
 #define CRYPTONOTE_PRUNING_STRIPE_SIZE          4096 // the smaller, the smoother the increase
 #define CRYPTONOTE_PRUNING_LOG_STRIPES          3 // the higher, the more space saved
@@ -184,19 +165,19 @@ namespace config
   uint64_t const BASE_REWARD_CLAMP_THRESHOLD = ((uint64_t)100000000); // pow(10, 8)
   std::string const P2P_REMOTE_DEBUG_TRUSTED_PUB_KEY = "0000000000000000000000000000000000000000000000000000000000000000";
 
-  uint64_t const CRYPTONOTE_PUBLIC_ADDRESS_BASE58_PREFIX = 114;
-  uint64_t const CRYPTONOTE_PUBLIC_INTEGRATED_ADDRESS_BASE58_PREFIX = 115;
-  uint64_t const CRYPTONOTE_PUBLIC_SUBADDRESS_BASE58_PREFIX = 116;
-  uint16_t const P2P_DEFAULT_PORT = 22022;
-  uint16_t const RPC_DEFAULT_PORT = 22023;
-  uint16_t const ZMQ_RPC_DEFAULT_PORT = 22024;
+  uint64_t const CRYPTONOTE_PUBLIC_ADDRESS_BASE58_PREFIX = 32124;
+  uint64_t const CRYPTONOTE_PUBLIC_INTEGRATED_ADDRESS_BASE58_PREFIX = 32125;
+  uint64_t const CRYPTONOTE_PUBLIC_SUBADDRESS_BASE58_PREFIX = 32126;
+  uint16_t const P2P_DEFAULT_PORT = 22345;
+  uint16_t const RPC_DEFAULT_PORT = 22346;
+  uint16_t const ZMQ_RPC_DEFAULT_PORT = 22347;
   boost::uuids::uuid const NETWORK_ID = { {
-        0x46 ,0x61, 0x72, 0x62 ,0x61, 0x75, 0x74, 0x69, 0x2a, 0x4c, 0x61, 0x75, 0x66, 0x65, 0x79
+        0x01 ,0x30, 0x60, 0x70 ,0x15, 0x30, 0x45, 0x60, 0x75, 0x80, 0x34, 0x67, 0x25, 0x39, 0x80
     } }; // Bender's nightmare
-  std::string const GENESIS_TX = "021e01ff000380808d93f5d771027c4fd4553bc9886f1f49e3f76d945bf71e8632a94e6c177b19cbc780e7e6bdb48080b4ccd4dfc60302c8b9f6461f58ef3f2107e577c7425d06af584a1c7482bf19060e84059c98b4c3808088fccdbcc32302732b53b0b0db706fcc3087074fb4b786da5ab72b2065699f9453448b0db27f892101ed71f2ce3fc70d7b2036f8a4e4b3fb75c66c12184b55a908e7d1a1d6995566cf00";
-  uint32_t const GENESIS_NONCE = 1022201;
+  std::string const GENESIS_TX = "013c01ff0001ffffffffffff03029b2e4c0281c0b02e7c53291a94d1d0cbff8883f8024f5142ee494ffbbd08807121017767aafcde9be00dcfd098715ebcf7f410daebc582fda69d24a28e9d0bc890d1";
+  uint32_t const GENESIS_NONCE = 70;
 
-  uint64_t const GOVERNANCE_REWARD_INTERVAL_IN_BLOCKS = ((60 * 60 * 24 * 7) / DIFFICULTY_TARGET_V2);
+  uint64_t const GOVERNANCE_REWARD_INTERVAL_IN_BLOCKS = ((60 * 60 * 24) / DIFFICULTY_TARGET_V2);
   std::string const GOVERNANCE_WALLET_ADDRESS[] =
   {
     "LCFxT37LAogDn1jLQKf4y7aAqfi21DjovX9qyijaLYQSdrxY1U5VGcnMJMjWrD9RhjeK5Lym67wZ73uh9AujXLQ1RKmXEyL", // hardfork v7-10
@@ -235,10 +216,10 @@ namespace config
     uint16_t const RPC_DEFAULT_PORT = 38154;
     uint16_t const ZMQ_RPC_DEFAULT_PORT = 38155;
     boost::uuids::uuid const NETWORK_ID = { {
-        0xbb ,0x37, 0x9B, 0x22 , 0x0A, 0x66 , 0x69, 0x1E, 0x09, 0xB2, 0x97, 0x8A, 0xCC, 0xA1, 0xDF, 0x9C
+        0xcc ,0x37, 0x01, 0x44 , 0x22, 0x55 , 0x75, 0x12, 0x23, 0x64, 0x37, 0x33, 0xbc, 0xA4, 0xD2, 0x05
       } }; // Beep Boop
-    std::string const GENESIS_TX = "021e01ff000380808d93f5d771027e4490431900c66a6532917ad9e6a1de634a209b708f653097e7b48efc1238c68080b4ccd4dfc60302ba19a224e6474371f9161b2e6271a36d060cbdc2e479ad78f1be64c56576fa07808088fccdbcc32302bccf9c13ba1b5bb02638de6e557acdd46bf48953e42cf98a12d2ad2900cc316121018fc6728d9e3c062d3afae3b2317998d2abee1e12f51271ba1c0d3cdd236b81d200";
-    uint32_t const GENESIS_NONCE = 10002;
+    std::string const GENESIS_TX = "";
+    uint32_t const GENESIS_NONCE = 70;
 
     uint64_t const GOVERNANCE_REWARD_INTERVAL_IN_BLOCKS = ((60 * 60 * 24 * 7) / DIFFICULTY_TARGET_V2);
     std::string const GOVERNANCE_WALLET_ADDRESS[] =
@@ -255,11 +236,11 @@ namespace cryptonote
   {
     network_version_7 = 7,
     network_version_8,
-    network_version_9_service_nodes, // Proof Of Stake w/ Service Nodes
-    network_version_10_bulletproofs, // Bulletproofs, Service Node Grace Registration Period, Batched Governance
-    network_version_11_infinite_staking, // Infinite Staking, CN-Turtle
-    network_version_12_checkpointing, // Checkpointing, Relaxed Deregistration, RandomXL, Loki Storage Server
-    network_version_13_enforce_checkpoints,
+    network_version_9, // Proof Of Stake w/ MasterNodes
+    network_version_10, // Bulletproofs, MasterNode Grace Registration Period, Batched Governance
+    network_version_11, // Infinite Staking, CN-Turtle
+    network_version_12, // Checkpointing, Relaxed Deregistration, RandomXL, Loki Storage Server
+    network_version_13,
 
     network_version_count,
   };
@@ -337,7 +318,7 @@ namespace cryptonote
         if (nettype == FAKECHAIN)
           mainnet.GOVERNANCE_REWARD_INTERVAL_IN_BLOCKS = 100;
 
-        if (hard_fork_version <= network_version_10_bulletproofs)
+        if (hard_fork_version <= network_version_10)
           mainnet.GOVERNANCE_WALLET_ADDRESS = &::config::GOVERNANCE_WALLET_ADDRESS[0];
         else
           mainnet.GOVERNANCE_WALLET_ADDRESS = &::config::GOVERNANCE_WALLET_ADDRESS[1];
@@ -347,7 +328,7 @@ namespace cryptonote
 
       case TESTNET:
       {
-        if (hard_fork_version <= network_version_9_service_nodes)
+        if (hard_fork_version <= network_version_9)
           testnet.GOVERNANCE_WALLET_ADDRESS = &::config::testnet::GOVERNANCE_WALLET_ADDRESS[0];
         else
           testnet.GOVERNANCE_WALLET_ADDRESS = &::config::testnet::GOVERNANCE_WALLET_ADDRESS[1];
@@ -357,7 +338,7 @@ namespace cryptonote
 
       case STAGENET:
       {
-        if (hard_fork_version <= network_version_9_service_nodes)
+        if (hard_fork_version <= network_version_9)
           stagenet.GOVERNANCE_WALLET_ADDRESS = &::config::stagenet::GOVERNANCE_WALLET_ADDRESS[0];
         else
           stagenet.GOVERNANCE_WALLET_ADDRESS = &::config::stagenet::GOVERNANCE_WALLET_ADDRESS[1];

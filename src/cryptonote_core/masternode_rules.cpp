@@ -3,10 +3,10 @@
 #include "int-util.h"
 #include <vector>
 #include <boost/lexical_cast.hpp>
+#include "stake.h"
+#include "masternode_rules.h"
 
-#include "service_node_rules.h"
-
-namespace service_nodes {
+namespace masternodes {
 
 
 uint64_t get_staking_requirement(cryptonote::network_type m_nettype, uint64_t height, uint8_t hf_version)
@@ -14,21 +14,12 @@ uint64_t get_staking_requirement(cryptonote::network_type m_nettype, uint64_t he
   if (m_nettype == cryptonote::TESTNET || m_nettype == cryptonote::FAKECHAIN)
       return COIN * 100;
 
-  uint64_t hardfork_height = m_nettype == cryptonote::MAINNET ? 101250 : 96210 /* stagenet */;
+  uint64_t hardfork_height = m_nettype == cryptonote::MAINNET ? 300 : 200 /* stagenet */;
   if (height < hardfork_height) height = hardfork_height;
 
   uint64_t height_adjusted = height - hardfork_height;
   uint64_t base = 0, variable = 0;
-  if (hf_version >= cryptonote::network_version_11_infinite_staking)
-  {
-    base     = 15000 * COIN;
-    variable = (25007.0 * COIN) / loki::exp2(height_adjusted/129600.0);
-  }
-  else
-  {
-    base      = 10000 * COIN;
-    variable  = (35000.0 * COIN) / loki::exp2(height_adjusted/129600.0);
-  }
+    base     = 40000 * COIN;
 
   uint64_t result = base + variable;
   return result;
@@ -42,7 +33,7 @@ uint64_t portions_to_amount(uint64_t portions, uint64_t staking_requirement)
   return resultlo;
 }
 
-bool check_service_node_portions(uint8_t hf_version, const std::vector<uint64_t>& portions)
+bool check_masternode_portions(uint8_t hf_version, const std::vector<uint64_t>& portions)
 {
   if (portions.size() > MAX_NUMBER_OF_CONTRIBUTORS) return false;
 
@@ -87,7 +78,7 @@ static uint64_t get_min_node_contribution_pre_v11(uint64_t staking_requirement, 
 
 uint64_t get_min_node_contribution(uint8_t version, uint64_t staking_requirement, uint64_t total_reserved, size_t num_contributions)
 {
-  if (version < cryptonote::network_version_11_infinite_staking)
+  if (version < cryptonote::network_version_11)
     return get_min_node_contribution_pre_v11(staking_requirement, total_reserved);
 
   const uint64_t needed                 = staking_requirement - total_reserved;
@@ -120,7 +111,7 @@ uint64_t get_portions_to_make_amount(uint64_t staking_requirement, uint64_t amou
 static bool get_portions_from_percent(double cur_percent, uint64_t& portions) {
   if(cur_percent < 0.0 || cur_percent > 100.0) return false;
 
-  // Fix for truncation issue when operator cut = 100 for a pool Service Node.
+  // Fix for truncation issue when operator cut = 100 for a pool MasterNode.
   if (cur_percent == 100.0)
   {
     portions = STAKING_PORTIONS;
@@ -162,4 +153,4 @@ uint64_t uniform_distribution_portable(std::mt19937_64& mersenne_twister, uint64
   return  x / (secureMax / n);
 }
 
-} // namespace service_nodes
+} // namespace masternodes

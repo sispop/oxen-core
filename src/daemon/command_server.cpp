@@ -114,7 +114,7 @@ t_command_server::t_command_server(
       "print_sn_key"
     , std::bind(&t_command_parser_executor::print_sn_key, &m_parser, p::_1)
     , "print_sn_key"
-    , "Print this daemon's service node key, if it is one and launched in service node mode."
+    , "Print this daemon's masternode key, if it is one and launched in masternode mode."
     );
   m_command_lookup.set_handler(
       "print_sr"
@@ -126,19 +126,19 @@ t_command_server::t_command_server(
       "prepare_registration"
     , std::bind(&t_command_parser_executor::prepare_registration, &m_parser)
     , "prepare_registration"
-    , "Interactive prompt to prepare a service node registration command. The resulting registration command can be run in the command-line wallet to send the registration to the blockchain."
+    , "Interactive prompt to prepare a masternode registration command. The resulting registration command can be run in the command-line wallet to send the registration to the blockchain."
     );
   m_command_lookup.set_handler(
       "print_sn"
     , std::bind(&t_command_parser_executor::print_sn, &m_parser, p::_1)
     , "print_sn [<pubkey> [...]] [+json|+detail]"
-    , "Print service node registration info for the current height"
+    , "Print masternode registration info for the current height"
     );
   m_command_lookup.set_handler(
       "print_sn_status"
     , std::bind(&t_command_parser_executor::print_sn_status, &m_parser, p::_1)
     , "print_sn_status [+json|+detail]"
-    , "Print service node registration info for this service node"
+    , "Print masternode registration info for this masternode"
     );
   m_command_lookup.set_handler(
       "is_key_image_spent"

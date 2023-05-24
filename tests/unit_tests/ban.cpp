@@ -88,7 +88,7 @@ public:
   void stop() {}
 
   // TODO(loki): Write tests
-  bool add_service_node_vote(const service_nodes::quorum_vote_t& vote, cryptonote::vote_verification_context &vvc) { return false; }
+  bool add_masternode_vote(const masternodes::quorum_vote_t& vote, cryptonote::vote_verification_context &vvc) { return false; }
 };
 
 typedef nodetool::node_server<cryptonote::t_cryptonote_protocol_handler<test_core>> Server;

@@ -35,14 +35,14 @@
 #include "cryptonote_basic/difficulty.h"
 #include "crypto/hash.h"
 #include "cryptonote_config.h"
-#include "cryptonote_core/service_node_voting.h"
+#include "cryptonote_core/masternode_voting.h"
 #include "rpc/rpc_handler.h"
 #include "common/varint.h"
 #include "common/perf_timer.h"
 #include "checkpoints/checkpoints.h"
 
-#include "cryptonote_core/service_node_quorum_cop.h"
-#include "cryptonote_core/service_node_list.h"
+#include "cryptonote_core/masternode_quorum_cop.h"
+#include "cryptonote_core/masternode_list.h"
 #include "common/loki.h"
 
 namespace
@@ -881,12 +881,12 @@ namespace cryptonote
 
   //-----------------------------------------------
   LOKI_RPC_DOC_INTROSPECT
-  // Retrieve all Service Node Keys.
-  struct COMMAND_RPC_GET_ALL_SERVICE_NODES_KEYS
+  // Retrieve all MasterNode Keys.
+  struct COMMAND_RPC_GET_ALL_MASTERNODES_KEYS
   {
     struct request_t
     {
-      bool active_nodes_only; // Return keys for service nodes if they are funded and working on the network
+      bool active_nodes_only; // Return keys for masternodes if they are funded and working on the network
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE_OPT(active_nodes_only, (bool)true)
       END_KV_SERIALIZE_MAP()
@@ -2516,15 +2516,15 @@ namespace cryptonote
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE_OPT(start_height, HEIGHT_SENTINEL_VALUE)
         KV_SERIALIZE_OPT(end_height, HEIGHT_SENTINEL_VALUE)
-        KV_SERIALIZE_OPT(quorum_type, (uint8_t)service_nodes::quorum_type::rpc_request_all_quorums_sentinel_value)
+        KV_SERIALIZE_OPT(quorum_type, (uint8_t)masternodes::quorum_type::rpc_request_all_quorums_sentinel_value)
       END_KV_SERIALIZE_MAP()
     };
     typedef epee::misc_utils::struct_init<request_t> request;
 
     struct quorum_t
     {
-      std::vector<std::string> validators; // Public key of the service node
-      std::vector<std::string> workers; // Public key of the service node
+      std::vector<std::string> validators; // Public key of the masternode
+      std::vector<std::string> workers; // Public key of the masternode
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(validators)
@@ -2541,7 +2541,7 @@ namespace cryptonote
     {
       uint64_t height;          // The height the quorums are relevant for
       uint8_t  quorum_type;     // The quorum type
-      quorum_t quorum;          // Quorum of Service Nodes
+      quorum_t quorum;          // Quorum of MasterNodes
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(height)
         KV_SERIALIZE(quorum_type)
@@ -2571,13 +2571,13 @@ namespace cryptonote
   };
 
   LOKI_RPC_DOC_INTROSPECT
-  struct COMMAND_RPC_GET_SERVICE_NODE_REGISTRATION_CMD_RAW
+  struct COMMAND_RPC_GET_MASTERNODE_REGISTRATION_CMD_RAW
   {
     struct request_t
     {
       std::vector<std::string> args; // (Developer) The arguments used in raw registration, i.e. portions
       bool make_friendly;            // Provide information about how to use the command in the result.
-      uint64_t staking_requirement;  // The staking requirement to become a Service Node the registration command will be generated upon
+      uint64_t staking_requirement;  // The staking requirement to become a MasterNode the registration command will be generated upon
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(args)
@@ -2590,7 +2590,7 @@ namespace cryptonote
     struct response_t
     {
       std::string status;           // Generic RPC error code. "OK" is the success value.
-      std::string registration_cmd; // The command to execute in the wallet CLI to register the queried daemon as a Service Node.
+      std::string registration_cmd; // The command to execute in the wallet CLI to register the queried daemon as a MasterNode.
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(status)
@@ -2601,7 +2601,7 @@ namespace cryptonote
   };
 
   LOKI_RPC_DOC_INTROSPECT
-  struct COMMAND_RPC_GET_SERVICE_NODE_REGISTRATION_CMD
+  struct COMMAND_RPC_GET_MASTERNODE_REGISTRATION_CMD
   {
     struct contribution_t
     {
@@ -2617,8 +2617,8 @@ namespace cryptonote
     struct request_t
     {
       std::string operator_cut;                  // The percentage of cut per reward the operator receives expressed as a string, i.e. "1.1%"
-      std::vector<contribution_t> contributions; // Array of contributors for this Service Node
-      uint64_t staking_requirement;              // The staking requirement to become a Service Node the registration command will be generated upon
+      std::vector<contribution_t> contributions; // Array of contributors for this MasterNode
+      uint64_t staking_requirement;              // The staking requirement to become a MasterNode the registration command will be generated upon
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(operator_cut)
@@ -2631,7 +2631,7 @@ namespace cryptonote
     struct response_t
     {
       std::string status;           // Generic RPC error code. "OK" is the success value.
-      std::string registration_cmd; // The command to execute in the wallet CLI to register the queried daemon as a Service Node.
+      std::string registration_cmd; // The command to execute in the wallet CLI to register the queried daemon as a MasterNode.
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(status)
@@ -2642,9 +2642,9 @@ namespace cryptonote
   };
 
   LOKI_RPC_DOC_INTROSPECT
-  // Get the service node public key of the queried daemon. 
+  // Get the masternode public key of the queried daemon. 
   // The daemon must be started in --service-node mode otherwise this RPC command will fail.
-  struct COMMAND_RPC_GET_SERVICE_NODE_KEY
+  struct COMMAND_RPC_GET_MASTERNODE_KEY
   {
     struct request_t
     {
@@ -2655,11 +2655,11 @@ namespace cryptonote
 
     struct response_t
     {
-      std::string service_node_pubkey; // The queried daemon's service node key.
+      std::string masternode_pubkey; // The queried daemon's masternode key.
       std::string status;              // Generic RPC error code. "OK" is the success value.
 
       BEGIN_KV_SERIALIZE_MAP()
-        KV_SERIALIZE(service_node_pubkey)
+        KV_SERIALIZE(masternode_pubkey)
         KV_SERIALIZE(status)
       END_KV_SERIALIZE_MAP()
     };
@@ -2694,7 +2694,7 @@ namespace cryptonote
   };
 
   LOKI_RPC_DOC_INTROSPECT
-  struct service_node_contribution
+  struct masternode_contribution
   {
     std::string key_image;         // The contribution's key image that is locked on the network.
     std::string key_image_pub_key; // The contribution's key image, public key component
@@ -2708,12 +2708,12 @@ namespace cryptonote
   };
 
   LOKI_RPC_DOC_INTROSPECT
-  struct service_node_contributor
+  struct masternode_contributor
   {
     uint64_t amount;                                             // The total amount of locked Loki in atomic units for this contributor.
-    uint64_t reserved;                                           // The amount of Loki in atomic units reserved by this contributor for this Service Node.
+    uint64_t reserved;                                           // The amount of Loki in atomic units reserved by this contributor for this MasterNode.
     std::string address;                                         // The wallet address for this contributor rewards are sent to and contributions came from.
-    std::vector<service_node_contribution> locked_contributions; // Array of contributions from this contributor.
+    std::vector<masternode_contribution> locked_contributions; // Array of contributions from this contributor.
 
     BEGIN_KV_SERIALIZE_MAP()
       KV_SERIALIZE(amount)
@@ -2724,16 +2724,16 @@ namespace cryptonote
   };
 
   LOKI_RPC_DOC_INTROSPECT
-  // Get information on Service Nodes.
-  struct COMMAND_RPC_GET_SERVICE_NODES
+  // Get information on MasterNodes.
+  struct COMMAND_RPC_GET_MASTERNODES
   {
     struct request_t
     {
-      std::vector<std::string> service_node_pubkeys; // Array of public keys of active Service Nodes to get information about. Pass the empty array to query all Service Nodes.
+      std::vector<std::string> masternode_pubkeys; // Array of public keys of active MasterNodes to get information about. Pass the empty array to query all MasterNodes.
       bool include_json;                             // When set, the response's as_json member is filled out.
 
       BEGIN_KV_SERIALIZE_MAP()
-        KV_SERIALIZE(service_node_pubkeys);
+        KV_SERIALIZE(masternode_pubkeys);
         KV_SERIALIZE(include_json);
       END_KV_SERIALIZE_MAP()
     };
@@ -2743,39 +2743,39 @@ namespace cryptonote
     {
       struct entry
       {
-        std::string                           service_node_pubkey;           // The public key of the Service Node.
-        uint64_t                              registration_height;           // The height at which the registration for the Service Node arrived on the blockchain.
-        uint16_t                              registration_hf_version;       // The hard fork at which the registration for the Service Node arrived on the blockchain.
-        uint64_t                              requested_unlock_height;       // The height at which contributions will be released and the Service Node expires. 0 if not requested yet.
-        uint64_t                              last_reward_block_height;      // The last height at which this Service Node received a reward.
-        uint32_t                              last_reward_transaction_index; // When multiple Service Nodes register on the same height, the order the transaction arrive dictate the order you receive rewards.
+        std::string                           masternode_pubkey;           // The public key of the MasterNode.
+        uint64_t                              registration_height;           // The height at which the registration for the MasterNode arrived on the blockchain.
+        uint16_t                              registration_hf_version;       // The hard fork at which the registration for the MasterNode arrived on the blockchain.
+        uint64_t                              requested_unlock_height;       // The height at which contributions will be released and the MasterNode expires. 0 if not requested yet.
+        uint64_t                              last_reward_block_height;      // The last height at which this MasterNode received a reward.
+        uint32_t                              last_reward_transaction_index; // When multiple MasterNodes register on the same height, the order the transaction arrive dictate the order you receive rewards.
         bool                                  active;                        // True if fully funded and not currently decommissioned (and so `active && !funded` implicitly defines decommissioned)
-        bool                                  funded;                        // True if the required stakes have been submitted to activate this Service Node
+        bool                                  funded;                        // True if the required stakes have been submitted to activate this MasterNode
         uint64_t                              state_height;                  // If active: the state at which registration was completed; if decommissioned: the decommissioning height; if awaiting: the last contribution (or registration) height
-        uint32_t                              decommission_count;            // The number of times the Service Node has been decommissioned since registration
+        uint32_t                              decommission_count;            // The number of times the MasterNode has been decommissioned since registration
         int64_t                               earned_downtime_blocks;        // The number of blocks earned towards decommissioning, or the number of blocks remaining until deregistration if currently decommissioned
-        std::vector<uint16_t>                 service_node_version;          // The major, minor, patch version of the Service Node respectively.
-        std::vector<service_node_contributor> contributors;                  // Array of contributors, contributing to this Service Node.
-        uint64_t                              total_contributed;             // The total amount of Loki in atomic units contributed to this Service Node.
-        uint64_t                              total_reserved;                // The total amount of Loki in atomic units reserved in this Service Node.
-        uint64_t                              staking_requirement;           // The staking requirement in atomic units that is required to be contributed to become a Service Node.
+        std::vector<uint16_t>                 masternode_version;          // The major, minor, patch version of the MasterNode respectively.
+        std::vector<masternode_contributor> contributors;                  // Array of contributors, contributing to this MasterNode.
+        uint64_t                              total_contributed;             // The total amount of Loki in atomic units contributed to this MasterNode.
+        uint64_t                              total_reserved;                // The total amount of Loki in atomic units reserved in this MasterNode.
+        uint64_t                              staking_requirement;           // The staking requirement in atomic units that is required to be contributed to become a MasterNode.
         uint64_t                              portions_for_operator;         // The operator percentage cut to take from each reward expressed in portions, see cryptonote_config.h's STAKING_PORTIONS.
-        uint64_t                              swarm_id;                      // The identifier of the Service Node's current swarm.
+        uint64_t                              swarm_id;                      // The identifier of the MasterNode's current swarm.
         std::string                           operator_address;              // The wallet address of the operator to which the operator cut of the staking reward is sent to.
-        std::string                           public_ip;                     // The public ip address of the service node
+        std::string                           public_ip;                     // The public ip address of the masternode
         uint16_t                              storage_port;                  // The port number associated with the storage server
 
-        // Service Node Testing
-        uint64_t                                           last_uptime_proof;                   // The last time this Service Node's uptime proof was relayed by at least 1 Service Node other than itself in unix epoch time.
+        // MasterNode Testing
+        uint64_t                                           last_uptime_proof;                   // The last time this MasterNode's uptime proof was relayed by at least 1 MasterNode other than itself in unix epoch time.
         bool                                               storage_server_reachable;            // Whether the node's storage server has been reported as unreachable for a long time
-        uint64_t                                           storage_server_reachable_timestamp;  // The last time this Service Node's storage server was contacted
+        uint64_t                                           storage_server_reachable_timestamp;  // The last time this MasterNode's storage server was contacted
         uint16_t                                           version_major;                       // Major version the node is currently running
         uint16_t                                           version_minor;                       // Minor version the node is currently running
         uint16_t                                           version_patch;                       // Patch version the node is currently running
-        std::vector<service_nodes::checkpoint_vote_record> votes;                               // Of the last N checkpoints the Service Node is in a checkpointing quorum, record whether or not the Service Node voted to checkpoint a block
+        std::vector<masternodes::checkpoint_vote_record> votes;                               // Of the last N checkpoints the MasterNode is in a checkpointing quorum, record whether or not the MasterNode voted to checkpoint a block
 
         BEGIN_KV_SERIALIZE_MAP()
-            KV_SERIALIZE(service_node_pubkey)
+            KV_SERIALIZE(masternode_pubkey)
             KV_SERIALIZE(registration_height)
             KV_SERIALIZE(registration_hf_version)
             KV_SERIALIZE(requested_unlock_height)
@@ -2786,7 +2786,7 @@ namespace cryptonote
             KV_SERIALIZE(state_height)
             KV_SERIALIZE(decommission_count)
             KV_SERIALIZE(earned_downtime_blocks)
-            KV_SERIALIZE(service_node_version)
+            KV_SERIALIZE(masternode_version)
             KV_SERIALIZE(contributors)
             KV_SERIALIZE(total_contributed)
             KV_SERIALIZE(total_reserved)
@@ -2807,7 +2807,7 @@ namespace cryptonote
         END_KV_SERIALIZE_MAP()
       };
 
-      std::vector<entry> service_node_states; // Array of service node registration information
+      std::vector<entry> masternode_states; // Array of masternode registration information
       uint64_t    height;                     // Current block's height.
       std::string block_hash;                 // Current block's hash.
       std::string status;                     // Generic RPC error code. "OK" is the success value.
@@ -2815,7 +2815,7 @@ namespace cryptonote
 
 
       BEGIN_KV_SERIALIZE_MAP()
-        KV_SERIALIZE(service_node_states)
+        KV_SERIALIZE(masternode_states)
         KV_SERIALIZE(height)
         KV_SERIALIZE(block_hash)
         KV_SERIALIZE(status)
@@ -2829,8 +2829,8 @@ namespace cryptonote
   if (this_ref.requested_fields.var || !this_ref.requested_fields.explicitly_set) KV_SERIALIZE(var)
 
   LOKI_RPC_DOC_INTROSPECT
-  // Get information on a random subset of Service Nodes.
-  struct COMMAND_RPC_GET_N_SERVICE_NODES
+  // Get information on a random subset of MasterNodes.
+  struct COMMAND_RPC_GET_N_MASTERNODES
   {
 
     // Boolean values indicate whether corresponding
@@ -2839,7 +2839,7 @@ namespace cryptonote
 
       bool explicitly_set = false;          // internal use only: incicates whether one of the other parameters has been explicitly set
 
-      bool service_node_pubkey;
+      bool masternode_pubkey;
       bool registration_height;
       bool registration_hf_version;
       bool requested_unlock_height;
@@ -2851,7 +2851,7 @@ namespace cryptonote
       bool decommission_count;
       bool earned_downtime_blocks;
 
-      bool service_node_version;
+      bool masternode_version;
       bool contributors;
       bool total_contributed;
       bool total_reserved;
@@ -2876,7 +2876,7 @@ namespace cryptonote
       bool hardfork;
 
       BEGIN_KV_SERIALIZE_MAP()
-        KV_SERIALIZE_OPT2(service_node_pubkey, false)
+        KV_SERIALIZE_OPT2(masternode_pubkey, false)
         KV_SERIALIZE_OPT2(registration_height, false)
         KV_SERIALIZE_OPT2(registration_hf_version, false)
         KV_SERIALIZE_OPT2(requested_unlock_height, false)
@@ -2887,7 +2887,7 @@ namespace cryptonote
         KV_SERIALIZE_OPT2(state_height, false)
         KV_SERIALIZE_OPT2(decommission_count, false)
         KV_SERIALIZE_OPT2(earned_downtime_blocks, false)
-        KV_SERIALIZE_OPT2(service_node_version, false)
+        KV_SERIALIZE_OPT2(masternode_version, false)
         KV_SERIALIZE_OPT2(contributors, false)
         KV_SERIALIZE_OPT2(total_contributed, false)
         KV_SERIALIZE_OPT2(total_reserved, false)
@@ -2936,39 +2936,39 @@ namespace cryptonote
           : requested_fields(res)
         {}
 
-        std::string                           service_node_pubkey;           // The public key of the Service Node.
-        uint64_t                              registration_height;           // The height at which the registration for the Service Node arrived on the blockchain.
-        uint16_t                              registration_hf_version;       // The hard fork at which the registration for the Service Node arrived on the blockchain.
-        uint64_t                              requested_unlock_height;       // The height at which contributions will be released and the Service Node expires. 0 if not requested yet.
-        uint64_t                              last_reward_block_height;      // The last height at which this Service Node received a reward.
-        uint32_t                              last_reward_transaction_index; // When multiple Service Nodes register on the same height, the order the transaction arrive dictate the order you receive rewards.
+        std::string                           masternode_pubkey;           // The public key of the MasterNode.
+        uint64_t                              registration_height;           // The height at which the registration for the MasterNode arrived on the blockchain.
+        uint16_t                              registration_hf_version;       // The hard fork at which the registration for the MasterNode arrived on the blockchain.
+        uint64_t                              requested_unlock_height;       // The height at which contributions will be released and the MasterNode expires. 0 if not requested yet.
+        uint64_t                              last_reward_block_height;      // The last height at which this MasterNode received a reward.
+        uint32_t                              last_reward_transaction_index; // When multiple MasterNodes register on the same height, the order the transaction arrive dictate the order you receive rewards.
         bool                                  active;                        // True if fully funded and not currently decommissioned (and so `active && !funded` implicitly defines decommissioned)
-        bool                                  funded;                        // True if the required stakes have been submitted to activate this Service Node
+        bool                                  funded;                        // True if the required stakes have been submitted to activate this MasterNode
         uint64_t                              state_height;                  // If active: the state at which registration was completed; if decommissioned: the decommissioning height; if awaiting: the last contribution (or registration) height
-        uint32_t                              decommission_count;            // The number of times the Service Node has been decommissioned since registration
+        uint32_t                              decommission_count;            // The number of times the MasterNode has been decommissioned since registration
         int64_t                               earned_downtime_blocks;        // The number of blocks earned towards decommissioning, or the number of blocks remaining until deregistration if currently decommissioned
-        std::vector<uint16_t>                 service_node_version;          // The major, minor, patch version of the Service Node respectively.
-        std::vector<service_node_contributor> contributors;                  // Array of contributors, contributing to this Service Node.
-        uint64_t                              total_contributed;             // The total amount of Loki in atomic units contributed to this Service Node.
-        uint64_t                              total_reserved;                // The total amount of Loki in atomic units reserved in this Service Node.
-        uint64_t                              staking_requirement;           // The staking requirement in atomic units that is required to be contributed to become a Service Node.
+        std::vector<uint16_t>                 masternode_version;          // The major, minor, patch version of the MasterNode respectively.
+        std::vector<masternode_contributor> contributors;                  // Array of contributors, contributing to this MasterNode.
+        uint64_t                              total_contributed;             // The total amount of Loki in atomic units contributed to this MasterNode.
+        uint64_t                              total_reserved;                // The total amount of Loki in atomic units reserved in this MasterNode.
+        uint64_t                              staking_requirement;           // The staking requirement in atomic units that is required to be contributed to become a MasterNode.
         uint64_t                              portions_for_operator;         // The operator percentage cut to take from each reward expressed in portions, see cryptonote_config.h's STAKING_PORTIONS.
-        uint64_t                              swarm_id;                      // The identifier of the Service Node's current swarm.
+        uint64_t                              swarm_id;                      // The identifier of the MasterNode's current swarm.
         std::string                           operator_address;              // The wallet address of the operator to which the operator cut of the staking reward is sent to.
-        std::string                           public_ip;                     // The public ip address of the service node
+        std::string                           public_ip;                     // The public ip address of the masternode
         uint16_t                              storage_port;                  // The port number associated with the storage server
 
-        // Service Node Testing
-        uint64_t                                           last_uptime_proof;                   // The last time this Service Node's uptime proof was relayed by at least 1 Service Node other than itself in unix epoch time.
+        // MasterNode Testing
+        uint64_t                                           last_uptime_proof;                   // The last time this MasterNode's uptime proof was relayed by at least 1 MasterNode other than itself in unix epoch time.
         bool                                               storage_server_reachable;            // Whether the node's storage server has been reported as unreachable for a long time
-        uint64_t                                           storage_server_reachable_timestamp;  // The last time this Service Node's storage server was contacted
+        uint64_t                                           storage_server_reachable_timestamp;  // The last time this MasterNode's storage server was contacted
         uint16_t                                           version_major;                       // Major version the node is currently running
         uint16_t                                           version_minor;                       // Minor version the node is currently running
         uint16_t                                           version_patch;                       // Patch version the node is currently running
-        std::vector<service_nodes::checkpoint_vote_record> votes;                               // Of the last N checkpoints the Service Node is in a checkpointing quorum, record whether or not the Service Node voted to checkpoint a block
+        std::vector<masternodes::checkpoint_vote_record> votes;                               // Of the last N checkpoints the MasterNode is in a checkpointing quorum, record whether or not the MasterNode voted to checkpoint a block
 
         BEGIN_KV_SERIALIZE_MAP()
-          KV_SERIALIZE_ENTRY_FIELD_IF_REQUESTED(service_node_pubkey);
+          KV_SERIALIZE_ENTRY_FIELD_IF_REQUESTED(masternode_pubkey);
           KV_SERIALIZE_ENTRY_FIELD_IF_REQUESTED(registration_height);
           KV_SERIALIZE_ENTRY_FIELD_IF_REQUESTED(registration_hf_version);
           KV_SERIALIZE_ENTRY_FIELD_IF_REQUESTED(requested_unlock_height);
@@ -2979,7 +2979,7 @@ namespace cryptonote
           KV_SERIALIZE_ENTRY_FIELD_IF_REQUESTED(state_height);
           KV_SERIALIZE_ENTRY_FIELD_IF_REQUESTED(decommission_count);
           KV_SERIALIZE_ENTRY_FIELD_IF_REQUESTED(earned_downtime_blocks);
-          KV_SERIALIZE_ENTRY_FIELD_IF_REQUESTED(service_node_version);
+          KV_SERIALIZE_ENTRY_FIELD_IF_REQUESTED(masternode_version);
           KV_SERIALIZE_ENTRY_FIELD_IF_REQUESTED(contributors);
           KV_SERIALIZE_ENTRY_FIELD_IF_REQUESTED(total_contributed);
           KV_SERIALIZE_ENTRY_FIELD_IF_REQUESTED(total_reserved);
@@ -3002,7 +3002,7 @@ namespace cryptonote
 
       requested_fields_t fields;
 
-      std::vector<entry> service_node_states; // Array of service node registration information
+      std::vector<entry> masternode_states; // Array of masternode registration information
       uint64_t    height;                     // Current block's height.
       uint64_t    target_height;              // Blockchain's target height.
       std::string block_hash;                 // Current block's hash.
@@ -3010,7 +3010,7 @@ namespace cryptonote
       std::string status;                     // Generic RPC error code. "OK" is the success value.
 
       BEGIN_KV_SERIALIZE_MAP()
-        KV_SERIALIZE(service_node_states)
+        KV_SERIALIZE(masternode_states)
         KV_SERIALIZE(status)
         if (this_ref.fields.height) {
           KV_SERIALIZE(height)
@@ -3054,7 +3054,7 @@ namespace cryptonote
   };
 
   LOKI_RPC_DOC_INTROSPECT
-  // Get the required amount of Loki to become a Service Node at the queried height. 
+  // Get the required amount of Loki to become a MasterNode at the queried height. 
   // For stagenet and testnet values, ensure the daemon is started with the 
   // `--stagenet` or `--testnet` flags respectively.
   struct COMMAND_RPC_GET_STAKING_REQUIREMENT
@@ -3083,8 +3083,8 @@ namespace cryptonote
   };
 
   LOKI_RPC_DOC_INTROSPECT
-  // Get information on blacklisted Service Node key images.
-  struct COMMAND_RPC_GET_SERVICE_NODE_BLACKLISTED_KEY_IMAGES
+  // Get information on blacklisted MasterNode key images.
+  struct COMMAND_RPC_GET_MASTERNODE_BLACKLISTED_KEY_IMAGES
   {
     struct request_t
     {
@@ -3144,7 +3144,7 @@ namespace cryptonote
   };
 
   LOKI_RPC_DOC_INTROSPECT
-  // Query hardcoded/service node checkpoints stored for the blockchain. Omit all arguments to retrieve the latest "count" checkpoints.
+  // Query hardcoded/masternode checkpoints stored for the blockchain. Omit all arguments to retrieve the latest "count" checkpoints.
   struct COMMAND_RPC_GET_CHECKPOINTS
   {
     constexpr static uint32_t NUM_CHECKPOINTS_TO_QUERY_BY_DEFAULT = 60;
@@ -3169,7 +3169,7 @@ namespace cryptonote
       std::string signature; // The signature generated by the voter in the quorum
 
       voter_to_signature_serialized() = default;
-      voter_to_signature_serialized(service_nodes::voter_to_signature const &entry)
+      voter_to_signature_serialized(masternodes::voter_to_signature const &entry)
       : voter_index(entry.voter_index)
       , signature(epee::string_tools::pod_to_hex(entry.signature)) { }
 
@@ -3187,10 +3187,10 @@ namespace cryptonote
     struct checkpoint_serialized
     {
       uint8_t version;
-      std::string type;                                      // Either "Hardcoded" or "ServiceNode" for checkpoints generated by Service Nodes or declared in the code
+      std::string type;                                      // Either "Hardcoded" or "ServiceNode" for checkpoints generated by MasterNodes or declared in the code
       uint64_t height;                                       // The height the checkpoint is relevant for
       std::string block_hash;                                // The block hash the checkpoint is specifying
-      std::vector<voter_to_signature_serialized> signatures; // Signatures from Service Nodes who agree on the block hash
+      std::vector<voter_to_signature_serialized> signatures; // Signatures from MasterNodes who agree on the block hash
       uint64_t prev_height;                                  // The previous height the checkpoint is based off
 
       checkpoint_serialized() = default;
@@ -3202,7 +3202,7 @@ namespace cryptonote
       , prev_height(checkpoint.prev_height)
       {
         signatures.reserve(checkpoint.signatures.size());
-        for (service_nodes::voter_to_signature const &entry : checkpoint.signatures)
+        for (masternodes::voter_to_signature const &entry : checkpoint.signatures)
           signatures.push_back(entry);
       }
 
@@ -3241,7 +3241,7 @@ namespace cryptonote
   };
 
   LOKI_RPC_DOC_INTROSPECT
-  // Query hardcoded/service node checkpoints stored for the blockchain. Omit all arguments to retrieve the latest "count" checkpoints.
+  // Query hardcoded/masternode checkpoints stored for the blockchain. Omit all arguments to retrieve the latest "count" checkpoints.
   struct COMMAND_RPC_GET_SN_STATE_CHANGES
   {
     constexpr static uint32_t NUM_BLOCKS_TO_SCAN_BY_DEFAULT = 720;
@@ -3292,7 +3292,7 @@ namespace cryptonote
     struct request
     {
       std::string type; // test type (currently used: ["reachability"])
-      std::string pubkey; // service node pubkey
+      std::string pubkey; // masternode pubkey
       bool passed; // whether the node is passing the test
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(type)

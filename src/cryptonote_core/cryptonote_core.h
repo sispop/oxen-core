@@ -41,9 +41,9 @@
 #include "common/command_line.h"
 #include "tx_pool.h"
 #include "blockchain.h"
-#include "service_node_voting.h"
-#include "service_node_list.h"
-#include "service_node_quorum_cop.h"
+#include "masternode_voting.h"
+#include "masternode_list.h"
+#include "masternode_quorum_cop.h"
 #include "cryptonote_core/miner.h"
 #include "cryptonote_basic/connection_context.h"
 #include "cryptonote_basic/cryptonote_stat_info.h"
@@ -775,7 +775,7 @@ namespace cryptonote
      bool offline() const { return m_offline; }
 
      /**
-      * @brief Get the deterministic quorum of service node's public keys responsible for the specified quorum type
+      * @brief Get the deterministic quorum of masternode's public keys responsible for the specified quorum type
       *
       * @param type The quorum type to retrieve
       * @param height Block height to deterministically recreate the quorum list from (note that for
@@ -783,63 +783,63 @@ namespace cryptonote
       * @param include_old whether to look in the old quorum states (does nothing unless running with --store-full-quorum-history)
       * @return Null shared ptr if quorum has not been determined yet or is not defined for height
       */
-     std::shared_ptr<const service_nodes::testing_quorum> get_testing_quorum(service_nodes::quorum_type type, uint64_t height, bool include_old = false, std::vector<std::shared_ptr<const service_nodes::testing_quorum>> *alt_states = nullptr) const;
+     std::shared_ptr<const masternodes::testing_quorum> get_testing_quorum(masternodes::quorum_type type, uint64_t height, bool include_old = false, std::vector<std::shared_ptr<const masternodes::testing_quorum>> *alt_states = nullptr) const;
 
      /**
       * @brief Get a non owning reference to the list of blacklisted key images
       */
-     const std::vector<service_nodes::key_image_blacklist_entry> &get_service_node_blacklisted_key_images() const;
+     const std::vector<masternodes::key_image_blacklist_entry> &get_masternode_blacklisted_key_images() const;
 
      /**
-      * @brief get a snapshot of the service node list state at the time of the call.
+      * @brief get a snapshot of the masternode list state at the time of the call.
       *
-      * @param service_node_pubkeys pubkeys to search, if empty this indicates get all the pubkeys
+      * @param masternode_pubkeys pubkeys to search, if empty this indicates get all the pubkeys
       *
-      * @return all the service nodes that can be matched from pubkeys in param
+      * @return all the masternodes that can be matched from pubkeys in param
       */
-     std::vector<service_nodes::service_node_pubkey_info> get_service_node_list_state(const std::vector<crypto::public_key>& service_node_pubkeys) const;
+     std::vector<masternodes::masternode_pubkey_info> get_masternode_list_state(const std::vector<crypto::public_key>& masternode_pubkeys) const;
 
      /**
-       * @brief get whether `pubkey` is known as a service node.
+       * @brief get whether `pubkey` is known as a masternode.
        *
        * @param pubkey the public key to test
-       * @param require_active if true also require that the service node is active (fully funded
+       * @param require_active if true also require that the masternode is active (fully funded
        * and not decommissioned).
        *
-       * @return whether `pubkey` is known as a (optionally active) service node
+       * @return whether `pubkey` is known as a (optionally active) masternode
        */
-     bool is_service_node(const crypto::public_key& pubkey, bool require_active) const;
+     bool is_masternode(const crypto::public_key& pubkey, bool require_active) const;
 
      /**
-      * @brief Add a service node vote
+      * @brief Add a masternode vote
       *
-      * @param vote The vote for deregistering a service node.
+      * @param vote The vote for deregistering a masternode.
 
       * @return
       */
-     bool add_service_node_vote(const service_nodes::quorum_vote_t& vote, vote_verification_context &vvc);
+     bool add_masternode_vote(const masternodes::quorum_vote_t& vote, vote_verification_context &vvc);
 
      /**
-      * @brief Get the keypair for this service node.
+      * @brief Get the keypair for this masternode.
 
-      * @param pub_key The public key for the service node, unmodified if not a service node
+      * @param pub_key The public key for the masternode, unmodified if not a masternode
 
-      * @param sec_key The secret key for the service node, unmodified if not a service node
+      * @param sec_key The secret key for the masternode, unmodified if not a masternode
 
-      * @return True if we are a service node
+      * @return True if we are a masternode
       */
-     bool get_service_node_keys(crypto::public_key &pub_key, crypto::secret_key &sec_key) const;
+     bool get_masternode_keys(crypto::public_key &pub_key, crypto::secret_key &sec_key) const;
 
      /**
-      * @brief Get the public key of every service node.
+      * @brief Get the public key of every masternode.
       *
       * @param keys The container in which to return the keys
       * @param active_nodes_only Only return nodes that are funded and actively working (i.e. not decommissioned) on the network
       */
-     void get_all_service_nodes_public_keys(std::vector<crypto::public_key>& keys, bool active_nodes_only) const;
+     void get_all_masternodes_public_keys(std::vector<crypto::public_key>& keys, bool active_nodes_only) const;
 
      /**
-      * @brief attempts to submit an uptime proof to the network, if this is running in service node mode
+      * @brief attempts to submit an uptime proof to the network, if this is running in masternode mode
       *
       * @return true
       */
@@ -880,12 +880,12 @@ namespace cryptonote
       *
       * @return true, necessary for binding this function to a periodic invoker
       */
-     bool relay_service_node_votes();
+     bool relay_masternode_votes();
 
      /**
-      * @brief Record if the service node has checkpointed at this point in time
+      * @brief Record if the masternode has checkpointed at this point in time
       */
-     void record_checkpoint_vote(crypto::public_key const &pubkey, uint64_t height, bool voted) { m_service_node_list.record_checkpoint_vote(pubkey, height, voted); }
+     void record_checkpoint_vote(crypto::public_key const &pubkey, uint64_t height, bool voted) { m_masternode_list.record_checkpoint_vote(pubkey, height, voted); }
 
      /**
       * @brief Record the reachability status of node's storage server
@@ -1055,11 +1055,11 @@ namespace cryptonote
      bool check_disk_space();
 
      /**
-      * @brief Initializes service node key by loading or creating.
+      * @brief Initializes masternode key by loading or creating.
       *
       * @return true on success, false otherwise
       */
-     bool init_service_node_key();
+     bool init_masternode_key();
 
      /**
       * @brief do the uptime proof logic and calls for idle loop.
@@ -1080,8 +1080,8 @@ namespace cryptonote
      tx_memory_pool m_mempool; //!< transaction pool instance
      Blockchain m_blockchain_storage; //!< Blockchain instance
 
-     service_nodes::service_node_list m_service_node_list;
-     service_nodes::quorum_cop        m_quorum_cop;
+     masternodes::masternode_list m_masternode_list;
+     masternodes::quorum_cop        m_quorum_cop;
 
      i_cryptonote_protocol* m_pprotocol; //!< cryptonote protocol instance
 
@@ -1103,7 +1103,7 @@ namespace cryptonote
      epee::math_helper::once_a_time_seconds<UPTIME_PROOF_BUFFER_IN_SECONDS, true> m_check_uptime_proof_interval; //!< interval for checking our own uptime proof
      epee::math_helper::once_a_time_seconds<90, false> m_block_rate_interval; //!< interval for checking block rate
      epee::math_helper::once_a_time_seconds<60*60*5, true> m_blockchain_pruning_interval; //!< interval for incremental blockchain pruning
-     epee::math_helper::once_a_time_seconds<60*2, false> m_service_node_vote_relayer;
+     epee::math_helper::once_a_time_seconds<60*2, false> m_masternode_vote_relayer;
 
      std::atomic<bool> m_starter_message_showed; //!< has the "daemon will sync now" message been shown?
 
@@ -1118,11 +1118,11 @@ namespace cryptonote
 
      std::atomic_flag m_checkpoints_updating; //!< set if checkpoints are currently updating to avoid multiple threads attempting to update at once
 
-     bool m_service_node;
-     crypto::secret_key m_service_node_key;
-     crypto::public_key m_service_node_pubkey;
+     bool m_masternode;
+     crypto::secret_key m_masternode_key;
+     crypto::public_key m_masternode_pubkey;
 
-     /// Service Node's public IP and storage server port
+     /// MasterNode's public IP and storage server port
      uint32_t m_sn_public_ip;
      uint16_t m_storage_port;
 

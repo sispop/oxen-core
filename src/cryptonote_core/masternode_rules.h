@@ -2,21 +2,21 @@
 
 #include "crypto/crypto.h"
 #include "cryptonote_config.h"
-#include "service_node_voting.h"
+#include "masternode_voting.h"
 
-namespace service_nodes {
-  // Service node decommissioning: as service nodes stay up they earn "credits" (measured in blocks)
-  // towards a future outage.  A new service node starts out with INITIAL_CREDIT, and then builds up
-  // CREDIT_PER_DAY for each day the service node remains active up to a maximum of
+namespace masternodes {
+  // Masternode decommissioning: as masternodes stay up they earn "credits" (measured in blocks)
+  // towards a future outage.  A new masternode starts out with INITIAL_CREDIT, and then builds up
+  // CREDIT_PER_DAY for each day the masternode remains active up to a maximum of
   // DECOMMISSION_MAX_CREDIT.
   //
-  // If a service node stops sending uptime proofs, a quorum will consider whether the service node
+  // If a masternode stops sending uptime proofs, a quorum will consider whether the masternode
   // has built up enough credits (at least MINIMUM): if so, instead of submitting a deregistration,
-  // it instead submits a decommission.  This removes the service node from the list of active
-  // service nodes both for rewards and for any active network duties.  If the service node comes
+  // it instead submits a decommission.  This removes the masternode from the list of active
+  // masternodes both for rewards and for any active network duties.  If the masternode comes
   // back online (i.e. starts sending the required performance proofs again) before the credits run
-  // out then a quorum will reinstate the service node using a recommission transaction, which adds
-  // the service node back to the bottom of the service node reward list, and resets its accumulated
+  // out then a quorum will reinstate the masternode using a recommission transaction, which adds
+  // the masternode back to the bottom of the masternode reward list, and resets its accumulated
   // credits to 0.  If it does not come back online within the required number of blocks (i.e. the
   // accumulated credit at the point of decommissioning) then a quorum will send a permanent
   // deregistration transaction to the network, starting a 30-day deregistration count down.
@@ -35,7 +35,7 @@ namespace service_nodes {
   constexpr int16_t CHECKPOINT_NUM_QUORUMS_TO_PARTICIPATE_IN = 8;
   constexpr int16_t CHECKPOINT_MAX_MISSABLE_VOTES            = 4;
   static_assert(CHECKPOINT_MAX_MISSABLE_VOTES < CHECKPOINT_NUM_QUORUMS_TO_PARTICIPATE_IN,
-                "The maximum number of votes a service node can miss cannot be greater than the amount of checkpoint "
+                "The maximum number of votes a masternode can miss cannot be greater than the amount of checkpoint "
                 "quorums they must participate in before we check if they should be deregistered or not.");
 
   // State change quorums are in charge of policing the network by changing the state of a service
@@ -81,7 +81,7 @@ namespace service_nodes {
   constexpr size_t   IDEAL_SWARM_SIZE                 = MIN_SWARM_SIZE + IDEAL_SWARM_MARGIN;
   constexpr size_t   EXCESS_BASE                      = MIN_SWARM_SIZE;
   constexpr size_t   NEW_SWARM_SIZE                   = IDEAL_SWARM_SIZE;
-  // The lower swarm percentile that will be randomly filled with new service nodes
+  // The lower swarm percentile that will be randomly filled with new masternodes
   constexpr size_t   FILL_SWARM_LOWER_PERCENTILE      = 25;
   // Redistribute snodes from decommissioned swarms to the smallest swarms
   constexpr size_t   DECOMMISSIONED_REDISTRIBUTION_LOWER_PERCENTILE = 0;
@@ -106,7 +106,7 @@ namespace service_nodes {
   {
     // TODO(loki): After switching to V13, we can change checkpointing quorums to activate on V13 since we delete all
     // v12 checkpoints so we don't need quorum data for it and save some space
-    quorum_type result = (hf_version <= cryptonote::network_version_11_infinite_staking) ? quorum_type::obligations
+    quorum_type result = (hf_version <= cryptonote::network_version_11) ? quorum_type::obligations
                                                                                          : quorum_type::checkpointing;
     assert(result != quorum_type::count);
     return result;
@@ -133,7 +133,7 @@ uint64_t portions_to_amount(uint64_t portions, uint64_t staking_requirement);
 
 /// Check if portions are sufficiently large (provided the contributions
 /// are made in the specified order) and don't exceed the required amount
-bool check_service_node_portions(uint8_t version, const std::vector<uint64_t>& portions);
+bool check_masternode_portions(uint8_t version, const std::vector<uint64_t>& portions);
 
 crypto::hash generate_request_stake_unlock_hash(uint32_t nonce);
 uint64_t     get_locked_key_image_unlock_height(cryptonote::network_type nettype, uint64_t node_register_height, uint64_t curr_height);

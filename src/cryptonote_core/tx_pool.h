@@ -48,9 +48,9 @@
 #include "rpc/core_rpc_server_commands_defs.h"
 #include "rpc/message_data_structs.h"
 
-namespace service_nodes
+namespace masternodes
 {
-  class service_node_list;
+  class masternode_list;
 };
 
 namespace cryptonote
@@ -110,7 +110,7 @@ namespace cryptonote
      * @param id the transaction's hash
      * @param tx_weight the transaction's weight
      */
-    bool add_tx(transaction &tx, const crypto::hash &id, const cryptonote::blobdata &blob, size_t tx_weight, tx_verification_context& tvc, bool kept_by_block, bool relayed, bool do_not_relay, uint8_t version, const service_nodes::service_node_list &service_node_list);
+    bool add_tx(transaction &tx, const crypto::hash &id, const cryptonote::blobdata &blob, size_t tx_weight, tx_verification_context& tvc, bool kept_by_block, bool relayed, bool do_not_relay, uint8_t version, const masternodes::masternode_list &masternode_list);
 
     /**
      * @brief add a transaction to the transaction pool
@@ -129,7 +129,7 @@ namespace cryptonote
      *
      * @return true if the transaction passes validations, otherwise false
      */
-    bool add_tx(transaction &tx, tx_verification_context& tvc, bool kept_by_block, bool relayed, bool do_not_relay, uint8_t version, service_nodes::service_node_list const &service_node_list);
+    bool add_tx(transaction &tx, tx_verification_context& tvc, bool kept_by_block, bool relayed, bool do_not_relay, uint8_t version, masternodes::masternode_list const &masternode_list);
 
     /**
      * @brief takes a transaction with the given hash from the pool
@@ -164,7 +164,7 @@ namespace cryptonote
      *
      * @return true
      */
-    bool on_blockchain_inc(service_nodes::service_node_list const &service_node_list, block const &blk);
+    bool on_blockchain_inc(masternodes::masternode_list const &masternode_list, block const &blk);
 
     /**
      * @brief action to take when notified of a block removed from the blockchain
@@ -462,7 +462,7 @@ namespace cryptonote
      * @return true if it already exists
      *
      */
-    bool have_duplicated_non_standard_tx(transaction const &tx, uint8_t hard_fork_version, service_nodes::service_node_list const &node_list) const;
+    bool have_duplicated_non_standard_tx(transaction const &tx, uint8_t hard_fork_version, masternodes::masternode_list const &node_list) const;
 
     /**
      * @brief check if any spent key image in a transaction is in the pool

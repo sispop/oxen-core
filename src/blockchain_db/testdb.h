@@ -164,9 +164,9 @@ public:
 
   virtual bool get_output_blacklist   (std::vector<uint64_t> &blacklist)       const override { return false; }
   virtual void add_output_blacklist   (std::vector<uint64_t> const &blacklist)       override { }
-  virtual void set_service_node_data  (const std::string& data, bool long_term)      override { }
-  virtual bool get_service_node_data  (std::string& data, bool long_term)            override { return false; }
-  virtual void clear_service_node_data()                                             override { }
+  virtual void set_masternode_data  (const std::string& data, bool long_term)      override { }
+  virtual bool get_masternode_data  (std::string& data, bool long_term)            override { return false; }
+  virtual void clear_masternode_data()                                             override { }
 
   virtual void add_alt_block(const crypto::hash &blkid, const cryptonote::alt_block_data_t &data, const cryptonote::blobdata &blob, const cryptonote::blobdata *checkpoint) override {}
   virtual bool get_alt_block(const crypto::hash &blkid, alt_block_data_t *data, cryptonote::blobdata *blob, cryptonote::blobdata *checkpoint) override { return false; }

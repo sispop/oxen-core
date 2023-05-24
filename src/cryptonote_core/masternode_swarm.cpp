@@ -1,7 +1,7 @@
-#include "service_node_swarm.h"
+#include "masternode_swarm.h"
 
 #undef LOKI_DEFAULT_LOG_CATEGORY
-#define LOKI_DEFAULT_LOG_CATEGORY "service_nodes"
+#define LOKI_DEFAULT_LOG_CATEGORY "masternodes"
 
 #ifdef UNIT_TEST
   #define prod_static
@@ -9,7 +9,7 @@
   #define prod_static static
 #endif
 
-namespace service_nodes
+namespace masternodes
 {
   static uint64_t get_new_swarm_id(const swarm_snode_map_t &swarm_to_snodes)
   {
@@ -103,7 +103,7 @@ namespace service_nodes
 
   prod_static void get_excess_pool(size_t threshold, const swarm_snode_map_t& swarm_to_snodes, std::vector<excess_pool_snode>& pool_snodes, size_t& excess)
   {
-    /// Create a pool of all the service nodes belonging
+    /// Create a pool of all the masternodes belonging
     /// to the swarms that have excess. That way we naturally
     /// make the chances of picking a swarm proportionate to the
     /// swarm size.

@@ -161,7 +161,7 @@ namespace cryptonote
     bool transfer(const std::vector<std::string> &args);
     bool locked_transfer(const std::vector<std::string> &args);
     bool stake(const std::vector<std::string> &args_);
-    bool register_service_node(const std::vector<std::string> &args_);
+    bool register_masternode(const std::vector<std::string> &args_);
     bool request_stake_unlock(const std::vector<std::string> &args_);
     bool print_locked_stakes(const std::vector<std::string>& /*args*/);
     bool query_locked_stakes(bool print_result);
@@ -255,8 +255,8 @@ namespace cryptonote
     bool welcome(const std::vector<std::string>& args);
     bool version(const std::vector<std::string>& args);
 
-    bool register_service_node_main(
-        const std::vector<std::string>& service_node_key_as_str,
+    bool register_masternode_main(
+        const std::vector<std::string>& masternode_key_as_str,
         const cryptonote::account_public_address& address,
         uint32_t priority,
         const std::vector<uint64_t>& portions,

@@ -161,7 +161,7 @@ namespace tools
         // Loki
         //
         MAP_JON_RPC_WE("stake", on_stake, wallet_rpc::COMMAND_RPC_STAKE)
-        MAP_JON_RPC_WE("register_service_node", on_register_service_node, wallet_rpc::COMMAND_RPC_REGISTER_SERVICE_NODE)
+        MAP_JON_RPC_WE("register_masternode", on_register_masternode, wallet_rpc::COMMAND_RPC_REGISTER_MASTERNODE)
         MAP_JON_RPC_WE("can_request_stake_unlock", on_can_request_stake_unlock, wallet_rpc::COMMAND_RPC_CAN_REQUEST_STAKE_UNLOCK)
         MAP_JON_RPC_WE("request_stake_unlock", on_request_stake_unlock, wallet_rpc::COMMAND_RPC_REQUEST_STAKE_UNLOCK)
       END_JSON_RPC_MAP()
@@ -251,7 +251,7 @@ namespace tools
       bool on_set_log_categories(const wallet_rpc::COMMAND_RPC_SET_LOG_CATEGORIES::request& req, wallet_rpc::COMMAND_RPC_SET_LOG_CATEGORIES::response& res, epee::json_rpc::error& er, const connection_context *ctx = NULL);
       bool on_get_version(const wallet_rpc::COMMAND_RPC_GET_VERSION::request& req, wallet_rpc::COMMAND_RPC_GET_VERSION::response& res, epee::json_rpc::error& er, const connection_context *ctx = NULL);
       bool on_stake(const wallet_rpc::COMMAND_RPC_STAKE::request& req, wallet_rpc::COMMAND_RPC_STAKE::response& res, epee::json_rpc::error& er, const connection_context *ctx = NULL);
-      bool on_register_service_node(const wallet_rpc::COMMAND_RPC_REGISTER_SERVICE_NODE::request& req, wallet_rpc::COMMAND_RPC_REGISTER_SERVICE_NODE::response& res, epee::json_rpc::error& er, const connection_context *ctx = NULL);
+      bool on_register_masternode(const wallet_rpc::COMMAND_RPC_REGISTER_MASTERNODE::request& req, wallet_rpc::COMMAND_RPC_REGISTER_MASTERNODE::response& res, epee::json_rpc::error& er, const connection_context *ctx = NULL);
       bool on_can_request_stake_unlock(const wallet_rpc::COMMAND_RPC_CAN_REQUEST_STAKE_UNLOCK::request& req, wallet_rpc::COMMAND_RPC_CAN_REQUEST_STAKE_UNLOCK::response& res, epee::json_rpc::error& er, const connection_context *ctx = NULL);
       bool on_request_stake_unlock(const wallet_rpc::COMMAND_RPC_REQUEST_STAKE_UNLOCK::request& req, wallet_rpc::COMMAND_RPC_REQUEST_STAKE_UNLOCK::response& res, epee::json_rpc::error& er, const connection_context *ctx = NULL);
 

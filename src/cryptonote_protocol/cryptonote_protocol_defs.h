@@ -38,7 +38,7 @@
 
 #include "common/loki.h"
 
-namespace service_nodes
+namespace masternodes
 {
   struct legacy_deregister_vote;
   struct quorum_vote_t;
@@ -326,12 +326,12 @@ namespace cryptonote
   /************************************************************************/
   /*                                                                      */
   /************************************************************************/
-  struct NOTIFY_NEW_SERVICE_NODE_VOTE
+  struct NOTIFY_NEW_MASTERNODE_VOTE
   {
     const static int ID = BC_COMMANDS_POOL_BASE + 12;
     struct request
     {
-      std::vector<service_nodes::quorum_vote_t> votes;
+      std::vector<masternodes::quorum_vote_t> votes;
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE_CONTAINER_POD_AS_BLOB(votes)
       END_KV_SERIALIZE_MAP()

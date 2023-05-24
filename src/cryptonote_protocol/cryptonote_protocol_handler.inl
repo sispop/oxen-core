@@ -751,27 +751,27 @@ namespace cryptonote
   }
   //------------------------------------------------------------------------------------------------------------------------  
   template<class t_core>
-  int t_cryptonote_protocol_handler<t_core>::handle_notify_new_service_node_vote(int command, NOTIFY_NEW_SERVICE_NODE_VOTE::request& arg, cryptonote_connection_context& context)
+  int t_cryptonote_protocol_handler<t_core>::handle_notify_new_masternode_vote(int command, NOTIFY_NEW_MASTERNODE_VOTE::request& arg, cryptonote_connection_context& context)
   {
-    MLOG_P2P_MESSAGE("Received NOTIFY_NEW_SERVICE_NODE_VOTE (" << arg.votes.size() << " txes)");
+    MLOG_P2P_MESSAGE("Received NOTIFY_NEW_MASTERNODE_VOTE (" << arg.votes.size() << " txes)");
 
     if(context.m_state != cryptonote_connection_context::state_normal)
       return 1;
 
     if(!is_synchronized())
     {
-      LOG_DEBUG_CC(context, "Received new service node vote while syncing, ignored");
+      LOG_DEBUG_CC(context, "Received new masternode vote while syncing, ignored");
       return 1;
     }
 
     for(auto it = arg.votes.begin(); it != arg.votes.end();)
     {
       cryptonote::vote_verification_context vvc = {};
-      m_core.add_service_node_vote(*it, vvc);
+      m_core.add_masternode_vote(*it, vvc);
 
       if (vvc.m_verification_failed)
       {
-        LOG_PRINT_CCONTEXT_L1("Vote type: " << service_nodes::quorum_type_to_string(it->type) << ", verification failed, dropping connection");
+        LOG_PRINT_CCONTEXT_L1("Vote type: " << masternodes::quorum_type_to_string(it->type) << ", verification failed, dropping connection");
         drop_connection(context, false /*add_fail*/, false /*flush_all_spans i.e. delete cached block data from this peer*/);
         return 1;
       }
@@ -787,7 +787,7 @@ namespace cryptonote
     }
 
     if (arg.votes.size())
-      relay_service_node_votes(arg, context);
+      relay_masternode_votes(arg, context);
 
     return 1;
   }
@@ -2230,9 +2230,9 @@ skip:
   }
   //------------------------------------------------------------------------------------------------------------------------
   template<class t_core>
-  bool t_cryptonote_protocol_handler<t_core>::relay_service_node_votes(NOTIFY_NEW_SERVICE_NODE_VOTE::request& arg, cryptonote_connection_context& exclude_context)
+  bool t_cryptonote_protocol_handler<t_core>::relay_masternode_votes(NOTIFY_NEW_MASTERNODE_VOTE::request& arg, cryptonote_connection_context& exclude_context)
   {
-    bool result = relay_to_synchronized_peers<NOTIFY_NEW_SERVICE_NODE_VOTE>(arg, exclude_context);
+    bool result = relay_to_synchronized_peers<NOTIFY_NEW_MASTERNODE_VOTE>(arg, exclude_context);
     return result;
   }
   //------------------------------------------------------------------------------------------------------------------------

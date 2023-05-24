@@ -547,7 +547,7 @@ namespace cryptonote
     if (hf_version >= cryptonote::network_version_7 && hf_version <= cryptonote::network_version_8)
       return txversion::v2_ringct;
 
-    if (hf_version >= cryptonote::network_version_9_service_nodes && hf_version <= cryptonote::network_version_10_bulletproofs)
+    if (hf_version >= cryptonote::network_version_9 && hf_version <= cryptonote::network_version_10)
       return txversion::v3_per_output_unlock_times;
 
     return txversion::v4_tx_types;
@@ -558,14 +558,14 @@ namespace cryptonote
     nettype = validate_nettype(nettype);
     if (nettype == MAINNET) // NOTE(loki): Add an exception for mainnet as there are v2's on mainnet.
     {
-      if (hf_version == cryptonote::network_version_10_bulletproofs)
+      if (hf_version == cryptonote::network_version_10)
         return txversion::v2_ringct;
     }
 
-    if (hf_version >= cryptonote::network_version_7 && hf_version <= cryptonote::network_version_9_service_nodes)
+    if (hf_version >= cryptonote::network_version_7 && hf_version <= cryptonote::network_version_9)
       return txversion::v2_ringct;
 
-    if (hf_version == cryptonote::network_version_10_bulletproofs)
+    if (hf_version == cryptonote::network_version_10)
       return txversion::v3_per_output_unlock_times;
 
     return txversion::v4_tx_types;

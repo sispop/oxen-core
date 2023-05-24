@@ -2659,7 +2659,7 @@ namespace wallet_rpc
   };
 
   LOKI_RPC_DOC_INTROSPECT
-  // Stake for Service Node.
+  // Stake for MasterNode.
   struct COMMAND_RPC_STAKE
   {
     struct request_t
@@ -2667,7 +2667,7 @@ namespace wallet_rpc
       std::string        destination;      // Primary Public address that the rewards will go to.
       uint64_t           amount;           // Amount of Loki to stake in atomic units.
       std::set<uint32_t> subaddr_indices;  // (Optional) Transfer from this set of subaddresses. (Defaults to 0)
-      std::string        service_node_key; // Service Node Public Address.
+      std::string        masternode_key; // MasterNode Public Address.
       uint32_t           priority;         // Set a priority for the transaction. Accepted Values are: 0-3 for: default, unimportant, normal, elevated, priority.
       bool               get_tx_key;       // (Optional) Return the transaction key after sending.
       bool               do_not_relay;     // (Optional) If true, the newly created transaction will not be relayed to the loki network. (Defaults to false)
@@ -2678,7 +2678,7 @@ namespace wallet_rpc
         KV_SERIALIZE_OPT(subaddr_indices, {});
         KV_SERIALIZE    (destination);
         KV_SERIALIZE    (amount);
-        KV_SERIALIZE    (service_node_key);
+        KV_SERIALIZE    (masternode_key);
         KV_SERIALIZE_OPT(priority,        (uint32_t)0);
         KV_SERIALIZE    (get_tx_key)
         KV_SERIALIZE_OPT(do_not_relay,    false)
@@ -2714,19 +2714,19 @@ namespace wallet_rpc
   };
 
   LOKI_RPC_DOC_INTROSPECT
-  // Register Service Node.
-  struct COMMAND_RPC_REGISTER_SERVICE_NODE
+  // Register MasterNode.
+  struct COMMAND_RPC_REGISTER_MASTERNODE
   {
     struct request_t
     {
-      std::string register_service_node_str; // String supplied by the prepare_registration command.
+      std::string register_masternode_str; // String supplied by the prepare_registration command.
       bool        get_tx_key;                // (Optional) Return the transaction key after sending.
       bool        do_not_relay;              // (Optional) If true, the newly created transaction will not be relayed to the loki network. (Defaults to false)
       bool        get_tx_hex;                // Return the transaction as hex string after sending (Defaults to false)
       bool        get_tx_metadata;           // Return the metadata needed to relay the transaction. (Defaults to false)
 
       BEGIN_KV_SERIALIZE_MAP()
-        KV_SERIALIZE(register_service_node_str);
+        KV_SERIALIZE(register_masternode_str);
         KV_SERIALIZE(get_tx_key)
         KV_SERIALIZE_OPT(do_not_relay,    false)
         KV_SERIALIZE_OPT(get_tx_hex,      false)
@@ -2761,15 +2761,15 @@ namespace wallet_rpc
   };
 
   LOKI_RPC_DOC_INTROSPECT
-  // Request to unlock stake by deregistering Service Node.
+  // Request to unlock stake by deregistering MasterNode.
   struct COMMAND_RPC_REQUEST_STAKE_UNLOCK
   {
     struct request_t
     {
-      std::string service_node_key; // Service Node Public Key.
+      std::string masternode_key; // MasterNode Public Key.
 
       BEGIN_KV_SERIALIZE_MAP()
-        KV_SERIALIZE(service_node_key);
+        KV_SERIALIZE(masternode_key);
       END_KV_SERIALIZE_MAP()
     };
     typedef epee::misc_utils::struct_init<request_t> request;
@@ -2788,15 +2788,15 @@ namespace wallet_rpc
   };
   
   LOKI_RPC_DOC_INTROSPECT
-  // Check if Service Node can unlock it's stake.
+  // Check if MasterNode can unlock it's stake.
   struct COMMAND_RPC_CAN_REQUEST_STAKE_UNLOCK
   {
     struct request_t
     {
-      std::string service_node_key; // Service node public address.
+      std::string masternode_key; // Masternode public address.
 
       BEGIN_KV_SERIALIZE_MAP()
-        KV_SERIALIZE(service_node_key);
+        KV_SERIALIZE(masternode_key);
       END_KV_SERIALIZE_MAP()
     };
     typedef epee::misc_utils::struct_init<request_t> request;

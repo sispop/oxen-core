@@ -33,7 +33,7 @@
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/utility.hpp>
 #include "ringct/rctOps.h"
-#include "cryptonote_core/service_node_list.h"
+#include "cryptonote_core/masternode_list.h"
 
 namespace cryptonote
 {
@@ -47,14 +47,14 @@ namespace cryptonote
   bool     height_has_governance_output         (network_type nettype, int hard_fork_version, uint64_t height);
   uint64_t derive_governance_from_block_reward  (network_type nettype, const cryptonote::block &block);
 
-  uint64_t get_portion_of_reward                (uint64_t portions, uint64_t total_service_node_reward);
-  uint64_t service_node_reward_formula          (uint64_t base_reward, int hard_fork_version);
+  uint64_t get_portion_of_reward                (uint64_t portions, uint64_t total_masternode_reward);
+  uint64_t masternode_reward_formula          (uint64_t base_reward, int hard_fork_version);
 
   struct loki_miner_tx_context // NOTE(loki): All the custom fields required by Loki to use construct_miner_tx
   {
-    loki_miner_tx_context(network_type type = MAINNET, service_nodes::block_winner const &block_winner = service_nodes::null_block_winner) : nettype(type), block_winner(std::move(block_winner)) { }
+    loki_miner_tx_context(network_type type = MAINNET, masternodes::block_winner const &block_winner = masternodes::null_block_winner) : nettype(type), block_winner(std::move(block_winner)) { }
     network_type                nettype;
-    service_nodes::block_winner block_winner;
+    masternodes::block_winner block_winner;
     uint64_t                    batched_governance = 0; // NOTE: 0 until hardfork v10, then use blockchain::calc_batched_governance_reward
   };
 
@@ -72,8 +72,8 @@ namespace cryptonote
 
   struct block_reward_parts
   {
-    uint64_t service_node_total;
-    uint64_t service_node_paid;
+    uint64_t masternode_total;
+    uint64_t masternode_paid;
 
     uint64_t governance_due;
     uint64_t governance_paid;
@@ -95,7 +95,7 @@ namespace cryptonote
     uint64_t                                 height;
     uint64_t                                 fee;
     uint64_t                                 batched_governance;   // Optional: 0 hardfork v10, then must be calculated using blockchain::calc_batched_governance_reward
-    std::vector<service_nodes::payout_entry> service_node_payouts = service_nodes::null_winner;
+    std::vector<masternodes::payout_entry> masternode_payouts = masternodes::null_winner;
   };
 
   // NOTE(loki): I would combine this into get_base_block_reward, but
@@ -178,8 +178,8 @@ namespace cryptonote
     loki_construct_tx_params(uint8_t hf_version)
     {
       *this = {};
-      v4_allow_tx_types    = (hf_version >= cryptonote::network_version_11_infinite_staking);
-      v3_per_output_unlock = (hf_version >= cryptonote::network_version_9_service_nodes);
+      v4_allow_tx_types    = (hf_version >= cryptonote::network_version_11);
+      v3_per_output_unlock = (hf_version >= cryptonote::network_version_9);
       v2_rct               = (hf_version >= cryptonote::network_version_7);
     }
   };

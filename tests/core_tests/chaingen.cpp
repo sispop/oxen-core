@@ -83,31 +83,31 @@ loki_chain_generator::loki_chain_generator(std::vector<test_event_entry> &events
   events_.push_back(settings);
 }
 
-service_nodes::quorum_manager loki_chain_generator::top_quorum() const
+masternodes::quorum_manager loki_chain_generator::top_quorum() const
 {
-  service_nodes::quorum_manager result = top().service_node_state.quorums;
+  masternodes::quorum_manager result = top().masternode_state.quorums;
   return result;
 }
 
-service_nodes::quorum_manager loki_chain_generator::quorum(uint64_t height) const
+masternodes::quorum_manager loki_chain_generator::quorum(uint64_t height) const
 {
   assert(height > 0 && height < blocks_.size());
-  service_nodes::quorum_manager result = blocks_[height].service_node_state.quorums;
+  masternodes::quorum_manager result = blocks_[height].masternode_state.quorums;
   return result;
 }
 
-std::shared_ptr<const service_nodes::testing_quorum> loki_chain_generator::get_testing_quorum(service_nodes::quorum_type type, uint64_t height) const
+std::shared_ptr<const masternodes::testing_quorum> loki_chain_generator::get_testing_quorum(masternodes::quorum_type type, uint64_t height) const
 {
   // TODO(loki): Bad copy pasta from get_testing_quorum, if it ever changes at the source this will break :<
-  if (type == service_nodes::quorum_type::checkpointing)
+  if (type == masternodes::quorum_type::checkpointing)
   {
-    assert(height >= service_nodes::REORG_SAFETY_BUFFER_BLOCKS_POST_HF12);
-    height -= service_nodes::REORG_SAFETY_BUFFER_BLOCKS_POST_HF12;
+    assert(height >= masternodes::REORG_SAFETY_BUFFER_BLOCKS_POST_HF12);
+    height -= masternodes::REORG_SAFETY_BUFFER_BLOCKS_POST_HF12;
   }
 
   assert(height > 0 && height < blocks_.size());
-  service_nodes::quorum_manager manager = blocks_[height].service_node_state.quorums;
-  std::shared_ptr<const service_nodes::testing_quorum> result = manager.get(type);
+  masternodes::quorum_manager manager = blocks_[height].masternode_state.quorums;
+  std::shared_ptr<const masternodes::testing_quorum> result = manager.get(type);
   return result;
 }
 
@@ -135,7 +135,7 @@ loki_blockchain_entry &loki_chain_generator::add_block(const std::vector<crypton
       else break;
     }
 
-    service_nodes::block_winner winner  = prev.service_node_state.get_block_winner();
+    masternodes::block_winner winner  = prev.masternode_state.get_block_winner();
     std::vector<uint64_t> block_weights = last_n_block_weights(new_height - 1, CRYPTONOTE_REWARD_BLOCKS_WINDOW);
     create_loki_blockchain_entry(result,
                                  desired_hf,
@@ -185,22 +185,22 @@ void loki_chain_generator::add_n_blocks(int n)
 
 void loki_chain_generator::add_blocks_until_next_checkpointable_height()
 {
-  if (height() % service_nodes::CHECKPOINT_INTERVAL == 0)
+  if (height() % masternodes::CHECKPOINT_INTERVAL == 0)
   {
-      add_n_blocks(service_nodes::CHECKPOINT_INTERVAL);
+      add_n_blocks(masternodes::CHECKPOINT_INTERVAL);
   }
   else
   {
-    while (height() % service_nodes::CHECKPOINT_INTERVAL != 0)
+    while (height() % masternodes::CHECKPOINT_INTERVAL != 0)
       add_block();
   }
 }
 
-void loki_chain_generator::add_service_node_checkpoint(uint64_t block_height, size_t num_votes)
+void loki_chain_generator::add_masternode_checkpoint(uint64_t block_height, size_t num_votes)
 {
   loki_blockchain_entry &entry = blocks_[block_height];
   entry.checkpointed           = true;
-  entry.checkpoint             = create_service_node_checkpoint(block_height, num_votes);
+  entry.checkpoint             = create_masternode_checkpoint(block_height, num_votes);
   events_.push_back(entry.checkpoint);
 }
 
@@ -228,7 +228,7 @@ cryptonote::transaction loki_chain_generator::create_and_add_tx(const cryptonote
   return t;
 }
 
-cryptonote::transaction loki_chain_generator::create_and_add_state_change_tx(service_nodes::new_state state, const crypto::public_key &pub_key, uint64_t height, const std::vector<uint64_t> &voters, uint64_t fee, bool kept_by_block)
+cryptonote::transaction loki_chain_generator::create_and_add_state_change_tx(masternodes::new_state state, const crypto::public_key &pub_key, uint64_t height, const std::vector<uint64_t> &voters, uint64_t fee, bool kept_by_block)
 {
   cryptonote::transaction result = create_state_change_tx(state, pub_key, height, voters, fee);
   add_tx(result, true /*can_be_added_to_blockchain*/, "" /*fail_msg*/, kept_by_block);
@@ -242,7 +242,7 @@ cryptonote::transaction loki_chain_generator::create_and_add_registration_tx(con
   return result;
 }
 
-cryptonote::transaction loki_chain_generator::create_registration_tx(const cryptonote::account_base &src, const cryptonote::keypair &service_node_keys) const
+cryptonote::transaction loki_chain_generator::create_registration_tx(const cryptonote::account_base &src, const cryptonote::keypair &masternode_keys) const
 {
   uint64_t new_height                                          = get_block_height(top().block) + 1;
   uint8_t new_hf_version                                       = get_hf_version_at(new_height);
@@ -252,15 +252,15 @@ cryptonote::transaction loki_chain_generator::create_registration_tx(const crypt
   cryptonote::block const &head                                = top().block;
   cryptonote::transaction result                               = {};
   {
-    const auto staking_requirement = service_nodes::get_staking_requirement(cryptonote::FAKECHAIN, new_height, get_hf_version_at(new_height));
-    uint64_t amount                = service_nodes::portions_to_amount(portions[0], staking_requirement);
+    const auto staking_requirement = masternodes::get_staking_requirement(cryptonote::FAKECHAIN, new_height, get_hf_version_at(new_height));
+    uint64_t amount                = masternodes::portions_to_amount(portions[0], staking_requirement);
 
     uint64_t unlock_time = 0;
     if (new_hf_version < cryptonote::network_version_11_infinite_staking)
-      unlock_time = new_height + service_nodes::staking_num_lock_blocks(cryptonote::FAKECHAIN);
+      unlock_time = new_height + masternodes::staking_num_lock_blocks(cryptonote::FAKECHAIN);
     
     std::vector<uint8_t> extra;
-    cryptonote::add_service_node_pubkey_to_tx_extra(extra, service_node_keys.pub);
+    cryptonote::add_masternode_pubkey_to_tx_extra(extra, masternode_keys.pub);
     const uint64_t exp_timestamp = time(nullptr) + STAKING_AUTHORIZATION_EXPIRATION_WINDOW;
 
     crypto::hash hash;
@@ -271,55 +271,55 @@ cryptonote::transaction loki_chain_generator::create_registration_tx(const crypt
     }
 
     crypto::signature signature;
-    crypto::generate_signature(hash, service_node_keys.pub, service_node_keys.sec, signature);
-    add_service_node_register_to_tx_extra(extra, contributors, operator_cut, portions, exp_timestamp, signature);
-    add_service_node_contributor_to_tx_extra(extra, contributors.at(0));
+    crypto::generate_signature(hash, masternode_keys.pub, masternode_keys.sec, signature);
+    add_masternode_register_to_tx_extra(extra, contributors, operator_cut, portions, exp_timestamp, signature);
+    add_masternode_contributor_to_tx_extra(extra, contributors.at(0));
     loki_tx_builder(events_, result, head, src /*from*/, src /*to*/, amount, new_hf_version).is_staking(true).with_unlock_time(unlock_time).with_extra(extra).with_per_output_unlock(true).build();
   }
 
-  service_node_keys_[service_node_keys.pub] = service_node_keys.sec; // NOTE: Save generated key for reuse later if we need to interact with the node again
+  masternode_keys_[masternode_keys.pub] = masternode_keys.sec; // NOTE: Save generated key for reuse later if we need to interact with the node again
   return result;
 }
 
-cryptonote::transaction loki_chain_generator::create_state_change_tx(service_nodes::new_state state, const crypto::public_key &pub_key, uint64_t height, const std::vector<uint64_t>& voters, uint64_t fee) const
+cryptonote::transaction loki_chain_generator::create_state_change_tx(masternodes::new_state state, const crypto::public_key &pub_key, uint64_t height, const std::vector<uint64_t>& voters, uint64_t fee) const
 {
   if (height == UINT64_MAX)
     height = this->height();
 
-  service_nodes::quorum_manager const &quorums                   = quorum(height);
-  std::vector<crypto::public_key> const &validator_service_nodes = quorums.obligations->validators;
-  std::vector<crypto::public_key> const &worker_service_nodes    = quorums.obligations->workers;
+  masternodes::quorum_manager const &quorums                   = quorum(height);
+  std::vector<crypto::public_key> const &validator_masternodes = quorums.obligations->validators;
+  std::vector<crypto::public_key> const &worker_masternodes    = quorums.obligations->workers;
 
   size_t worker_index = UINT64_MAX;
-  for (size_t i = 0; i < worker_service_nodes.size(); i++)
+  for (size_t i = 0; i < worker_masternodes.size(); i++)
   {
-    crypto::public_key const &check_key = worker_service_nodes[i];
+    crypto::public_key const &check_key = worker_masternodes[i];
     if (pub_key == check_key) worker_index = i;
   }
   assert(worker_index != UINT64_MAX);
 
-  cryptonote::tx_extra_service_node_state_change state_change_extra(state, height, worker_index);
+  cryptonote::tx_extra_masternode_state_change state_change_extra(state, height, worker_index);
   if (voters.size())
   {
     for (const auto voter_index : voters)
     {
-      crypto::public_key const &voter_pub_key = validator_service_nodes[voter_index];
-      assert(service_node_keys_.count(voter_pub_key) == 1);
-      crypto::secret_key const &voter_sec_key = service_node_keys_[voter_pub_key];
+      crypto::public_key const &voter_pub_key = validator_masternodes[voter_index];
+      assert(masternode_keys_.count(voter_pub_key) == 1);
+      crypto::secret_key const &voter_sec_key = masternode_keys_[voter_pub_key];
 
-      service_nodes::quorum_vote_t vote = service_nodes::make_state_change_vote(state_change_extra.block_height, voter_index, state_change_extra.service_node_index, state, voter_pub_key, voter_sec_key);
+      masternodes::quorum_vote_t vote = masternodes::make_state_change_vote(state_change_extra.block_height, voter_index, state_change_extra.masternode_index, state, voter_pub_key, voter_sec_key);
       state_change_extra.votes.push_back({vote.signature, (uint32_t)voter_index});
     }
   }
   else
   {
-    for (size_t i = 0; i < service_nodes::STATE_CHANGE_MIN_VOTES_TO_CHANGE_STATE; i++)
+    for (size_t i = 0; i < masternodes::STATE_CHANGE_MIN_VOTES_TO_CHANGE_STATE; i++)
     {
-      crypto::public_key const &voter_pub_key = validator_service_nodes[i];
-      assert(service_node_keys_.count(voter_pub_key) == 1);
-      crypto::secret_key const &voter_sec_key = service_node_keys_[voter_pub_key];
+      crypto::public_key const &voter_pub_key = validator_masternodes[i];
+      assert(masternode_keys_.count(voter_pub_key) == 1);
+      crypto::secret_key const &voter_sec_key = masternode_keys_[voter_pub_key];
 
-      service_nodes::quorum_vote_t vote = service_nodes::make_state_change_vote(state_change_extra.block_height, i, state_change_extra.service_node_index, state, voter_pub_key, voter_sec_key);
+      masternodes::quorum_vote_t vote = masternodes::make_state_change_vote(state_change_extra.block_height, i, state_change_extra.masternode_index, state, voter_pub_key, voter_sec_key);
       state_change_extra.votes.push_back({vote.signature, (uint32_t)i});
     }
   }
@@ -327,7 +327,7 @@ cryptonote::transaction loki_chain_generator::create_state_change_tx(service_nod
   cryptonote::transaction result;
   {
     std::vector<uint8_t> extra;
-    const bool full_tx_made = cryptonote::add_service_node_state_change_to_tx_extra(result.extra, state_change_extra, get_hf_version_at(height + 1));
+    const bool full_tx_made = cryptonote::add_masternode_state_change_to_tx_extra(result.extra, state_change_extra, get_hf_version_at(height + 1));
     assert(full_tx_made);
     if (fee) loki_tx_builder(events_, result, top().block, first_miner_, first_miner_, 0 /*amount*/, get_hf_version_at(height + 1)).with_fee(fee).with_extra(extra).with_per_output_unlock(true).build();
     result.version = cryptonote::transaction::get_max_version_for_hf(get_hf_version_at(height + 1), cryptonote::FAKECHAIN);
@@ -337,24 +337,24 @@ cryptonote::transaction loki_chain_generator::create_state_change_tx(service_nod
   return result;
 }
 
-cryptonote::checkpoint_t loki_chain_generator::create_service_node_checkpoint(uint64_t block_height, size_t num_votes) const
+cryptonote::checkpoint_t loki_chain_generator::create_masternode_checkpoint(uint64_t block_height, size_t num_votes) const
 {
-  assert(block_height % service_nodes::CHECKPOINT_INTERVAL == 0);
-  service_nodes::testing_quorum const &quorum = *get_testing_quorum(service_nodes::quorum_type::checkpointing, block_height);
+  assert(block_height % masternodes::CHECKPOINT_INTERVAL == 0);
+  masternodes::testing_quorum const &quorum = *get_testing_quorum(masternodes::quorum_type::checkpointing, block_height);
   assert(num_votes < quorum.validators.size());
 
   loki_blockchain_entry const &entry = blocks_[block_height];
   crypto::hash const block_hash      = cryptonote::get_block_hash(entry.block);
-  cryptonote::checkpoint_t result    = service_nodes::make_empty_service_node_checkpoint(block_hash, block_height);
+  cryptonote::checkpoint_t result    = masternodes::make_empty_masternode_checkpoint(block_hash, block_height);
   result.signatures.reserve(num_votes);
   for (size_t i = 0; i < num_votes; i++)
   {
     crypto::public_key const &pub_key = quorum.validators[i];
-    assert(service_node_keys_.count(pub_key) == 1);
-    crypto::secret_key const &sec_key = service_node_keys_[pub_key];
+    assert(masternode_keys_.count(pub_key) == 1);
+    crypto::secret_key const &sec_key = masternode_keys_[pub_key];
 
-    service_nodes::quorum_vote_t vote = service_nodes::make_checkpointing_vote(entry.block.major_version, result.block_hash, block_height, i, pub_key, sec_key);
-    result.signatures.push_back(service_nodes::voter_to_signature(vote));
+    masternodes::quorum_vote_t vote = masternodes::make_checkpointing_vote(entry.block.major_version, result.block_hash, block_height, i, pub_key, sec_key);
+    result.signatures.push_back(masternodes::voter_to_signature(vote));
   }
 
   return result;
@@ -448,7 +448,7 @@ bool loki_chain_generator::create_loki_blockchain_entry(loki_blockchain_entry &e
                                                         uint64_t timestamp,
                                                         std::vector<uint64_t> &block_weights,
                                                         const std::vector<cryptonote::transaction> &tx_list,
-                                                        const service_nodes::block_winner &block_winner)
+                                                        const masternodes::block_winner &block_winner)
 {
   assert(hf_version >= prev.block.major_version);
   uint64_t height        = get_block_height(prev.block) + 1;
@@ -558,10 +558,10 @@ bool loki_chain_generator::create_loki_blockchain_entry(loki_blockchain_entry &e
     tx_table_[tx_hash] = tx;
   }
 
-  entry.service_node_state = prev.service_node_state;
+  entry.masternode_state = prev.masternode_state;
   // TODO(loki): State history culling
-  state_history_.emplace_hint(state_history_.end(), entry.service_node_state);
-  entry.service_node_state.update_from_block(db_, cryptonote::FAKECHAIN, state_history_, {} /*alt_states*/, entry.block, entry.txs, nullptr);
+  state_history_.emplace_hint(state_history_.end(), entry.masternode_state);
+  entry.masternode_state.update_from_block(db_, cryptonote::FAKECHAIN, state_history_, {} /*alt_states*/, entry.block, entry.txs, nullptr);
 
   uint64_t block_reward, block_reward_unpenalized;
   cryptonote::get_base_block_reward(epee::misc_utils::median(block_weights), entry.block_weight, prev.already_generated_coins, block_reward, block_reward_unpenalized, hf_version, height);
@@ -716,7 +716,7 @@ bool test_generator::construct_block(cryptonote::block &blk,
                                      uint64_t already_generated_coins,
                                      std::vector<uint64_t> &block_weights,
                                      const std::list<cryptonote::transaction> &tx_list,
-                                     const service_nodes::block_winner &winner)
+                                     const masternodes::block_winner &winner)
 {
   /// a temporary workaround
   blk.major_version = m_hf_version;
@@ -821,7 +821,7 @@ bool test_generator::construct_block(cryptonote::block &blk,
                                      const cryptonote::block &blk_prev,
                                      const cryptonote::account_base &miner_acc,
                                      const std::list<cryptonote::transaction> &tx_list /* = {}*/,
-                                     const service_nodes::block_winner &winner)
+                                     const masternodes::block_winner &winner)
 {
   uint64_t height = boost::get<cryptonote::txin_gen>(blk_prev.miner_tx.vin.front()).height + 1;
   crypto::hash prev_id = get_block_hash(blk_prev);
@@ -886,7 +886,7 @@ bool test_generator::construct_block_manually_tx(cryptonote::block& blk, const c
 
 cryptonote::transaction make_registration_tx(std::vector<test_event_entry>& events,
                                              const cryptonote::account_base& account,
-                                             const cryptonote::keypair& service_node_keys,
+                                             const cryptonote::keypair& masternode_keys,
                                              uint64_t operator_cut,
                                              const std::vector<cryptonote::account_public_address>& contributors,
                                              const std::vector<uint64_t>& portions,
@@ -894,16 +894,16 @@ cryptonote::transaction make_registration_tx(std::vector<test_event_entry>& even
                                              uint8_t hf_version)
 {
   const auto new_height          = cryptonote::get_block_height(head) + 1;
-  const auto staking_requirement = service_nodes::get_staking_requirement(cryptonote::FAKECHAIN, new_height, hf_version);
-  uint64_t amount                = service_nodes::portions_to_amount(portions[0], staking_requirement);
+  const auto staking_requirement = masternodes::get_staking_requirement(cryptonote::FAKECHAIN, new_height, hf_version);
+  uint64_t amount                = masternodes::portions_to_amount(portions[0], staking_requirement);
 
   cryptonote::transaction tx;
   uint64_t unlock_time = 0;
   if (hf_version < cryptonote::network_version_11_infinite_staking)
-    unlock_time = new_height + service_nodes::staking_num_lock_blocks(cryptonote::FAKECHAIN);
+    unlock_time = new_height + masternodes::staking_num_lock_blocks(cryptonote::FAKECHAIN);
 
   std::vector<uint8_t> extra;
-  cryptonote::add_service_node_pubkey_to_tx_extra(extra, service_node_keys.pub);
+  cryptonote::add_masternode_pubkey_to_tx_extra(extra, masternode_keys.pub);
   const uint64_t exp_timestamp = time(nullptr) + STAKING_AUTHORIZATION_EXPIRATION_WINDOW;
 
   crypto::hash hash;
@@ -914,9 +914,9 @@ cryptonote::transaction make_registration_tx(std::vector<test_event_entry>& even
   }
 
   crypto::signature signature;
-  crypto::generate_signature(hash, service_node_keys.pub, service_node_keys.sec, signature);
-  add_service_node_register_to_tx_extra(extra, contributors, operator_cut, portions, exp_timestamp, signature);
-  add_service_node_contributor_to_tx_extra(extra, contributors.at(0));
+  crypto::generate_signature(hash, masternode_keys.pub, masternode_keys.sec, signature);
+  add_masternode_register_to_tx_extra(extra, contributors, operator_cut, portions, exp_timestamp, signature);
+  add_masternode_contributor_to_tx_extra(extra, contributors.at(0));
   loki_tx_builder(events, tx, head, account, account, amount, hf_version).is_staking(true).with_extra(extra).with_unlock_time(unlock_time).with_per_output_unlock(true).build();
   events.push_back(tx);
   return tx;

@@ -35,7 +35,7 @@
 #include "string_tools.h"
 #include "storages/portable_storage_template_helper.h" // epee json include
 #include "serialization/keyvalue_serialization.h"
-#include "cryptonote_core/service_node_rules.h"
+#include "cryptonote_core/masternode_rules.h"
 #include <vector>
 #include "syncobj.h"
 #include "blockchain_db/blockchain_db.h"
@@ -186,7 +186,7 @@ namespace cryptonote
   bool checkpoints::block_added(const cryptonote::block& block, const std::vector<cryptonote::transaction>& txs, checkpoint_t const *checkpoint)
   {
     uint64_t const height = get_block_height(block);
-    if (height < service_nodes::CHECKPOINT_STORE_PERSISTENTLY_INTERVAL || block.major_version < network_version_12_checkpointing)
+    if (height < masternodes::CHECKPOINT_STORE_PERSISTENTLY_INTERVAL || block.major_version < network_version_12)
       return true;
 
     uint64_t end_cull_height = 0;
@@ -195,18 +195,18 @@ namespace cryptonote
       if (m_db->get_immutable_checkpoint(&immutable_checkpoint, height + 1))
         end_cull_height = immutable_checkpoint.height;
     }
-    uint64_t start_cull_height = (end_cull_height < service_nodes::CHECKPOINT_STORE_PERSISTENTLY_INTERVAL)
+    uint64_t start_cull_height = (end_cull_height < masternodes::CHECKPOINT_STORE_PERSISTENTLY_INTERVAL)
                                      ? 0
-                                     : end_cull_height - service_nodes::CHECKPOINT_STORE_PERSISTENTLY_INTERVAL;
+                                     : end_cull_height - masternodes::CHECKPOINT_STORE_PERSISTENTLY_INTERVAL;
 
-    if ((start_cull_height % service_nodes::CHECKPOINT_INTERVAL) > 0)
-      start_cull_height += (service_nodes::CHECKPOINT_INTERVAL - (start_cull_height % service_nodes::CHECKPOINT_INTERVAL));
+    if ((start_cull_height % masternodes::CHECKPOINT_INTERVAL) > 0)
+      start_cull_height += (masternodes::CHECKPOINT_INTERVAL - (start_cull_height % masternodes::CHECKPOINT_INTERVAL));
 
     m_last_cull_height = std::max(m_last_cull_height, start_cull_height);
     auto guard         = db_wtxn_guard(m_db);
-    for (; m_last_cull_height < end_cull_height; m_last_cull_height += service_nodes::CHECKPOINT_INTERVAL)
+    for (; m_last_cull_height < end_cull_height; m_last_cull_height += masternodes::CHECKPOINT_INTERVAL)
     {
-      if (m_last_cull_height % service_nodes::CHECKPOINT_STORE_PERSISTENTLY_INTERVAL == 0)
+      if (m_last_cull_height % masternodes::CHECKPOINT_STORE_PERSISTENTLY_INTERVAL == 0)
         continue;
 
       try
@@ -235,8 +235,8 @@ namespace cryptonote
     {
       uint64_t start_height = top_checkpoint.height;
       for (size_t delete_height = start_height;
-           delete_height >= height && delete_height >= service_nodes::CHECKPOINT_INTERVAL;
-           delete_height -= service_nodes::CHECKPOINT_INTERVAL)
+           delete_height >= height && delete_height >= masternodes::CHECKPOINT_INTERVAL;
+           delete_height -= masternodes::CHECKPOINT_INTERVAL)
       {
         try
         {
@@ -260,27 +260,27 @@ namespace cryptonote
     return height <= top_checkpoint_height;
   }
   //---------------------------------------------------------------------------
-  bool checkpoints::check_block(uint64_t height, const crypto::hash& h, bool* is_a_checkpoint, bool *service_node_checkpoint) const
+  bool checkpoints::check_block(uint64_t height, const crypto::hash& h, bool* is_a_checkpoint, bool *masternode_checkpoint) const
   {
     checkpoint_t checkpoint;
     bool found = get_checkpoint(height, checkpoint);
     if (is_a_checkpoint) *is_a_checkpoint = found;
-    if (service_node_checkpoint) *service_node_checkpoint = false;
+    if (masternode_checkpoint) *masternode_checkpoint = false;
 
     if(!found)
       return true;
 
     bool result = checkpoint.check(h);
-    if (service_node_checkpoint)
-      *service_node_checkpoint = (checkpoint.type == checkpoint_type::service_node);
+    if (masternode_checkpoint)
+      *masternode_checkpoint = (checkpoint.type == checkpoint_type::masternode);
 
     return result;
   }
   //---------------------------------------------------------------------------
-  bool checkpoints::is_alternative_block_allowed(uint64_t blockchain_height, uint64_t block_height, bool *service_node_checkpoint)
+  bool checkpoints::is_alternative_block_allowed(uint64_t blockchain_height, uint64_t block_height, bool *masternode_checkpoint)
   {
-    if (service_node_checkpoint)
-      *service_node_checkpoint = false;
+    if (masternode_checkpoint)
+      *masternode_checkpoint = false;
 
     if (0 == block_height)
       return false;
@@ -296,8 +296,8 @@ namespace cryptonote
     if (m_db->get_immutable_checkpoint(&immutable_checkpoint, blockchain_height))
     {
       immutable_height = immutable_checkpoint.height;
-      if (service_node_checkpoint)
-        *service_node_checkpoint = (immutable_checkpoint.type == checkpoint_type::service_node);
+      if (masternode_checkpoint)
+        *masternode_checkpoint = (immutable_checkpoint.type == checkpoint_type::masternode);
     }
 
     m_immutable_height = std::max(immutable_height, m_immutable_height);

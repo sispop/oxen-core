@@ -356,12 +356,12 @@ namespace rpc
       if (tvc.m_key_image_locked_by_snode)
       {
         if (!res.error_details.empty()) res.error_details += " and ";
-        res.error_details = "tx uses outputs that are locked by the service node network";
+        res.error_details = "tx uses outputs that are locked by the masternode network";
       }
       if (tvc.m_key_image_blacklisted)
       {
         if (!res.error_details.empty()) res.error_details += " and ";
-        res.error_details = "tx uses a key image that has been temporarily blacklisted by the service node network";
+        res.error_details = "tx uses a key image that has been temporarily blacklisted by the masternode network";
       }
       if (res.error_details.empty())
       {

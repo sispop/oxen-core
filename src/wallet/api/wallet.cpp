@@ -43,7 +43,7 @@
 #include "common_defines.h"
 #include "common/util.h"
 
-#include "cryptonote_core/service_node_rules.h"
+#include "cryptonote_core/masternode_rules.h"
 
 #include "mnemonics/electrum-words.h"
 #include "mnemonics/english.h"
@@ -2432,7 +2432,7 @@ PendingTransaction* WalletImpl::stakePending(const std::string& sn_key_str, cons
   crypto::public_key sn_key;
   if (!epee::string_tools::hex_to_pod(sn_key_str, sn_key))
   {
-    error_msg = "Failed to parse service node pubkey";
+    error_msg = "Failed to parse masternode pubkey";
     LOG_ERROR(error_msg);
     return nullptr;
   }

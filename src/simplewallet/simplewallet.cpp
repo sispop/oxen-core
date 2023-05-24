@@ -59,8 +59,8 @@
 #include "common/scoped_message_writer.h"
 #include "common/loki_integration_test_hooks.h"
 #include "cryptonote_protocol/cryptonote_protocol_handler.h"
-#include "cryptonote_core/service_node_voting.h"
-#include "cryptonote_core/service_node_list.h"
+#include "cryptonote_core/masternode_voting.h"
+#include "cryptonote_core/masternode_list.h"
 #include "simplewallet.h"
 #include "cryptonote_basic/cryptonote_format_utils.h"
 #include "storages/http_abstract_invoke.h"
@@ -262,9 +262,9 @@ namespace
   //
   // Loki
   //
-  const char* USAGE_REGISTER_SERVICE_NODE("register_service_node [index=<N1>[,<N2>,...]] [<priority>] <operator cut> <address1> <fraction1> [<address2> <fraction2> [...]] <expiration timestamp> <pubkey> <signature>");
-  const char* USAGE_STAKE("stake [index=<N1>[,<N2>,...]] [<priority>] <service node pubkey> <amount|percent%>");
-  const char* USAGE_REQUEST_STAKE_UNLOCK("request_stake_unlock <service_node_pubkey>");
+  const char* USAGE_REGISTER_MASTERNODE("register_masternode [index=<N1>[,<N2>,...]] [<priority>] <operator cut> <address1> <fraction1> [<address2> <fraction2> [...]] <expiration timestamp> <pubkey> <signature>");
+  const char* USAGE_STAKE("stake [index=<N1>[,<N2>,...]] [<priority>] <masternode pubkey> <amount|percent%>");
+  const char* USAGE_REQUEST_STAKE_UNLOCK("request_stake_unlock <masternode_pubkey>");
   const char* USAGE_PRINT_LOCKED_STAKES("print_locked_stakes");
 
 #if defined (LOKI_ENABLE_INTEGRATION_TEST_HOOKS)
@@ -3166,22 +3166,22 @@ simple_wallet::simple_wallet()
   //
   // Loki
   //
-  m_cmd_binder.set_handler("register_service_node",
-                           boost::bind(&simple_wallet::register_service_node, this, _1),
-                           tr(USAGE_REGISTER_SERVICE_NODE),
-                           tr("Send <amount> to this wallet's main account and lock it as an operator stake for a new Service Node. This command is typically generated on the Service Node via the `prepare_registration' lokid command. The optional index= and <priority> parameters work as in the `transfer' command."));
+  m_cmd_binder.set_handler("register_masternode",
+                           boost::bind(&simple_wallet::register_masternode, this, _1),
+                           tr(USAGE_REGISTER_MASTERNODE),
+                           tr("Send <amount> to this wallet's main account and lock it as an operator stake for a new MasterNode. This command is typically generated on the MasterNode via the `prepare_registration' lokid command. The optional index= and <priority> parameters work as in the `transfer' command."));
   m_cmd_binder.set_handler("stake",
                            boost::bind(&simple_wallet::stake, this, _1),
                            tr(USAGE_STAKE),
-                           tr("Send a transfer to this wallet's main account and lock it as a contribution stake to the given Service Node (which must be registered and awaiting contributions). The stake amount may be specified either as a fixed amount or as a percentage of the Service Node's total stake. The optional index= and <priority> parameters work as in the `transfer' command."));
+                           tr("Send a transfer to this wallet's main account and lock it as a contribution stake to the given MasterNode (which must be registered and awaiting contributions). The stake amount may be specified either as a fixed amount or as a percentage of the MasterNode's total stake. The optional index= and <priority> parameters work as in the `transfer' command."));
   m_cmd_binder.set_handler("request_stake_unlock",
                            boost::bind(&simple_wallet::request_stake_unlock, this, _1),
                            tr(USAGE_REQUEST_STAKE_UNLOCK),
-                           tr("Request a stake currently locked in the given Service Node to be unlocked on the network"));
+                           tr("Request a stake currently locked in the given MasterNode to be unlocked on the network"));
   m_cmd_binder.set_handler("print_locked_stakes",
                            boost::bind(&simple_wallet::print_locked_stakes, this, _1),
                            tr(USAGE_PRINT_LOCKED_STAKES),
-                           tr("Print stakes currently locked on the Service Node network"));
+                           tr("Print stakes currently locked on the MasterNode network"));
 }
 //----------------------------------------------------------------------------------------------------
 bool simple_wallet::set_variable(const std::vector<std::string> &args)
@@ -6061,23 +6061,23 @@ bool simple_wallet::locked_sweep_all(const std::vector<std::string> &args_)
   return sweep_main(0, true, args_);
 }
 //----------------------------------------------------------------------------------------------------
-bool simple_wallet::register_service_node(const std::vector<std::string> &args_)
+bool simple_wallet::register_masternode(const std::vector<std::string> &args_)
 {
   if (!try_connect_to_daemon())
     return true;
 
   SCOPED_WALLET_UNLOCK()
-  tools::wallet2::register_service_node_result result = m_wallet->create_register_service_node_tx(args_, m_current_subaddress_account);
-  if (result.status != tools::wallet2::register_service_node_result_status::success)
+  tools::wallet2::register_masternode_result result = m_wallet->create_register_masternode_tx(args_, m_current_subaddress_account);
+  if (result.status != tools::wallet2::register_masternode_result_status::success)
   {
     fail_msg_writer() << result.msg;
-    if (result.status == tools::wallet2::register_service_node_result_status::insufficient_num_args ||
-        result.status == tools::wallet2::register_service_node_result_status::service_node_key_parse_fail ||
-        result.status == tools::wallet2::register_service_node_result_status::service_node_signature_parse_fail ||
-        result.status == tools::wallet2::register_service_node_result_status::subaddr_indices_parse_fail ||
-        result.status == tools::wallet2::register_service_node_result_status::convert_registration_args_failed)
+    if (result.status == tools::wallet2::register_masternode_result_status::insufficient_num_args ||
+        result.status == tools::wallet2::register_masternode_result_status::masternode_key_parse_fail ||
+        result.status == tools::wallet2::register_masternode_result_status::masternode_signature_parse_fail ||
+        result.status == tools::wallet2::register_masternode_result_status::subaddr_indices_parse_fail ||
+        result.status == tools::wallet2::register_masternode_result_status::convert_registration_args_failed)
     {
-      fail_msg_writer() << USAGE_REGISTER_SERVICE_NODE;
+      fail_msg_writer() << USAGE_REGISTER_MASTERNODE;
     }
     return true;
   }
@@ -6114,7 +6114,7 @@ bool simple_wallet::stake(const std::vector<std::string> &args_)
   //
   // Parse Arguments from Args
   //
-  crypto::public_key service_node_key = {};
+  crypto::public_key masternode_key = {};
   uint32_t priority = 0;
   std::set<uint32_t> subaddr_indices = {};
   uint64_t amount = 0;
@@ -6142,9 +6142,9 @@ bool simple_wallet::stake(const std::vector<std::string> &args_)
       return true;
     }
 
-    if (!epee::string_tools::hex_to_pod(local_args[0], service_node_key))
+    if (!epee::string_tools::hex_to_pod(local_args[0], masternode_key))
     {
-      fail_msg_writer() << tr("failed to parse service node pubkey");
+      fail_msg_writer() << tr("failed to parse masternode pubkey");
       return true;
     }
 
@@ -6191,7 +6191,7 @@ bool simple_wallet::stake(const std::vector<std::string> &args_)
 
       time_t begin_construct_time = time(nullptr);
 
-      tools::wallet2::stake_result stake_result = m_wallet->create_stake_tx(service_node_key, info, amount, amount_fraction, priority, m_current_subaddress_account, subaddr_indices);
+      tools::wallet2::stake_result stake_result = m_wallet->create_stake_tx(masternode_key, info, amount, amount_fraction, priority, m_current_subaddress_account, subaddr_indices);
       if (stake_result.status != tools::wallet2::stake_result_status::success)
       {
         fail_msg_writer() << stake_result.msg;
@@ -6244,7 +6244,7 @@ bool simple_wallet::request_stake_unlock(const std::vector<std::string> &args_)
   crypto::public_key snode_key;
   if (!epee::string_tools::hex_to_pod(args_[0], snode_key))
   {
-    fail_msg_writer() << tr("failed to parse service node pubkey: ") << args_[0];
+    fail_msg_writer() << tr("failed to parse masternode pubkey: ") << args_[0];
     return true;
   }
 
@@ -6308,7 +6308,7 @@ bool simple_wallet::query_locked_stakes(bool print_result)
   {
     using namespace cryptonote;
     boost::optional<std::string> failed;
-    const std::vector<COMMAND_RPC_GET_SERVICE_NODES::response::entry> response = m_wallet->get_all_service_nodes(failed);
+    const std::vector<COMMAND_RPC_GET_MASTERNODES::response::entry> response = m_wallet->get_all_masternodes(failed);
     if (failed)
     {
       fail_msg_writer() << *failed;
@@ -6316,10 +6316,10 @@ bool simple_wallet::query_locked_stakes(bool print_result)
     }
 
     cryptonote::account_public_address const primary_address = m_wallet->get_address();
-    for (COMMAND_RPC_GET_SERVICE_NODES::response::entry const &node_info : response)
+    for (COMMAND_RPC_GET_MASTERNODES::response::entry const &node_info : response)
     {
       bool only_once = true;
-      for (service_node_contributor const &contributor : node_info.contributors)
+      for (masternode_contributor const &contributor : node_info.contributors)
       {
         address_parse_info address_info = {};
         if (!cryptonote::get_account_address_from_str(address_info, m_wallet->nettype(), contributor.address))
@@ -6333,7 +6333,7 @@ bool simple_wallet::query_locked_stakes(bool print_result)
 
         for (size_t i = 0; i < contributor.locked_contributions.size(); ++i)
         {
-          service_node_contribution const &contribution = contributor.locked_contributions[i];
+          masternode_contribution const &contribution = contributor.locked_contributions[i];
           has_locked_stakes = true;
 
           if (!print_result)
@@ -6343,12 +6343,12 @@ bool simple_wallet::query_locked_stakes(bool print_result)
           if (only_once)
           {
             only_once = false;
-            msg_buf.append("Service Node: ");
-            msg_buf.append(node_info.service_node_pubkey);
+            msg_buf.append("MasterNode: ");
+            msg_buf.append(node_info.masternode_pubkey);
             msg_buf.append("\n");
 
             msg_buf.append("Unlock Height: ");
-            if (node_info.requested_unlock_height == service_nodes::KEY_IMAGE_AWAITING_UNLOCK_HEIGHT)
+            if (node_info.requested_unlock_height == masternodes::KEY_IMAGE_AWAITING_UNLOCK_HEIGHT)
                 msg_buf.append("Unlock not requested yet");
             else
                 msg_buf.append(std::to_string(node_info.requested_unlock_height));
@@ -6382,7 +6382,7 @@ bool simple_wallet::query_locked_stakes(bool print_result)
   {
     using namespace cryptonote;
     boost::optional<std::string> failed;
-    const std::vector<cryptonote::COMMAND_RPC_GET_SERVICE_NODE_BLACKLISTED_KEY_IMAGES::entry> response = m_wallet->get_service_node_blacklisted_key_images(failed);
+    const std::vector<cryptonote::COMMAND_RPC_GET_MASTERNODE_BLACKLISTED_KEY_IMAGES::entry> response = m_wallet->get_masternode_blacklisted_key_images(failed);
     if (failed)
     {
       fail_msg_writer() << *failed;
@@ -6394,7 +6394,7 @@ bool simple_wallet::query_locked_stakes(bool print_result)
     binary_buf.reserve(sizeof(crypto::key_image));
     for (size_t i = 0; i < response.size(); ++i)
     {
-      COMMAND_RPC_GET_SERVICE_NODE_BLACKLISTED_KEY_IMAGES::entry const &entry = response[i];
+      COMMAND_RPC_GET_MASTERNODE_BLACKLISTED_KEY_IMAGES::entry const &entry = response[i];
       binary_buf.clear();
       if(!epee::string_tools::parse_hexstr_to_binbuff(entry.key_image, binary_buf) || binary_buf.size() != sizeof(crypto::key_image))
       {
@@ -7915,7 +7915,7 @@ bool simple_wallet::show_transfers(const std::vector<std::string> &args_)
         case tools::pay_type::miner:        color = console_color_cyan; break;
         case tools::pay_type::governance:   color = console_color_cyan; break;
         case tools::pay_type::stake:        color = console_color_blue; break;
-        case tools::pay_type::service_node: color = console_color_cyan; break;
+        case tools::pay_type::masternode: color = console_color_cyan; break;
         default:                            color = console_color_magenta; break;
       }
     }
@@ -7936,7 +7936,7 @@ bool simple_wallet::show_transfers(const std::vector<std::string> &args_)
 
         if (transfer.type == tools::pay_type::in ||
             transfer.type == tools::pay_type::governance ||
-            transfer.type == tools::pay_type::service_node ||
+            transfer.type == tools::pay_type::masternode ||
             transfer.type == tools::pay_type::miner)
           destinations += output.address.substr(0, 6);
         else

@@ -37,9 +37,10 @@
 #include "int-util.h"
 #include "rpc/core_rpc_server_commands_defs.h"
 #include "cryptonote_core/cryptonote_core.h"
-#include "cryptonote_core/service_node_rules.h"
+#include "cryptonote_core/masternode_rules.h"
 #include "cryptonote_basic/hardfork.h"
 #include "checkpoints/checkpoints.h"
+#include "stake/stake.h"
 #include <boost/format.hpp>
 
 #include "common/loki_integration_test_hooks.h"
@@ -329,12 +330,12 @@ bool t_rpc_command_executor::print_sn_state_changes(uint64_t start_height, uint6
 
   if (m_is_rpc)
   {
-    if (!m_rpc_client->json_rpc_request(req, res, "get_service_nodes_state_changes", "Failed to query service nodes state changes"))
+    if (!m_rpc_client->json_rpc_request(req, res, "get_masternodes_state_changes", "Failed to query masternodes state changes"))
       return false;
   }
   else
   {
-    if (!m_rpc_server->on_get_service_nodes_state_changes(req, res, error_resp) || res.status != CORE_RPC_STATUS_OK)
+    if (!m_rpc_server->on_get_masternodes_state_changes(req, res, error_resp) || res.status != CORE_RPC_STATUS_OK)
     {
       tools::fail_msg_writer() << "Failed to query sn state changes";
       return false;
@@ -343,7 +344,7 @@ bool t_rpc_command_executor::print_sn_state_changes(uint64_t start_height, uint6
 
   std::stringstream output;
 
-  output << "Service Node State Changes (blocks " << res.start_height << "-" << res.end_height << ")" << std::endl;
+  output << "MasterNode State Changes (blocks " << res.start_height << "-" << res.end_height << ")" << std::endl;
   output << " Recommissions:\t\t" << res.total_recommission << std::endl;
   output << " Unlocks:\t\t" << res.total_unlock << std::endl;
   output << " Decommissions:\t\t" << res.total_decommission << std::endl;
@@ -641,33 +642,33 @@ bool t_rpc_command_executor::show_status() {
   uint64_t my_sn_last_uptime = 0;
   bool my_sn_registered = false, my_sn_staked = false, my_sn_active = false;
   {
-    cryptonote::COMMAND_RPC_GET_SERVICE_NODE_KEY::request req = {};
-    cryptonote::COMMAND_RPC_GET_SERVICE_NODE_KEY::response res = {};
+    cryptonote::COMMAND_RPC_GET_MASTERNODE_KEY::request req = {};
+    cryptonote::COMMAND_RPC_GET_MASTERNODE_KEY::response res = {};
     epee::json_rpc::error error_resp;
     std::string fail_message = "Unsuccessful";
 
     // Allow to fail, and if it does just ignore it.
     bool good = false;
     if (m_is_rpc)
-      good = m_rpc_client->json_rpc_request(req, res, "get_service_node_key", fail_message.c_str());
+      good = m_rpc_client->json_rpc_request(req, res, "get_masternode_key", fail_message.c_str());
     else
-      good = m_rpc_server->on_get_service_node_key(req, res, error_resp) && res.status == CORE_RPC_STATUS_OK;
+      good = m_rpc_server->on_get_masternode_key(req, res, error_resp) && res.status == CORE_RPC_STATUS_OK;
 
     if (good)
     {
-      my_sn_key = std::move(res.service_node_pubkey);
-      cryptonote::COMMAND_RPC_GET_SERVICE_NODES::request sn_req = {};
-      cryptonote::COMMAND_RPC_GET_SERVICE_NODES::response sn_res = {};
+      my_sn_key = std::move(res.masternode_pubkey);
+      cryptonote::COMMAND_RPC_GET_MASTERNODES::request sn_req = {};
+      cryptonote::COMMAND_RPC_GET_MASTERNODES::response sn_res = {};
 
-      sn_req.service_node_pubkeys.push_back(my_sn_key);
+      sn_req.masternode_pubkeys.push_back(my_sn_key);
       if (m_is_rpc)
-        good = m_rpc_client->json_rpc_request(sn_req, sn_res, "get_service_nodes", fail_message.c_str()) && sn_res.service_node_states.size() == 1;
+        good = m_rpc_client->json_rpc_request(sn_req, sn_res, "get_masternodes", fail_message.c_str()) && sn_res.masternode_states.size() == 1;
       else
-        good = m_rpc_server->on_get_service_nodes(sn_req, sn_res, error_resp) && sn_res.status == CORE_RPC_STATUS_OK && sn_res.service_node_states.size() == 1;
+        good = m_rpc_server->on_get_masternodes(sn_req, sn_res, error_resp) && sn_res.status == CORE_RPC_STATUS_OK && sn_res.masternode_states.size() == 1;
 
       if (good)
       {
-        auto &entry = sn_res.service_node_states.front();
+        auto &entry = sn_res.masternode_states.front();
         my_sn_registered = true;
         my_sn_staked = entry.total_contributed >= entry.staking_requirement;
         my_sn_active = entry.active;
@@ -987,7 +988,7 @@ bool t_rpc_command_executor::print_quorum_state(uint64_t start_height, uint64_t 
 
   req.start_height = start_height;
   req.end_height   = end_height;
-  req.quorum_type  = (decltype(req.quorum_type))service_nodes::quorum_type::rpc_request_all_quorums_sentinel_value;
+  req.quorum_type  = (decltype(req.quorum_type))masternodes::quorum_type::rpc_request_all_quorums_sentinel_value;
 
   std::string fail_message = "Unsuccessful";
 
@@ -2436,7 +2437,7 @@ static std::string to_string_rounded(double d, int precision) {
   return ss.str();
 }
 
-static void append_printable_service_node_list_entry(cryptonote::network_type nettype, bool detailed_view, uint64_t curr_height, uint64_t entry_index, cryptonote::COMMAND_RPC_GET_SERVICE_NODES::response::entry const &entry, std::string &buffer)
+static void append_printable_masternode_list_entry(cryptonote::network_type nettype, bool detailed_view, uint64_t curr_height, uint64_t entry_index, cryptonote::COMMAND_RPC_GET_MASTERNODES::response::entry const &entry, std::string &buffer)
 {
   const char indent1[] = "    ";
   const char indent2[] = "        ";
@@ -2448,7 +2449,7 @@ static void append_printable_service_node_list_entry(cryptonote::network_type ne
 
   // Print Funding Status
   {
-    stream << indent1 << "[" << entry_index << "] " << "Service Node: " << entry.service_node_pubkey << " ";
+    stream << indent1 << "[" << entry_index << "] " << "MasterNode: " << entry.masternode_pubkey << " ";
     stream << "v" << entry.version_major << "." << entry.version_minor << "." << entry.version_patch << "\n";
 
     if (detailed_view)
@@ -2462,22 +2463,22 @@ static void append_printable_service_node_list_entry(cryptonote::network_type ne
   uint64_t const now = time(nullptr);
   {
     uint64_t expiry_height = 0;
-    if (entry.registration_hf_version >= cryptonote::network_version_11_infinite_staking)
+    if (entry.registration_hf_version >= cryptonote::network_version_11)
     {
       expiry_height = entry.requested_unlock_height;
     }
-    else if (entry.registration_hf_version >= cryptonote::network_version_10_bulletproofs)
+    else if (entry.registration_hf_version >= cryptonote::network_version_10)
     {
-        expiry_height = entry.registration_height + service_nodes::staking_num_lock_blocks(nettype);
+        expiry_height = entry.registration_height + masternodes::staking_num_lock_blocks(nettype);
         expiry_height += STAKING_REQUIREMENT_LOCK_BLOCKS_EXCESS;
     }
     else
     {
-        expiry_height = entry.registration_height + service_nodes::staking_num_lock_blocks(nettype);
+        expiry_height = entry.registration_height + masternodes::staking_num_lock_blocks(nettype);
     }
 
     stream << indent2 << "Registration Hardfork Version | Register/Expiry Height: " << entry.registration_hf_version << " | " << entry.registration_height << " / ";
-    if (expiry_height == service_nodes::KEY_IMAGE_AWAITING_UNLOCK_HEIGHT)
+    if (expiry_height == masternodes::KEY_IMAGE_AWAITING_UNLOCK_HEIGHT)
     {
         stream << "Staking Infinitely (stake unlock not requested yet)\n";
     }
@@ -2502,7 +2503,7 @@ static void append_printable_service_node_list_entry(cryptonote::network_type ne
     stream << indent2 << "Operator Address: " << entry.operator_address << "\n";
   }
 
-  if (is_registered) // Print service node tests
+  if (is_registered) // Print masternode tests
   {
     epee::console_colors uptime_proof_color = (entry.last_uptime_proof == 0) ? epee::console_color_red : epee::console_color_green;
 
@@ -2534,8 +2535,8 @@ static void append_printable_service_node_list_entry(cryptonote::network_type ne
     stream << indent2 <<  "Checkpoint Participation [Height: Voted]: ";
     for (size_t i = 0; i < entry.votes.size(); i++)
     {
-      service_nodes::checkpoint_vote_record const &record = entry.votes[i];
-      if (record.height == service_nodes::INVALID_HEIGHT)
+      masternodes::checkpoint_vote_record const &record = entry.votes[i];
+      if (record.height == masternodes::INVALID_HEIGHT)
       {
         stream << "[N/A: N/A]";
       }
@@ -2552,8 +2553,8 @@ static void append_printable_service_node_list_entry(cryptonote::network_type ne
     if (entry.active) {
       stream << "Downtime Credits: " << entry.earned_downtime_blocks << " blocks";
       stream << " (about " << to_string_rounded(entry.earned_downtime_blocks / (double) BLOCKS_EXPECTED_IN_HOURS(1), 2)  << " hours)";
-      if (entry.earned_downtime_blocks < service_nodes::DECOMMISSION_MINIMUM)
-        stream << " (Note: " << service_nodes::DECOMMISSION_MINIMUM << " blocks required to enable deregistration delay)";
+      if (entry.earned_downtime_blocks < masternodes::DECOMMISSION_MINIMUM)
+        stream << " (Note: " << masternodes::DECOMMISSION_MINIMUM << " blocks required to enable deregistration delay)";
     } else {
       stream << "Current Status: DECOMMISSIONED\n";
       stream << indent2 << "Remaining Decommission Time Until DEREGISTRATION: " << entry.earned_downtime_blocks << " blocks";
@@ -2565,7 +2566,7 @@ static void append_printable_service_node_list_entry(cryptonote::network_type ne
   {
     for (size_t j = 0; j < entry.contributors.size(); ++j)
     {
-      const cryptonote::service_node_contributor &contributor = entry.contributors[j];
+      const cryptonote::masternode_contributor &contributor = entry.contributors[j];
       stream << indent2 << "[" << j << "] Contributor: " << contributor.address  << "\n";
       stream << indent3 << "Amount / Reserved: " << cryptonote::print_money(contributor.amount) << "/" << cryptonote::print_money(contributor.reserved) << "\n";
     }
@@ -2576,8 +2577,8 @@ static void append_printable_service_node_list_entry(cryptonote::network_type ne
 
 bool t_rpc_command_executor::print_sn(const std::vector<std::string> &args)
 {
-    cryptonote::COMMAND_RPC_GET_SERVICE_NODES::request req = {};
-    cryptonote::COMMAND_RPC_GET_SERVICE_NODES::response res = {};
+    cryptonote::COMMAND_RPC_GET_MASTERNODES::request req = {};
+    cryptonote::COMMAND_RPC_GET_MASTERNODES::response res = {};
     std::string fail_message = "Unsuccessful";
     epee::json_rpc::error error_resp;
 
@@ -2594,7 +2595,7 @@ bool t_rpc_command_executor::print_sn(const std::vector<std::string> &args)
         detailed_view = true;
         continue;
       }
-      req.service_node_pubkeys.push_back(args[i]);
+      req.masternode_pubkeys.push_back(args[i]);
     }
 
     cryptonote::COMMAND_RPC_GET_INFO::request get_info_req;
@@ -2610,7 +2611,7 @@ bool t_rpc_command_executor::print_sn(const std::vector<std::string> &args)
         return true;
       }
 
-      if (!m_rpc_client->json_rpc_request(req, res, "get_service_nodes", fail_message.c_str()))
+      if (!m_rpc_client->json_rpc_request(req, res, "get_masternodes", fail_message.c_str()))
       {
         tools::fail_msg_writer() << make_error(fail_message, res.status);
         return true;
@@ -2626,7 +2627,7 @@ bool t_rpc_command_executor::print_sn(const std::vector<std::string> &args)
       if (m_rpc_server->on_get_info(get_info_req, get_info_res) || get_info_res.status == CORE_RPC_STATUS_OK)
         curr_height = get_info_res.height;
 
-      if (!m_rpc_server->on_get_service_nodes(req, res, error_resp) || res.status != CORE_RPC_STATUS_OK)
+      if (!m_rpc_server->on_get_masternodes(req, res, error_resp) || res.status != CORE_RPC_STATUS_OK)
       {
           tools::fail_msg_writer() << make_error(fail_message, error_resp.message);
           return true;
@@ -2634,12 +2635,12 @@ bool t_rpc_command_executor::print_sn(const std::vector<std::string> &args)
       nettype = m_rpc_server->nettype();
     }
 
-    std::vector<cryptonote::COMMAND_RPC_GET_SERVICE_NODES::response::entry *> unregistered;
-    std::vector<cryptonote::COMMAND_RPC_GET_SERVICE_NODES::response::entry *> registered;
-    registered.reserve  (res.service_node_states.size());
-    unregistered.reserve(res.service_node_states.size() * 0.5f);
+    std::vector<cryptonote::COMMAND_RPC_GET_MASTERNODES::response::entry *> unregistered;
+    std::vector<cryptonote::COMMAND_RPC_GET_MASTERNODES::response::entry *> registered;
+    registered.reserve  (res.masternode_states.size());
+    unregistered.reserve(res.masternode_states.size() * 0.5f);
 
-    for (auto &entry : res.service_node_states)
+    for (auto &entry : res.masternode_states)
     {
       if (entry.total_contributed == entry.staking_requirement)
       {
@@ -2652,7 +2653,7 @@ bool t_rpc_command_executor::print_sn(const std::vector<std::string> &args)
     }
 
     std::sort(unregistered.begin(), unregistered.end(),
-        [](const cryptonote::COMMAND_RPC_GET_SERVICE_NODES::response::entry *a, const cryptonote::COMMAND_RPC_GET_SERVICE_NODES::response::entry *b) {
+        [](const cryptonote::COMMAND_RPC_GET_MASTERNODES::response::entry *a, const cryptonote::COMMAND_RPC_GET_MASTERNODES::response::entry *b) {
         uint64_t a_remaining = a->staking_requirement - a->total_reserved;
         uint64_t b_remaining = b->staking_requirement - b->total_reserved;
 
@@ -2663,7 +2664,7 @@ bool t_rpc_command_executor::print_sn(const std::vector<std::string> &args)
     });
 
     std::stable_sort(registered.begin(), registered.end(),
-        [](const cryptonote::COMMAND_RPC_GET_SERVICE_NODES::response::entry *a, const cryptonote::COMMAND_RPC_GET_SERVICE_NODES::response::entry *b) {
+        [](const cryptonote::COMMAND_RPC_GET_MASTERNODES::response::entry *a, const cryptonote::COMMAND_RPC_GET_MASTERNODES::response::entry *b) {
         if (a->last_reward_block_height == b->last_reward_block_height)
           return a->last_reward_transaction_index < b->last_reward_transaction_index;
 
@@ -2678,7 +2679,7 @@ bool t_rpc_command_executor::print_sn(const std::vector<std::string> &args)
 
     if (unregistered.size() == 0 && registered.size() == 0)
     {
-      if (req.service_node_pubkeys.size() > 0)
+      if (req.masternode_pubkeys.size() > 0)
       {
         int str_size = 0;
         for (const std::string &arg : args) str_size += (arg.size() + 2);
@@ -2691,11 +2692,11 @@ bool t_rpc_command_executor::print_sn(const std::vector<std::string> &args)
           if (i < args[i].size() - 1) buffer.append(", ");
         }
 
-        tools::msg_writer() << "No service node is currently known on the network: " << buffer;
+        tools::msg_writer() << "No masternode is currently known on the network: " << buffer;
       }
       else
       {
-        tools::msg_writer() << "No service node is currently known on the network";
+        tools::msg_writer() << "No masternode is currently known on the network";
       }
 
       return true;
@@ -2705,39 +2706,39 @@ bool t_rpc_command_executor::print_sn(const std::vector<std::string> &args)
     std::string registered_print_data;
     for (size_t i = 0; i < unregistered.size(); i++)
     {
-      cryptonote::COMMAND_RPC_GET_SERVICE_NODES::response::entry const &entry = (*unregistered[i]);
-      append_printable_service_node_list_entry(nettype, detailed_view, curr_height, i, entry, unregistered_print_data);
+      cryptonote::COMMAND_RPC_GET_MASTERNODES::response::entry const &entry = (*unregistered[i]);
+      append_printable_masternode_list_entry(nettype, detailed_view, curr_height, i, entry, unregistered_print_data);
       if (i < unregistered.size())
         unregistered_print_data.append("\n");
     }
 
     for (size_t i = 0; i < registered.size(); i++)
     {
-      cryptonote::COMMAND_RPC_GET_SERVICE_NODES::response::entry const &entry = (*registered[i]);
-      append_printable_service_node_list_entry(nettype, detailed_view, curr_height, i, entry, registered_print_data);
+      cryptonote::COMMAND_RPC_GET_MASTERNODES::response::entry const &entry = (*registered[i]);
+      append_printable_masternode_list_entry(nettype, detailed_view, curr_height, i, entry, registered_print_data);
       if (i < registered.size())
         registered_print_data.append("\n");
     }
 
     if (unregistered.size() > 0)
-      tools::msg_writer() << "Service Node Unregistered State [" << unregistered.size() << "]\n" << unregistered_print_data;
+      tools::msg_writer() << "MasterNode Unregistered State [" << unregistered.size() << "]\n" << unregistered_print_data;
 
     if (registered.size() > 0)
-      tools::msg_writer() << "Service Node Registration State [" << registered.size() << "]\n"   << registered_print_data;
+      tools::msg_writer() << "MasterNode Registration State [" << registered.size() << "]\n"   << registered_print_data;
 
     return true;
 }
 
 bool t_rpc_command_executor::print_sn_status(const std::vector<std::string>& args)
 {
-  cryptonote::COMMAND_RPC_GET_SERVICE_NODE_KEY::response res = {};
+  cryptonote::COMMAND_RPC_GET_MASTERNODE_KEY::response res = {};
   {
-    cryptonote::COMMAND_RPC_GET_SERVICE_NODE_KEY::request req = {};
+    cryptonote::COMMAND_RPC_GET_MASTERNODE_KEY::request req = {};
     std::string fail_message = "Unsuccessful";
 
     if (m_is_rpc)
     {
-      if (!m_rpc_client->json_rpc_request(req, res, "get_service_node_key", fail_message.c_str()))
+      if (!m_rpc_client->json_rpc_request(req, res, "get_masternode_key", fail_message.c_str()))
       {
         tools::fail_msg_writer() << make_error(fail_message, res.status);
         return true;
@@ -2746,7 +2747,7 @@ bool t_rpc_command_executor::print_sn_status(const std::vector<std::string>& arg
     else
     {
       epee::json_rpc::error error_resp;
-      if (!m_rpc_server->on_get_service_node_key(req, res, error_resp) || res.status != CORE_RPC_STATUS_OK)
+      if (!m_rpc_server->on_get_masternode_key(req, res, error_resp) || res.status != CORE_RPC_STATUS_OK)
       {
         tools::fail_msg_writer() << make_error(fail_message, error_resp.message);
         return true;
@@ -2762,7 +2763,7 @@ bool t_rpc_command_executor::print_sn_status(const std::vector<std::string>& arg
 
   std::vector<std::string> real_args = {};
   real_args.reserve(1 + args.size());
-  real_args.push_back(res.service_node_pubkey);
+  real_args.push_back(res.masternode_pubkey);
   for (const std::string &arg : args) real_args.push_back(arg);
 
   bool result = print_sn(real_args);
@@ -2828,14 +2829,14 @@ bool t_rpc_command_executor::pop_blocks(uint64_t num_blocks)
 
 bool t_rpc_command_executor::print_sn_key()
 {
-  cryptonote::COMMAND_RPC_GET_SERVICE_NODE_KEY::request req = {};
-  cryptonote::COMMAND_RPC_GET_SERVICE_NODE_KEY::response res = {};
+  cryptonote::COMMAND_RPC_GET_MASTERNODE_KEY::request req = {};
+  cryptonote::COMMAND_RPC_GET_MASTERNODE_KEY::response res = {};
   std::string fail_message = "Unsuccessful";
   epee::json_rpc::error error_resp;
 
   if (m_is_rpc)
   {
-    if (!m_rpc_client->json_rpc_request(req, res, "get_service_node_key", fail_message.c_str()))
+    if (!m_rpc_client->json_rpc_request(req, res, "get_masternode_key", fail_message.c_str()))
     {
       tools::fail_msg_writer() << make_error(fail_message, res.status);
       return true;
@@ -2843,14 +2844,14 @@ bool t_rpc_command_executor::print_sn_key()
   }
   else
   {
-    if (!m_rpc_server->on_get_service_node_key(req, res, error_resp) || res.status != CORE_RPC_STATUS_OK)
+    if (!m_rpc_server->on_get_masternode_key(req, res, error_resp) || res.status != CORE_RPC_STATUS_OK)
     {
       tools::fail_msg_writer() << make_error(fail_message, error_resp.message);
       return true;
     }
   }
 
-  std::string const msg_buf = "Service Node Public Key: " + res.service_node_pubkey;
+  std::string const msg_buf = "MasterNode Public Key: " + res.masternode_pubkey;
   tools::success_msg_writer() << msg_buf;
   return true;
 }
@@ -2885,21 +2886,21 @@ bool t_rpc_command_executor::prepare_registration()
   };
   auto scoped_log_cats = std::unique_ptr<clear_log_categories>(new clear_log_categories());
 
-  // Check if the daemon was started in Service Node or not
+  // Check if the daemon was started in MasterNode or not
   {
-    cryptonote::COMMAND_RPC_GET_SERVICE_NODE_KEY::request keyreq = {};
-    cryptonote::COMMAND_RPC_GET_SERVICE_NODE_KEY::response keyres = {};
-    std::string const fail_msg = "Cannot get service node key. Make sure you are running daemon with --service-node flag";
+    cryptonote::COMMAND_RPC_GET_MASTERNODE_KEY::request keyreq = {};
+    cryptonote::COMMAND_RPC_GET_MASTERNODE_KEY::response keyres = {};
+    std::string const fail_msg = "Cannot get masternode key. Make sure you are running daemon with --service-node flag";
 
     if (m_is_rpc)
     {
-      if (!m_rpc_client->json_rpc_request(keyreq, keyres, "get_service_node_key", fail_msg))
+      if (!m_rpc_client->json_rpc_request(keyreq, keyres, "get_masternode_key", fail_msg))
         return true;
     }
     else
     {
       epee::json_rpc::error error_resp;
-      if (!m_rpc_server->on_get_service_node_key(keyreq, keyres, error_resp) || keyres.status != CORE_RPC_STATUS_OK)
+      if (!m_rpc_server->on_get_masternode_key(keyreq, keyres, error_resp) || keyres.status != CORE_RPC_STATUS_OK)
       {
         tools::fail_msg_writer() << make_error(fail_msg, error_resp.message);
         return true;
@@ -2909,7 +2910,7 @@ bool t_rpc_command_executor::prepare_registration()
 
   // Query the latest known block height and nettype
   uint64_t block_height            = 0;
-  uint8_t hf_version               = cryptonote::network_version_9_service_nodes;
+  uint8_t hf_version               = cryptonote::network_version_9;
   cryptonote::network_type nettype = cryptonote::UNDEFINED;
   {
     cryptonote::COMMAND_RPC_GET_INFO::request req;
@@ -2981,7 +2982,7 @@ bool t_rpc_command_executor::prepare_registration()
       uint64_t delta = now - header.timestamp;
       if (delta > (60 * 60))
       {
-        tools::fail_msg_writer() << "The last block this Service Node knows about was at least " << get_human_time_ago(header.timestamp, now)
+        tools::fail_msg_writer() << "The last block this MasterNode knows about was at least " << get_human_time_ago(header.timestamp, now)
                                  << "\nYour node is possibly desynced from the network or still syncing to the network."
                                  << "\n\nRegistering this node may result in a deregistration due to being out of date with the network\n";
       }
@@ -2992,15 +2993,15 @@ bool t_rpc_command_executor::prepare_registration()
       uint64_t delta = block_height - header.height;
       if (delta > 15)
       {
-        tools::fail_msg_writer() << "The last block this Service Node synced is " << delta << " blocks away from the longest chain we know about."
+        tools::fail_msg_writer() << "The last block this MasterNode synced is " << delta << " blocks away from the longest chain we know about."
                                  << "\n\nRegistering this node may result in a deregistration due to being out of date with the network\n";
       }
     }
   }
 
   const uint64_t staking_requirement =
-    std::max(service_nodes::get_staking_requirement(nettype, block_height, hf_version),
-             service_nodes::get_staking_requirement(nettype, block_height + 30 * 24, hf_version)); // allow 1 day
+    std::max(masternodes::get_staking_requirement(nettype, block_height, hf_version),
+             masternodes::get_staking_requirement(nettype, block_height + 30 * 24, hf_version)); // allow 1 day
 
   // anything less than DUST will be added to operator stake
   const uint64_t DUST = MAX_NUMBER_OF_CONTRIBUTORS;
@@ -3114,7 +3115,7 @@ bool t_rpc_command_executor::prepare_registration()
           continue;
         }
 
-        if (!service_nodes::get_portions_from_percent_str(operator_fee_str, state.operator_fee_portions))
+        if (!masternodes::get_portions_from_percent_str(operator_fee_str, state.operator_fee_portions))
         {
           std::cout << "Invalid value: " << operator_fee_str << ". Should be between [0-100]" << std::endl;
           continue;
@@ -3204,7 +3205,7 @@ bool t_rpc_command_executor::prepare_registration()
 
       case register_step::is_open_stake__operator_amount_to_reserve:
       {
-        uint64_t min_contribution_portions = service_nodes::get_min_node_contribution_in_portions(hf_version, staking_requirement, 0, 0);
+        uint64_t min_contribution_portions = masternodes::get_min_node_contribution_in_portions(hf_version, staking_requirement, 0, 0);
         const uint64_t min_contribution    = get_amount_to_make_portions(staking_requirement, min_contribution_portions);
         std::cout << "Minimum amount that can be reserved: " << cryptonote::print_money(min_contribution) << " " << cryptonote::get_unit() << std::endl;
 
@@ -3226,7 +3227,7 @@ bool t_rpc_command_executor::prepare_registration()
           continue;
         }
 
-        uint64_t portions = service_nodes::get_portions_to_make_amount(staking_requirement, contribution);
+        uint64_t portions = masternodes::get_portions_to_make_amount(staking_requirement, contribution);
         if(portions < min_contribution_portions)
         {
           std::cout << "The operator needs to contribute at least 25% of the stake requirement (" << cryptonote::print_money(min_contribution) << " " << cryptonote::get_unit() << "). Aborted." << std::endl;
@@ -3283,8 +3284,8 @@ bool t_rpc_command_executor::prepare_registration()
       case register_step::is_open_stake__contributor_amount_to_reserve:
       {
         const uint64_t amount_left         = staking_requirement - state.total_reserved_contributions;
-        uint64_t min_contribution_portions = service_nodes::get_min_node_contribution_in_portions(hf_version, staking_requirement, state.total_reserved_contributions, state.contributions.size());
-        const uint64_t min_contribution    = service_nodes::portions_to_amount(staking_requirement, min_contribution_portions);
+        uint64_t min_contribution_portions = masternodes::get_min_node_contribution_in_portions(hf_version, staking_requirement, state.total_reserved_contributions, state.contributions.size());
+        const uint64_t min_contribution    = masternodes::portions_to_amount(staking_requirement, min_contribution_portions);
 
         std::cout << "The minimum amount possible to contribute is " << cryptonote::print_money(min_contribution) << " " << cryptonote::get_unit() << std::endl;
         std::cout << "There is " << cryptonote::print_money(amount_left) << " " << cryptonote::get_unit() << " left to meet the staking requirement." << std::endl;
@@ -3308,7 +3309,7 @@ bool t_rpc_command_executor::prepare_registration()
           continue;
         }
 
-        uint64_t portions = service_nodes::get_portions_to_make_amount(staking_requirement, contribution);
+        uint64_t portions = masternodes::get_portions_to_make_amount(staking_requirement, contribution);
         if (portions < min_contribution_portions)
         {
           std::cout << "The amount is too small." << std::endl;
@@ -3340,7 +3341,7 @@ bool t_rpc_command_executor::prepare_registration()
         if (amount_left > DUST)
         {
           std::cout << "Your total reservations do not equal the staking requirement." << std::endl;
-          std::cout << "You will leave the remaining portion of " << cryptonote::print_money(amount_left) << " " << cryptonote::get_unit() << " open to contributions from anyone, and the Service Node will not activate until the full staking requirement is filled." << std::endl;
+          std::cout << "You will leave the remaining portion of " << cryptonote::print_money(amount_left) << " " << cryptonote::get_unit() << " open to contributions from anyone, and the MasterNode will not activate until the full staking requirement is filled." << std::endl;
 
           last_input_result = input_line_yes_no_back_cancel("Is this ok?\n");
           if(last_input_result == input_line_result::no || last_input_result == input_line_result::cancel)
@@ -3439,8 +3440,8 @@ bool t_rpc_command_executor::prepare_registration()
   scoped_log_cats.reset();
 
   {
-    cryptonote::COMMAND_RPC_GET_SERVICE_NODE_REGISTRATION_CMD_RAW::request req;
-    cryptonote::COMMAND_RPC_GET_SERVICE_NODE_REGISTRATION_CMD_RAW::response res;
+    cryptonote::COMMAND_RPC_GET_MASTERNODE_REGISTRATION_CMD_RAW::request req;
+    cryptonote::COMMAND_RPC_GET_MASTERNODE_REGISTRATION_CMD_RAW::response res;
     std::string fail_message = "Unsuccessful";
 
     req.args = args;
@@ -3448,7 +3449,7 @@ bool t_rpc_command_executor::prepare_registration()
     req.staking_requirement = staking_requirement;
     if (m_is_rpc)
     {
-      if (!m_rpc_client->json_rpc_request(req, res, "get_service_node_registration_cmd_raw", fail_message))
+      if (!m_rpc_client->json_rpc_request(req, res, "get_masternode_registration_cmd_raw", fail_message))
       {
         tools::fail_msg_writer() << "Failed to validate registration arguments; check the addresses and registration parameters and that the Daemon is running with the '--service-node' flag";
         return true;
@@ -3457,7 +3458,7 @@ bool t_rpc_command_executor::prepare_registration()
     else
     {
       epee::json_rpc::error error_resp;
-      if (!m_rpc_server->on_get_service_node_registration_cmd_raw(req, res, error_resp) || res.status != CORE_RPC_STATUS_OK)
+      if (!m_rpc_server->on_get_masternode_registration_cmd_raw(req, res, error_resp) || res.status != CORE_RPC_STATUS_OK)
       {
         tools::fail_msg_writer() << make_error(fail_message, error_resp.message);
         return true;

@@ -92,7 +92,7 @@ namespace cryptonote {
 
   uint64_t block_reward_unpenalized_formula_v8(uint64_t height)
   {
-    uint64_t result = 28000000000.0 + 100000000000.0 / loki::exp2(height / (720.0 * 90.0)); // halve every 90 days.
+    uint64_t result = 8000000000000); // halve every 90 days.
     return result;
   }
 
@@ -101,7 +101,7 @@ namespace cryptonote {
     //premine reward
     if (already_generated_coins == 0)
     {
-      reward = 22500000000000000;
+      reward = 17592186;
       return true;
     }
 

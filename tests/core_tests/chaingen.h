@@ -170,7 +170,7 @@ struct event_visitor_settings
 {
   int valid_mask;
   bool txs_keeped_by_block;
-  crypto::secret_key service_node_key;
+  crypto::secret_key masternode_key;
 
   enum settings
   {
@@ -191,7 +191,7 @@ private:
   {
     ar & valid_mask;
     ar & txs_keeped_by_block;
-    ar & service_node_key;
+    ar & masternode_key;
   }
 };
 
@@ -233,7 +233,7 @@ typedef boost::variant<cryptonote::block,
                        loki_blockchain_addable<loki_block_with_checkpoint>,
                        loki_blockchain_addable<cryptonote::block>,
                        loki_blockchain_addable<loki_transaction>,
-                       loki_blockchain_addable<service_nodes::quorum_vote_t>,
+                       loki_blockchain_addable<masternodes::quorum_vote_t>,
                        loki_blockchain_addable<cryptonote::checkpoint_t>
                        > test_event_entry;
 typedef std::unordered_map<crypto::hash, const cryptonote::transaction*> map_hash2tx_t;
@@ -316,10 +316,10 @@ public:
   void add_block(const cryptonote::block& blk, size_t tsx_size, std::vector<uint64_t>& block_weights, uint64_t already_generated_coins);
   bool construct_block(cryptonote::block& blk, uint64_t height, const crypto::hash& prev_id,
     const cryptonote::account_base& miner_acc, uint64_t timestamp, uint64_t already_generated_coins,
-    std::vector<uint64_t>& block_weights, const std::list<cryptonote::transaction>& tx_list, const service_nodes::block_winner &winner = {});
+    std::vector<uint64_t>& block_weights, const std::list<cryptonote::transaction>& tx_list, const masternodes::block_winner &winner = {});
   bool construct_block(cryptonote::block& blk, const cryptonote::account_base& miner_acc, uint64_t timestamp);
   bool construct_block(cryptonote::block& blk, const cryptonote::block& blk_prev, const cryptonote::account_base& miner_acc,
-    const std::list<cryptonote::transaction>& tx_list = std::list<cryptonote::transaction>(), const service_nodes::block_winner &winner = {});
+    const std::list<cryptonote::transaction>& tx_list = std::list<cryptonote::transaction>(), const masternodes::block_winner &winner = {});
 
   bool construct_block_manually(cryptonote::block& blk, const cryptonote::block& prev_block,
     const cryptonote::account_base& miner_acc, int actual_params = bf_none, uint8_t major_ver = 0,
@@ -756,11 +756,11 @@ public:
     return true;
   }
 
-  bool operator()(const loki_blockchain_addable<service_nodes::quorum_vote_t> &entry) const
+  bool operator()(const loki_blockchain_addable<masternodes::quorum_vote_t> &entry) const
   {
-    log_event("loki_blockchain_addable<service_nodes::quorum_vote_t>");
+    log_event("loki_blockchain_addable<masternodes::quorum_vote_t>");
     cryptonote::vote_verification_context vvc = {};
-    bool added                                = m_c.add_service_node_vote(entry.data, vvc);
+    bool added                                = m_c.add_masternode_vote(entry.data, vvc);
     CHECK_AND_NO_ASSERT_MES(added == entry.can_be_added_to_blockchain, false, entry.fail_msg);
     return true;
   }
@@ -1322,7 +1322,7 @@ struct loki_blockchain_entry
   std::vector<cryptonote::transaction>       txs;
   uint64_t                                   block_weight;
   uint64_t                                   already_generated_coins;
-  service_nodes::service_node_list::state_t  service_node_state;
+  masternodes::masternode_list::state_t  masternode_state;
   bool                                       checkpointed;
   cryptonote::checkpoint_t                   checkpoint;
 };
@@ -1348,8 +1348,8 @@ struct loki_chain_generator_db : public cryptonote::BaseTestDB
 
 struct loki_chain_generator
 {
-  mutable std::unordered_map<crypto::public_key, crypto::secret_key>  service_node_keys_;
-  std::set<service_nodes::service_node_list::state_t>                 state_history_;
+  mutable std::unordered_map<crypto::public_key, crypto::secret_key>  masternode_keys_;
+  std::set<masternodes::masternode_list::state_t>                 state_history_;
 
   // TODO(loki): I want to store pointers to transactions but I get some memory corruption somewhere. Pls fix.
   // We already store blockchain_entries in block_ vector which stores the actual backing transaction entries.
@@ -1369,16 +1369,16 @@ struct loki_chain_generator
   size_t                                               event_index()  const { return events_.size() - 1; }
 
   const loki_blockchain_entry&                         top() const { return blocks_.back(); }
-  service_nodes::quorum_manager                        top_quorum() const;
-  service_nodes::quorum_manager                        quorum(uint64_t height) const;
-  std::shared_ptr<const service_nodes::testing_quorum> get_testing_quorum(service_nodes::quorum_type type, uint64_t height) const;
+  masternodes::quorum_manager                        top_quorum() const;
+  masternodes::quorum_manager                        quorum(uint64_t height) const;
+  std::shared_ptr<const masternodes::testing_quorum> get_testing_quorum(masternodes::quorum_type type, uint64_t height) const;
 
   cryptonote::account_base                             add_account();
   loki_blockchain_entry                               &add_block(const std::vector<cryptonote::transaction>& txs = {}, cryptonote::checkpoint_t const *checkpoint = nullptr, bool can_be_added_to_blockchain = true, std::string const &fail_msg = {});
   void                                                 add_blocks_until_version(uint8_t hf_version);
   void                                                 add_n_blocks(int n);
   void                                                 add_blocks_until_next_checkpointable_height();
-  void                                                 add_service_node_checkpoint(uint64_t block_height, size_t num_votes);
+  void                                                 add_masternode_checkpoint(uint64_t block_height, size_t num_votes);
   void                                                 add_mined_money_unlock_blocks(); // NOTE: Unlock all Loki generated from mining prior to this call i.e. CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW
 
   void                                                 add_tx(cryptonote::transaction const &tx, bool can_be_added_to_blockchain, std::string const &fail_msg = {}, bool kept_by_block = false);
@@ -1386,16 +1386,16 @@ struct loki_chain_generator
   // NOTE: Add constructed TX to events_ and assume that it is valid to add to the blockchain. If the TX is meant to be unaddable to the blockchain use the individual create + add functions to
   // be able to mark the add TX event as something that should trigger a failure.
   cryptonote::transaction                              create_and_add_tx             (const cryptonote::account_base& src, const cryptonote::account_base& dest, uint64_t amount, uint64_t fee = TESTS_DEFAULT_FEE, bool kept_by_block = false);
-  cryptonote::transaction                              create_and_add_state_change_tx(service_nodes::new_state state, const crypto::public_key& pub_key, uint64_t height = -1, const std::vector<uint64_t>& voters = {}, uint64_t fee = 0, bool kept_by_block = false);
+  cryptonote::transaction                              create_and_add_state_change_tx(masternodes::new_state state, const crypto::public_key& pub_key, uint64_t height = -1, const std::vector<uint64_t>& voters = {}, uint64_t fee = 0, bool kept_by_block = false);
   cryptonote::transaction                              create_and_add_registration_tx(const cryptonote::account_base& src, const cryptonote::keypair& sn_keys = cryptonote::keypair::generate(hw::get_device("default")), bool kept_by_block = false);
 
   // NOTE: Create transactions but don't add to events_
   cryptonote::transaction                              create_registration_tx(const cryptonote::account_base& src, const cryptonote::keypair& sn_keys = cryptonote::keypair::generate(hw::get_device("default"))) const;
-  cryptonote::transaction                              create_state_change_tx(service_nodes::new_state state, const crypto::public_key& pub_key, uint64_t height = -1, const std::vector<uint64_t>& voters = {}, uint64_t fee = 0) const;
-  cryptonote::checkpoint_t                             create_service_node_checkpoint(uint64_t block_height, size_t num_votes) const;
+  cryptonote::transaction                              create_state_change_tx(masternodes::new_state state, const crypto::public_key& pub_key, uint64_t height = -1, const std::vector<uint64_t>& voters = {}, uint64_t fee = 0) const;
+  cryptonote::checkpoint_t                             create_masternode_checkpoint(uint64_t block_height, size_t num_votes) const;
 
   loki_blockchain_entry                                create_genesis_block(const cryptonote::account_base &miner, uint64_t timestamp);
-  bool                                                 create_loki_blockchain_entry(loki_blockchain_entry &entry, uint8_t hf_version, loki_blockchain_entry &prev, const cryptonote::account_base &miner_acc, uint64_t timestamp, std::vector<uint64_t> &block_weights, const std::vector<cryptonote::transaction> &tx_list, const service_nodes::block_winner &block_winner);
+  bool                                                 create_loki_blockchain_entry(loki_blockchain_entry &entry, uint8_t hf_version, loki_blockchain_entry &prev, const cryptonote::account_base &miner_acc, uint64_t timestamp, std::vector<uint64_t> &block_weights, const std::vector<cryptonote::transaction> &tx_list, const masternodes::block_winner &block_winner);
 
   uint8_t                                              get_hf_version_at(uint64_t height) const;
   std::vector<uint64_t>                                last_n_block_weights(uint64_t height, uint64_t num) const;

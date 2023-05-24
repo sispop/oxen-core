@@ -660,7 +660,7 @@ struct Wallet
     static uint64_t amountFromDouble(double amount);
     static std::string genPaymentId();
     static bool paymentIdValid(const std::string &paiment_id);
-    /// Check if the string represents a valid public key (regardless of whether the service node actually exists or not)
+    /// Check if the string represents a valid public key (regardless of whether the masternode actually exists or not)
     static bool serviceNodePubkeyValid(const std::string &str);
     static bool addressValid(const std::string &str, NetworkType nettype);
     static bool addressValid(const std::string &str, bool testnet)          // deprecated
@@ -1006,7 +1006,7 @@ struct Wallet
     virtual Device getDeviceType() const = 0;
 
     /// Prepare a staking transaction; return nullptr on failure
-    virtual PendingTransaction* stakePending(const std::string& service_node_key, const std::string& address, const std::string& amount, std::string& error_msg) = 0;
+    virtual PendingTransaction* stakePending(const std::string& masternode_key, const std::string& address, const std::string& amount, std::string& error_msg) = 0;
 
     //! cold-device protocol key image sync
     virtual uint64_t coldKeyImageSync(uint64_t &spent, uint64_t &unspent) = 0;
