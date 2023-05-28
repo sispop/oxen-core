@@ -3,8 +3,8 @@
 #include "int-util.h"
 #include <vector>
 #include <boost/lexical_cast.hpp>
-#include "stake.h"
-#include "masternode_rules.h"
+#include "stake/stake.h"
+#include "rules.h"
 
 namespace masternodes {
 
@@ -19,7 +19,7 @@ uint64_t get_staking_requirement(cryptonote::network_type m_nettype, uint64_t he
 
   uint64_t height_adjusted = height - hardfork_height;
   uint64_t base = 0, variable = 0;
-    base     = 40000 * COIN;
+    base     = 500000 * COIN;
 
   uint64_t result = base + variable;
   return result;

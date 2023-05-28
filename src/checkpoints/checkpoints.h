@@ -35,7 +35,7 @@
 #include "misc_log_ex.h"
 #include "crypto/hash.h"
 #include "cryptonote_config.h"
-#include "cryptonote_core/masternode_voting.h"
+#include "cryptonote_core/voting.h"
 #include "cryptonote_basic/cryptonote_basic_impl.h"
 #include "string_tools.h"
 

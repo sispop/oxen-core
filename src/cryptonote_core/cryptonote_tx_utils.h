@@ -33,7 +33,7 @@
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/utility.hpp>
 #include "ringct/rctOps.h"
-#include "cryptonote_core/masternode_list.h"
+#include "cryptonote_core/list.h"
 
 namespace cryptonote
 {

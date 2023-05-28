@@ -1,4 +1,4 @@
-#include "masternode_swarm.h"
+#include "swarm.h"
 
 #undef LOKI_DEFAULT_LOG_CATEGORY
 #define LOKI_DEFAULT_LOG_CATEGORY "masternodes"

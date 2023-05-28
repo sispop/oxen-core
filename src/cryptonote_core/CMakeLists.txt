@@ -30,11 +30,11 @@
 set(cryptonote_core_sources
   blockchain.cpp
   cryptonote_core.cpp
-  masternode_rules.cpp
-  masternode_list.cpp
-  masternode_voting.cpp
-  masternode_quorum_cop.cpp
-  masternode_swarm.cpp
+  rules.cpp
+  list.cpp
+  voting.cpp
+  quorum_cop.cpp
+  swarm.cpp
   tx_pool.cpp
   tx_sanity_check.cpp
   miner.cpp
@@ -44,12 +44,12 @@ set(cryptonote_core_headers)
 
 set(cryptonote_core_private_headers
   blockchain.h
-  masternode_rules.h
-  masternode_list.h
-  masternode_quorum_cop.h
-  masternode_swarm.h
+  rules.h
+  list.h
+  quorum_cop.h
+  swarm.h
   cryptonote_core.h
-  masternode_voting.h
+  voting.h
   tx_pool.h
   tx_sanity_check.h
   miner.h

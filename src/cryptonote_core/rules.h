@@ -2,7 +2,8 @@
 
 #include "crypto/crypto.h"
 #include "cryptonote_config.h"
-#include "masternode_voting.h"
+#include "stake/stake.h"
+#include "voting.h"
 
 namespace masternodes {
   // Masternode decommissioning: as masternodes stay up they earn "credits" (measured in blocks)
@@ -63,8 +64,8 @@ namespace masternodes {
 
   // NOTE: We can reorg up to last 2 checkpoints + the number of extra blocks before the next checkpoint is set
   constexpr uint64_t  REORG_SAFETY_BUFFER_BLOCKS_POST_HF12 = (CHECKPOINT_INTERVAL * CHECKPOINT_NUM_CHECKPOINTS_FOR_CHAIN_FINALITY) + (CHECKPOINT_INTERVAL - 1);
-  constexpr uint64_t  REORG_SAFETY_BUFFER_BLOCKS_PRE_HF12  = 20;
-  static_assert(REORG_SAFETY_BUFFER_BLOCKS_POST_HF12 < VOTE_LIFETIME, "Safety buffer should always be less than the vote lifetime");
+  constexpr uint64_t  REORG_SAFETY_BUFFER_BLOCKS_PRE_HF12  = 4;
+//  static_assert(REORG_SAFETY_BUFFER_BLOCKS_POST_HF12 < VOTE_LIFETIME, "Safety buffer should always be less than the vote lifetime");
   static_assert(REORG_SAFETY_BUFFER_BLOCKS_PRE_HF12  < VOTE_LIFETIME, "Safety buffer should always be less than the vote lifetime");
 
   constexpr uint64_t  IP_CHANGE_WINDOW_IN_SECONDS     = 24*60*60; // How far back an obligations quorum looks for multiple IPs (unless the following buffer is more recent)

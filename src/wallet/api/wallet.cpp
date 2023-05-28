@@ -43,7 +43,7 @@
 #include "common_defines.h"
 #include "common/util.h"
 
-#include "cryptonote_core/masternode_rules.h"
+#include "cryptonote_core/rules.h"
 
 #include "mnemonics/electrum-words.h"
 #include "mnemonics/english.h"

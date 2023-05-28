@@ -37,7 +37,7 @@
 #include "int-util.h"
 #include "rpc/core_rpc_server_commands_defs.h"
 #include "cryptonote_core/cryptonote_core.h"
-#include "cryptonote_core/masternode_rules.h"
+#include "cryptonote_core/rules.h"
 #include "cryptonote_basic/hardfork.h"
 #include "checkpoints/checkpoints.h"
 #include "stake/stake.h"

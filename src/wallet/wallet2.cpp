@@ -80,8 +80,8 @@ using namespace epee;
 #include "device_trezor/device_trezor.hpp"
 #include "net/socks_connect.h"
 
-#include "cryptonote_core/masternode_list.h"
-#include "cryptonote_core/masternode_rules.h"
+#include "cryptonote_core/list.h"
+#include "cryptonote_core/rules.h"
 #include "common/loki.h"
 #include "common/loki_integration_test_hooks.h"
 

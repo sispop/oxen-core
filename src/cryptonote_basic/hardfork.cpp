@@ -56,20 +56,17 @@ static uint8_t get_block_version(const cryptonote::block &b)
   return b.major_version;
 }
 
-// TODO(loki): Re-evaluate Hardfork as a class. Originally designed to
-// handle voting, hardforks are now locked in, maybe we just need helper
-// functions on the hardcoded table instead of hiding everything behind
-// a class.
 
 // version 7 from the start of the blockchain, inhereted from Monero mainnet
 static constexpr HardFork::Params mainnet_hard_forks[] =
 {
-  { network_version_7,                   1,      0, 1503046577 },
-  { network_version_8,                   64324,  0, 1533006000 },
-  { network_version_9,     101250, 0, 1537444800 },
-  { network_version_10,     161849, 0, 1544743800 }, // 2018-12-13 23:30UTC
-  { network_version_11, 234767, 0, 1554170400 }, // 2019-03-26 13:00AEDT
-  { network_version_12,    321467, 0, 1563940800 }, // 2019-07-24 14:00AEDT
+  { network_version_7,     1,      0,  1341378000},
+  { network_version_8,     2,     0,  1685115121},
+  { network_version_9,     3,    0,  1685115421},
+  { network_version_10,    4,    0,  1685115601}, //
+  { network_version_11,    200,    0,  1685115781}, //
+  { network_version_12,    250,    0,  1685116021}, //
+  { network_version_13,    290,    0,  1685116201},
 };
 
 static constexpr HardFork::Params testnet_hard_forks[] =

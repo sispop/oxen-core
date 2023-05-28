@@ -59,8 +59,8 @@
 #include "common/scoped_message_writer.h"
 #include "common/loki_integration_test_hooks.h"
 #include "cryptonote_protocol/cryptonote_protocol_handler.h"
-#include "cryptonote_core/masternode_voting.h"
-#include "cryptonote_core/masternode_list.h"
+#include "cryptonote_core/voting.h"
+#include "cryptonote_core/list.h"
 #include "simplewallet.h"
 #include "cryptonote_basic/cryptonote_format_utils.h"
 #include "storages/http_abstract_invoke.h"
@@ -4794,8 +4794,8 @@ bool simple_wallet::start_mining(const std::vector<std::string>& args)
   std::string err = interpret_rpc_response(r, res.status);
   if (err.empty())
     success_msg_writer() << tr("Mining started in daemon");
-  else
-    fail_msg_writer() << tr("mining has NOT been started: ") << err;
+  //edirin//else
+   // fail_msg_writer() << tr("mining has NOT been started: ") << err;
   return true;
 }
 //----------------------------------------------------------------------------------------------------

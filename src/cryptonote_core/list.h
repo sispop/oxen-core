@@ -32,9 +32,9 @@
 #include <mutex>
 #include "serialization/serialization.h"
 #include "cryptonote_basic/cryptonote_basic_impl.h"
-#include "cryptonote_core/masternode_rules.h"
-#include "cryptonote_core/masternode_voting.h"
-#include "cryptonote_core/masternode_quorum_cop.h"
+#include "cryptonote_core/rules.h"
+#include "cryptonote_core/voting.h"
+#include "cryptonote_core/quorum_cop.h"
 
 namespace cryptonote
 {
