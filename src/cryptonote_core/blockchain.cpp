@@ -56,8 +56,8 @@
 #include "ringct/rctSigs.h"
 #include "common/perf_timer.h"
 #include "common/notify.h"
-#include "masternode_voting.h"
-#include "masternode_list.h"
+#include "voting.h"
+#include "list.h"
 #include "common/varint.h"
 #include "common/pruning.h"
 
@@ -926,8 +926,7 @@ difficulty_type Blockchain::get_difficulty_for_next_block()
   // difficulty for the first difficulty window blocks:
   uint64_t hf12_height = m_hardfork->get_earliest_ideal_height_for_version(network_version_12);
 
-  difficulty_type diff = next_difficulty_v2(timestamps, difficulties, target, version <= cryptonote::network_version_9,
-          height >= hf12_height && height < hf12_height + DIFFICULTY_WINDOW_V2);
+  difficulty_type diff = next_difficulty(timestamps, difficulties, target);
 
   CRITICAL_REGION_LOCAL1(m_difficulty_lock);
   m_difficulty_for_next_block_top_hash = top_hash;
@@ -1167,8 +1166,7 @@ difficulty_type Blockchain::get_next_difficulty_for_alternative_chain(const std:
   uint64_t height = (alt_chain.size() ? alt_chain.front().height : alt_block_height) + alt_chain.size() + 1;
 
   // calculate the difficulty target for the block and return it
-  return next_difficulty_v2(timestamps, cumulative_difficulties, target, get_current_hard_fork_version() <= cryptonote::network_version_9,
-      height >= hf12_height && height < hf12_height + DIFFICULTY_WINDOW_V2);
+  return next_difficulty(timestamps, cumulative_difficulties, target);
 }
 //------------------------------------------------------------------
 // This function does a sanity check on basic things that all miner

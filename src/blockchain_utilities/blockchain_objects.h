@@ -3,8 +3,8 @@
 
 #include "cryptonote_core/blockchain.h"
 #include "cryptonote_core/tx_pool.h"
-#include "cryptonote_core/masternode_list.h"
-#include "cryptonote_core/masternode_voting.h"
+#include "cryptonote_core/list.h"
+#include "cryptonote_core/voting.h"
 
 // NOTE(loki): This is done this way because of the circular constructors.
 struct blockchain_objects_t

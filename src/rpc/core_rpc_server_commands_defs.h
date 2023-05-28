@@ -35,14 +35,14 @@
 #include "cryptonote_basic/difficulty.h"
 #include "crypto/hash.h"
 #include "cryptonote_config.h"
-#include "cryptonote_core/masternode_voting.h"
+#include "cryptonote_core/voting.h"
 #include "rpc/rpc_handler.h"
 #include "common/varint.h"
 #include "common/perf_timer.h"
 #include "checkpoints/checkpoints.h"
 
-#include "cryptonote_core/masternode_quorum_cop.h"
-#include "cryptonote_core/masternode_list.h"
+#include "cryptonote_core/quorum_cop.h"
+#include "cryptonote_core/list.h"
 #include "common/loki.h"
 
 namespace

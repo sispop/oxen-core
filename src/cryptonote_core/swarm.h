@@ -1,6 +1,6 @@
 #pragma once
 
-#include "masternode_rules.h"
+#include "rules.h"
 
 #include <map>
 #include <vector>

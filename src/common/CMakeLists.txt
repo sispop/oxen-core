@@ -72,6 +72,7 @@ set(common_private_headers
   download.h
   error.h
   expect.h
+  int-util.h
   loki.h
   http_connection.h
   loki_integration_test_hooks.h

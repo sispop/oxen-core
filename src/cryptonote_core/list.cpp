@@ -1,4 +1,4 @@
-// Copyright (c)      2018, The Loki Project
+// Copyright (c)      2023, The Loki Project
 //
 // All rights reserved.
 //
@@ -42,11 +42,11 @@
 #include "common/i18n.h"
 #include "common/util.h"
 #include "blockchain.h"
-#include "masternode_quorum_cop.h"
+#include "quorum_cop.h"
 #include "stake/stake.h"
-#include "masternode_list.h"
-#include "masternode_rules.h"
-#include "masternode_swarm.h"
+#include "list.h"
+#include "rules.h"
+#include "swarm.h"
 #include "version.h"
 
 #undef LOKI_DEFAULT_LOG_CATEGORY

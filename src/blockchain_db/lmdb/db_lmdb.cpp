@@ -45,7 +45,7 @@
 #include "ringct/rctOps.h"
 
 #include "checkpoints/checkpoints.h"
-#include "cryptonote_core/masternode_rules.h"
+#include "cryptonote_core/rules.h"
 #include "cryptonote_basic/hardfork.h"
 
 #undef LOKI_DEFAULT_LOG_CATEGORY
@@ -4687,8 +4687,7 @@ void BlockchainLMDB::fixup(fixup_context const context)
           v12_initial_override = true;
           v12_initial_blocks_remaining--;
         }
-        difficulty_type diff = next_difficulty_v2(timestamps, difficulties, DIFFICULTY_TARGET_V2,
-            version <= cryptonote::network_version_9, v12_initial_override);
+        difficulty_type diff = next_difficulty(timestamps, difficulties, DIFFICULTY_TARGET_V2);
 
         MDB_val_set(key, curr_height);
         if (int result = mdb_cursor_get(m_cur_block_info, (MDB_val *)&zerokval, &key, MDB_GET_BOTH))

@@ -26,9 +26,9 @@
 // STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 // THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "masternode_quorum_cop.h"
-#include "masternode_voting.h"
-#include "masternode_list.h"
+#include "quorum_cop.h"
+#include "voting.h"
+#include "list.h"
 #include "cryptonote_config.h"
 #include "cryptonote_core.h"
 #include "version.h"

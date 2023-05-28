@@ -42,7 +42,7 @@
 #include "crypto/hash.h"
 #include "ringct/rctSigs.h"
 #include "cryptonote_basic/verification_context.h"
-#include "cryptonote_core/masternode_voting.h"
+#include "cryptonote_core/voting.h"
 
 using namespace epee;
 
