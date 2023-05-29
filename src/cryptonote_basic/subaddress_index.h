@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Monero Project
+// Copyright (c) 2017-2023, The Monero Project
 // 
 // All rights reserved.
 // 
@@ -33,11 +33,11 @@
 #include <boost/serialization/version.hpp>
 #include <ostream>
 
-#include "common/loki.h"
+#include "common/sispop.h"
 
 namespace cryptonote
 {
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   struct subaddress_index
   {
     uint32_t major; // The account index, major index

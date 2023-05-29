@@ -1,5 +1,5 @@
-// Copyright (c) 2014-2019, The Monero Project
-// Copyright (c)      2018, The Loki Project
+// Copyright (c) 2014-2023, The Monero Project
+// Copyright (c)      2023, The Oxen Project
 //
 // All rights reserved.
 //
@@ -43,11 +43,11 @@
 
 using namespace epee;
 
-#include "common/loki_integration_test_hooks.h"
-#include "common/loki.h"
+#include "common/sispop_integration_test_hooks.h"
+#include "common/sispop.h"
 
-#undef LOKI_DEFAULT_LOG_CATEGORY
-#define LOKI_DEFAULT_LOG_CATEGORY "checkpoints"
+#undef SISPOP_DEFAULT_LOG_CATEGORY
+#define SISPOP_DEFAULT_LOG_CATEGORY "checkpoints"
 
 namespace cryptonote
 {
@@ -61,7 +61,12 @@ namespace cryptonote
 
   height_to_hash const HARDCODED_MAINNET_CHECKPOINTS[] =
   {
-    {0,      "8cc33ab439f5fec5a384321b872c25686d2ab9d688e715ee3087b20094fccd47" },//"418015bb9ae982a1975da7d79277c2705727a56894ba0fb246adaabb1f4632e3"},
+    {0,      "8cc33ab439f5fec5a384321b872c25686d2ab9d688e715ee3087b20094fccd47" },
+    {10,     "9773ed09001061911837ec651c93eb1402072f46e374306fd4849c55fd3a3eb2" },
+    {20,     "4b1841173c6156e94b4f20c3679cc797828d87e101ee8376d61007e3b19f5b76" },
+    {60,     "1483f222071d17450b78b010f25404da320e926738d3132ab298938cc67df3ba" },
+    {68,     "bca3bc6cc63c56121d6a5c5f66141ac4458f3f7835e8d11929a72568de617c9d" },
+    {249,    "713136ab970686de37221d952acd039e0e4c5bfd70a6a19fbee1034e39f54326" },
   };
 
   height_to_hash const HARDCODED_TESTNET_CHECKPOINTS[] =
@@ -78,7 +83,7 @@ namespace cryptonote
 
     if (nettype == MAINNET)
     {
-      uint64_t last_index         = loki::array_count(HARDCODED_MAINNET_CHECKPOINTS) - 1;
+      uint64_t last_index         = sispop::array_count(HARDCODED_MAINNET_CHECKPOINTS) - 1;
       height_to_hash const &entry = HARDCODED_MAINNET_CHECKPOINTS[last_index];
 
       if (epee::string_tools::hex_to_pod(entry.hash, result))
@@ -86,7 +91,7 @@ namespace cryptonote
     }
     else
     {
-      uint64_t last_index         = loki::array_count(HARDCODED_TESTNET_CHECKPOINTS) - 1;
+      uint64_t last_index         = sispop::array_count(HARDCODED_TESTNET_CHECKPOINTS) - 1;
       height_to_hash const &entry = HARDCODED_TESTNET_CHECKPOINTS[last_index];
 
       if (epee::string_tools::hex_to_pod(entry.hash, result))
@@ -154,7 +159,7 @@ namespace cryptonote
   }
   bool checkpoints::update_checkpoint(checkpoint_t const &checkpoint)
   {
-    // NOTE(loki): Assumes checkpoint is valid
+    // NOTE(sispop): Assumes checkpoint is valid
     bool result        = true;
     bool batch_started = false;
     try
@@ -311,10 +316,10 @@ namespace cryptonote
     m_db      = db;
     m_nettype = nettype;
 
-#if !defined(LOKI_ENABLE_INTEGRATION_TEST_HOOKS)
+#if !defined(SISPOP_ENABLE_INTEGRATION_TEST_HOOKS)
     if (nettype == MAINNET)
     {
-      for (size_t i = 0; i < loki::array_count(HARDCODED_MAINNET_CHECKPOINTS); ++i)
+      for (size_t i = 0; i < sispop::array_count(HARDCODED_MAINNET_CHECKPOINTS); ++i)
       {
         height_to_hash const &checkpoint = HARDCODED_MAINNET_CHECKPOINTS[i];
         ADD_CHECKPOINT(checkpoint.height, checkpoint.hash);
@@ -322,7 +327,7 @@ namespace cryptonote
     }
     else if (nettype == TESTNET)
     {
-      for (size_t i = 0; i < loki::array_count(HARDCODED_TESTNET_CHECKPOINTS); ++i)
+      for (size_t i = 0; i < sispop::array_count(HARDCODED_TESTNET_CHECKPOINTS); ++i)
       {
         height_to_hash const &checkpoint = HARDCODED_TESTNET_CHECKPOINTS[i];
         ADD_CHECKPOINT(checkpoint.height, checkpoint.hash);

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Monero Project
+// Copyright (c) 2017-2023, The Monero Project
 // 
 // All rights reserved.
 // 
@@ -43,8 +43,8 @@ extern "C"
 #include "multiexp.h"
 #include "bulletproofs.h"
 
-#undef LOKI_DEFAULT_LOG_CATEGORY
-#define LOKI_DEFAULT_LOG_CATEGORY "bulletproofs"
+#undef SISPOP_DEFAULT_LOG_CATEGORY
+#define SISPOP_DEFAULT_LOG_CATEGORY "bulletproofs"
 
 //#define DEBUG_BP
 

@@ -1,5 +1,5 @@
-# Copyright (c) 2018, The Loki Project
-# Copyright (c) 2014-2019, The Monero Project
+# Copyright (c) 2023, The Oxen Project
+# Copyright (c) 2014-2023, The Monero Project
 #
 # All rights reserved.
 #
@@ -36,7 +36,7 @@ set(common_sources
   download.cpp
   error.cpp
   expect.cpp
-  loki.cpp
+  sispop.cpp
   util.cpp
   i18n.cpp
   rules.cpp
@@ -73,9 +73,9 @@ set(common_private_headers
   error.h
   expect.h
   int-util.h
-  loki.h
+  sispop.h
   http_connection.h
-  loki_integration_test_hooks.h
+  sispop_integration_test_hooks.h
   notify.h
   pod-class.h
   pruning.h
@@ -96,9 +96,9 @@ set(common_private_headers
   timings.h
   combinator.h)
 
-loki_private_headers(common
+sispop_private_headers(common
   ${common_private_headers})
-loki_add_library(common
+sispop_add_library(common
   ${common_sources}
   ${common_headers}
   ${common_private_headers}

@@ -188,25 +188,25 @@ RUN set -ex && \
     rm -rf /var/lib/apt
 COPY --from=builder /src/build/release/bin /usr/local/bin/
 
-# Create loki user
-RUN adduser --system --group --disabled-password loki && \
-	mkdir -p /wallet /home/loki/.loki && \
-	chown -R loki:loki /home/loki/.loki && \
-	chown -R loki:loki /wallet
+# Create sispop user
+RUN adduser --system --group --disabled-password sispop && \
+	mkdir -p /wallet /home/sispop/.sispop && \
+	chown -R sispop:sispop /home/sispop/.sispop && \
+	chown -R sispop:sispop /wallet
 
 # Contains the blockchain
-VOLUME /home/loki/.loki
+VOLUME /home/sispop/.sispop
 
 # Generate your wallet via accessing the container and run:
 # cd /wallet
-# loki-wallet-cli
+# sispop-wallet-cli
 VOLUME /wallet
 
-EXPOSE 22022
-EXPOSE 22023
+EXPOSE 22345
+EXPOSE 22346
 
 # switch to user monero
-USER loki
+USER sispop
 
-ENTRYPOINT ["lokid", "--p2p-bind-ip=0.0.0.0", "--p2p-bind-port=22022", "--rpc-bind-ip=0.0.0.0", "--rpc-bind-port=22023", "--non-interactive", "--confirm-external-bind"]
+ENTRYPOINT ["sispopd", "--p2p-bind-ip=0.0.0.0", "--p2p-bind-port=22345", "--rpc-bind-ip=0.0.0.0", "--rpc-bind-port=22346", "--non-interactive", "--confirm-external-bind"]
 

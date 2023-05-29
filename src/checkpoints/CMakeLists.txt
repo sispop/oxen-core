@@ -1,5 +1,5 @@
-# Copyright (c) 2018, The Loki Project
-# Copyright (c) 2014-2019, The Monero Project
+# Copyright (c) 2023, The Oxen Project
+# Copyright (c) 2014-2023, The Monero Project
 #
 # All rights reserved.
 #
@@ -45,9 +45,9 @@ set(checkpoints_headers)
 set(checkpoints_private_headers
   checkpoints.h)
 
-loki_private_headers(checkpoints
+sispop_private_headers(checkpoints
   ${checkpoints_private_headers})
-loki_add_library(checkpoints
+sispop_add_library(checkpoints
   ${checkpoints_sources}
   ${checkpoints_headers}
   ${checkpoints_private_headers})

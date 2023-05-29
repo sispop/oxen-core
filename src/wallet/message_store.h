@@ -1,4 +1,4 @@
-// Copyright (c) 2019, The Monero Project
+// Copyright (c) 2023, The Monero Project
 //
 // All rights reserved.
 //
@@ -45,8 +45,8 @@
 #include "wipeable_string.h"
 #include "message_transporter.h"
 
-#undef LOKI_DEFAULT_LOG_CATEGORY
-#define LOKI_DEFAULT_LOG_CATEGORY "wallet.mms"
+#undef SISPOP_DEFAULT_LOG_CATEGORY
+#define SISPOP_DEFAULT_LOG_CATEGORY "wallet.mms"
 #define AUTO_CONFIG_TOKEN_BYTES 4
 #define AUTO_CONFIG_TOKEN_PREFIX "mms"
 

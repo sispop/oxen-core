@@ -1,5 +1,5 @@
-# Copyright (c) 2018, The Loki Project
-# Copyright (c) 2014-2019, The Monero Project
+# Copyright (c) 2023, The Oxen Project
+# Copyright (c) 2014-2023, The Monero Project
 #
 # All rights reserved.
 #
@@ -58,9 +58,9 @@ set(wallet_api_private_headers
   subaddress_account.h
   unsigned_transaction.h)
 
-loki_private_headers(wallet_api
+sispop_private_headers(wallet_api
   ${wallet_api_private_headers})
-loki_add_library(wallet_api
+sispop_add_library(wallet_api
   ${wallet_api_sources}
   ${wallet_api_headers}
   ${wallet_api_private_headers})

@@ -73,10 +73,10 @@ if(DEVICE_TREZOR_READY)
         message(STATUS "Trezor debugging enabled")
     endif()
 
-    loki_private_headers(device_trezor
+    sispop_private_headers(device_trezor
             ${device_private_headers})
 
-    loki_add_library(device_trezor
+    sispop_add_library(device_trezor
             ${trezor_sources}
             ${trezor_headers}
             ${trezor_private_headers})
@@ -97,7 +97,7 @@ if(DEVICE_TREZOR_READY)
 
 else()
     message(STATUS "Trezor support disabled")
-    loki_private_headers(device_trezor)
-    loki_add_library(device_trezor device_trezor.cpp)
+    sispop_private_headers(device_trezor)
+    sispop_add_library(device_trezor device_trezor.cpp)
     target_link_libraries(device_trezor PUBLIC cncrypto)
 endif()

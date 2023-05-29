@@ -1,5 +1,5 @@
-// Copyright (c) 2014-2019, The Monero Project
-// Copyright (c)      2018, The Loki Project
+// Copyright (c) 2014-2023, The Monero Project
+// Copyright (c)      2023, The Oxen Project
 // 
 // All rights reserved.
 // 
@@ -66,10 +66,10 @@
 #include "message_store.h"
 #include "wallet_light_rpc.h"
 
-#include "common/loki_integration_test_hooks.h"
+#include "common/sispop_integration_test_hooks.h"
 
-#undef LOKI_DEFAULT_LOG_CATEGORY
-#define LOKI_DEFAULT_LOG_CATEGORY "wallet.wallet2"
+#undef SISPOP_DEFAULT_LOG_CATEGORY
+#define SISPOP_DEFAULT_LOG_CATEGORY "wallet.wallet2"
 
 #define SUBADDRESS_LOOKAHEAD_MAJOR 50
 #define SUBADDRESS_LOOKAHEAD_MINOR 200
@@ -422,7 +422,7 @@ private:
       std::vector<cryptonote::tx_destination_entry> m_dests;
       crypto::hash m_payment_id;
       uint64_t m_timestamp;
-      uint64_t m_unlock_time; // NOTE(loki): Not used after TX v2.
+      uint64_t m_unlock_time; // NOTE(sispop): Not used after TX v2.
       std::vector<uint64_t> m_unlock_times;
       uint32_t m_subaddr_account;   // subaddress account of your wallet to be used in this transfer
       std::set<uint32_t> m_subaddr_indices;  // set of address indices used as inputs in this transfer
@@ -950,7 +950,7 @@ private:
     void get_unconfirmed_payments_out(std::list<std::pair<crypto::hash,wallet2::unconfirmed_transfer_details>>& unconfirmed_payments, const boost::optional<uint32_t>& subaddr_account = boost::none, const std::set<uint32_t>& subaddr_indices = {}) const;
     void get_unconfirmed_payments(std::list<std::pair<crypto::hash,wallet2::pool_payment_details>>& unconfirmed_payments, const boost::optional<uint32_t>& subaddr_account = boost::none, const std::set<uint32_t>& subaddr_indices = {}) const;
 
-    // NOTE(loki): get_all_masternode caches the result, get_masternodes doesn't
+    // NOTE(sispop): get_all_masternode caches the result, get_masternodes doesn't
     std::vector<cryptonote::COMMAND_RPC_GET_MASTERNODES::response::entry> get_all_masternodes(boost::optional<std::string> &failed)                                          const { return m_node_rpc_proxy.get_all_masternodes(failed); }
     std::vector<cryptonote::COMMAND_RPC_GET_MASTERNODES::response::entry> get_masternodes    (std::vector<std::string> const &pubkeys, boost::optional<std::string> &failed) const { return m_node_rpc_proxy.get_masternodes(pubkeys, failed); }
     std::vector<cryptonote::COMMAND_RPC_GET_MASTERNODE_BLACKLISTED_KEY_IMAGES::entry> get_masternode_blacklisted_key_images(boost::optional<std::string> &failed)            const { return m_node_rpc_proxy.get_masternode_blacklisted_key_images(failed); }
@@ -1708,13 +1708,13 @@ private:
     std::unique_ptr<wallet_device_callback> m_device_callback;
   };
 
-  // TODO(loki): Hmm. We need this here because we make register_masternode do
+  // TODO(sispop): Hmm. We need this here because we make register_masternode do
   // parsing on the wallet2 side instead of simplewallet. This is so that
   // register_masternode RPC command doesn't make it the wallet_rpc's
   // responsibility to parse out the string returned from the daemon. We're
   // purposely abstracting that complexity out to just wallet2's responsibility.
 
-  // TODO(loki): The better question is if anyone is ever going to try use
+  // TODO(sispop): The better question is if anyone is ever going to try use
   // register masternode funded by multiple subaddresses. This is unlikely.
   extern const std::array<const char* const, 5> allowed_priority_strings;
   bool parse_subaddress_indices(const std::string& arg, std::set<uint32_t>& subaddr_indices, std::string *err_msg = nullptr);

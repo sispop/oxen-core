@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2019, The Monero Project
+// Copyright (c) 2014-2023, The Monero Project
 //
 // All rights reserved.
 //
@@ -52,7 +52,7 @@
 PUSH_WARNINGS
 DISABLE_VS_WARNINGS(4355)
 
-#include "common/loki_integration_test_hooks.h"
+#include "common/sispop_integration_test_hooks.h"
 namespace cryptonote
 {
    struct test_options {

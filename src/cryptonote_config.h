@@ -55,19 +55,19 @@
 #define EMISSION_DIVISOR                                2000000
 
 #define CRYPTONOTE_REWARD_BLOCKS_WINDOW                 100
-#define CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V1    20000 // NOTE(loki): For testing suite, //size of block (bytes) after which reward for block calculated using block size - before first fork
+#define CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V1    20000 // NOTE(sispop): For testing suite, //size of block (bytes) after which reward for block calculated using block size - before first fork
 #define CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE_V5    300000 //size of block (bytes) after which reward for block calculated using block size - second change, from v5
 #define CRYPTONOTE_LONG_TERM_BLOCK_WEIGHT_WINDOW_SIZE   100000 // size in blocks of the long term block weight median window
 #define CRYPTONOTE_SHORT_TERM_BLOCK_WEIGHT_SURGE_FACTOR 50
 #define CRYPTONOTE_COINBASE_BLOB_RESERVED_SIZE          600
 #define CRYPTONOTE_DISPLAY_DECIMAL_POINT                9
 // COIN - number of smallest units in one coin
-#define COIN                                            ((uint64_t)1000000000) // 1 LOKI = pow(10, 9)
+#define COIN                                            ((uint64_t)1000000000) // 1 SISPOP = pow(10, 9)
 
-#define FEE_PER_KB                                      ((uint64_t)2000000000) // 2 LOKI (= 2 * pow(10, 9))
+#define FEE_PER_KB                                      ((uint64_t)2000000000) // 2 SISPOP (= 2 * pow(10, 9))
 #define FEE_PER_BYTE                                    ((uint64_t)215)   // Fallback used in wallet if no fee is available from RPC
 #define FEE_PER_BYTE_V12                                ((uint64_t)17200) // Higher fee (and fallback) in v12 (only, v13 switches back)
-#define FEE_PER_OUTPUT                                  ((uint64_t)20000000) // 0.02 LOKI per tx output (in addition to the per-byte fee), starting in v13
+#define FEE_PER_OUTPUT                                  ((uint64_t)20000000) // 0.02 SISPOP per tx output (in addition to the per-byte fee), starting in v13
 #define DYNAMIC_FEE_PER_KB_BASE_BLOCK_REWARD            ((uint64_t)10000000000000) // 10 * pow(10,12)
 #define DYNAMIC_FEE_PER_KB_BASE_FEE_V5                  ((uint64_t)400000000)
 #define DYNAMIC_FEE_REFERENCE_TRANSACTION_WEIGHT        ((uint64_t)3000)
@@ -236,10 +236,10 @@ namespace cryptonote
   {
     network_version_7 = 7,
     network_version_8,
-    network_version_9, // Proof Of Stake w/ MasterNodes
-    network_version_10, // Bulletproofs, MasterNode Grace Registration Period, Batched Governance
-    network_version_11, // Infinite Staking, CN-Turtle
-    network_version_12, // Checkpointing, Relaxed Deregistration, RandomXL, Loki Storage Server
+    network_version_9,
+    network_version_10,
+    network_version_11,
+    network_version_12,
     network_version_13,
 
     network_version_count,

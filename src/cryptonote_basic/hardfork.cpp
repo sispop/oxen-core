@@ -1,5 +1,5 @@
-// Copyright (c) 2014-2019, The Monero Project
-// Copyright (c)      2018, The Loki Project
+// Copyright (c) 2014-2023, The Monero Project
+// Copyright (c)      2023, The Oxen Project
 // 
 // All rights reserved.
 // 
@@ -30,13 +30,13 @@
 #include <algorithm>
 #include <cstdio>
 
-#include "common/loki.h"
+#include "common/sispop.h"
 #include "cryptonote_basic/cryptonote_basic.h"
 #include "blockchain_db/blockchain_db.h"
 #include "hardfork.h"
 
-#undef LOKI_DEFAULT_LOG_CATEGORY
-#define LOKI_DEFAULT_LOG_CATEGORY "hardfork"
+#undef SISPOP_DEFAULT_LOG_CATEGORY
+#define SISPOP_DEFAULT_LOG_CATEGORY "hardfork"
 
 using namespace cryptonote;
 

@@ -1,5 +1,5 @@
-// Copyright (c) 2014-2019, The Monero Project
-// Copyright (c)      2018, The Loki Project
+// Copyright (c) 2014-2023, The Monero Project
+// Copyright (c)      2023, The Oxen Project
 // 
 // All rights reserved.
 // 
@@ -46,8 +46,8 @@
 
 using namespace epee;
 
-#undef LOKI_DEFAULT_LOG_CATEGORY
-#define LOKI_DEFAULT_LOG_CATEGORY "cn"
+#undef SISPOP_DEFAULT_LOG_CATEGORY
+#define SISPOP_DEFAULT_LOG_CATEGORY "cn"
 
 #define ENCRYPTED_PAYMENT_ID_TAIL 0x8d
 
@@ -1153,7 +1153,7 @@ namespace cryptonote
     switch (decimal_point)
     {
       case 9:
-        return "loki";
+        return "sispop";
       case 6:
         return "megarok";
       case 3:
@@ -1369,7 +1369,7 @@ namespace cryptonote
 
     const blobdata blob = tx_to_blob(t);
 
-    // TODO(loki): Not sure if this is the right fix, we may just want to set
+    // TODO(sispop): Not sure if this is the right fix, we may just want to set
     // unprunable size to the size of the prefix because technically that is
     // what it is and then keep this code path.
     if (t.type == txtype::standard)

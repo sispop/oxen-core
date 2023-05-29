@@ -49,14 +49,14 @@
 #include "chaingen.h"
 #include "device/device.hpp"
 
-cryptonote::block loki_chain_generator_db::get_block_from_height(const uint64_t &height) const
+cryptonote::block sispop_chain_generator_db::get_block_from_height(const uint64_t &height) const
 {
   assert(height < blockchain.size());
   cryptonote::block result = this->blockchain[height].block;
   return result;
 }
 
-bool loki_chain_generator_db::get_tx(const crypto::hash &h, cryptonote::transaction &tx) const
+bool sispop_chain_generator_db::get_tx(const crypto::hash &h, cryptonote::transaction &tx) const
 {
   auto it = tx_table.find(h);
   if (it == tx_table.end()) return false;
@@ -64,13 +64,13 @@ bool loki_chain_generator_db::get_tx(const crypto::hash &h, cryptonote::transact
   return true;
 }
 
-loki_chain_generator::loki_chain_generator(std::vector<test_event_entry> &events, const std::vector<std::pair<uint8_t, uint64_t>> &hard_forks)
+sispop_chain_generator::sispop_chain_generator(std::vector<test_event_entry> &events, const std::vector<std::pair<uint8_t, uint64_t>> &hard_forks)
 : db_(blocks_, tx_table_, block_table_)
 , events_(events)
 , hard_forks_(hard_forks)
 {
   first_miner_.generate();
-  loki_blockchain_entry genesis = loki_chain_generator::create_genesis_block(first_miner_, 1338224400);
+  sispop_blockchain_entry genesis = sispop_chain_generator::create_genesis_block(first_miner_, 1338224400);
   events_.push_back(genesis.block);
   blocks_.push_back(genesis);
 
@@ -83,22 +83,22 @@ loki_chain_generator::loki_chain_generator(std::vector<test_event_entry> &events
   events_.push_back(settings);
 }
 
-masternodes::quorum_manager loki_chain_generator::top_quorum() const
+masternodes::quorum_manager sispop_chain_generator::top_quorum() const
 {
   masternodes::quorum_manager result = top().masternode_state.quorums;
   return result;
 }
 
-masternodes::quorum_manager loki_chain_generator::quorum(uint64_t height) const
+masternodes::quorum_manager sispop_chain_generator::quorum(uint64_t height) const
 {
   assert(height > 0 && height < blocks_.size());
   masternodes::quorum_manager result = blocks_[height].masternode_state.quorums;
   return result;
 }
 
-std::shared_ptr<const masternodes::testing_quorum> loki_chain_generator::get_testing_quorum(masternodes::quorum_type type, uint64_t height) const
+std::shared_ptr<const masternodes::testing_quorum> sispop_chain_generator::get_testing_quorum(masternodes::quorum_type type, uint64_t height) const
 {
-  // TODO(loki): Bad copy pasta from get_testing_quorum, if it ever changes at the source this will break :<
+  // TODO(sispop): Bad copy pasta from get_testing_quorum, if it ever changes at the source this will break :<
   if (type == masternodes::quorum_type::checkpointing)
   {
     assert(height >= masternodes::REORG_SAFETY_BUFFER_BLOCKS_POST_HF12);
@@ -111,7 +111,7 @@ std::shared_ptr<const masternodes::testing_quorum> loki_chain_generator::get_tes
   return result;
 }
 
-cryptonote::account_base loki_chain_generator::add_account()
+cryptonote::account_base sispop_chain_generator::add_account()
 {
   cryptonote::account_base account;
   account.generate();
@@ -119,11 +119,11 @@ cryptonote::account_base loki_chain_generator::add_account()
   return account;
 }
 
-loki_blockchain_entry &loki_chain_generator::add_block(const std::vector<cryptonote::transaction>& txs, cryptonote::checkpoint_t const *checkpoint, bool can_be_added_to_blockchain, std::string const &fail_msg)
+sispop_blockchain_entry &sispop_chain_generator::add_block(const std::vector<cryptonote::transaction>& txs, cryptonote::checkpoint_t const *checkpoint, bool can_be_added_to_blockchain, std::string const &fail_msg)
 {
   blocks_.push_back({});
-  loki_blockchain_entry &result = blocks_.back(); // NOTE: important to use blocks_ storage as we take references to the contents in create_loki_blockchain_entry
-  loki_blockchain_entry &prev   = blocks_[blocks_.size() - 2];
+  sispop_blockchain_entry &result = blocks_.back(); // NOTE: important to use blocks_ storage as we take references to the contents in create_sispop_blockchain_entry
+  sispop_blockchain_entry &prev   = blocks_[blocks_.size() - 2];
   {
     const auto new_height  = get_block_height(prev.block) + 1;
     uint8_t desired_hf     = hard_forks_[0].first;
@@ -137,7 +137,7 @@ loki_blockchain_entry &loki_chain_generator::add_block(const std::vector<crypton
 
     masternodes::block_winner winner  = prev.masternode_state.get_block_winner();
     std::vector<uint64_t> block_weights = last_n_block_weights(new_height - 1, CRYPTONOTE_REWARD_BLOCKS_WINDOW);
-    create_loki_blockchain_entry(result,
+    create_sispop_blockchain_entry(result,
                                  desired_hf,
                                  prev,
                                  first_miner_,
@@ -148,15 +148,15 @@ loki_blockchain_entry &loki_chain_generator::add_block(const std::vector<crypton
 
     if (checkpoint)
     {
-      loki_block_with_checkpoint data = {};
+      sispop_block_with_checkpoint data = {};
       data.has_checkpoint             = true;
       data.block                      = result.block;
       data.checkpoint                 = *checkpoint;
-      events_.push_back(loki_blockchain_addable<loki_block_with_checkpoint>(data, can_be_added_to_blockchain, fail_msg));
+      events_.push_back(sispop_blockchain_addable<sispop_block_with_checkpoint>(data, can_be_added_to_blockchain, fail_msg));
     }
     else
     {
-      events_.push_back(loki_blockchain_addable<cryptonote::block>(result.block, can_be_added_to_blockchain, fail_msg));
+      events_.push_back(sispop_blockchain_addable<cryptonote::block>(result.block, can_be_added_to_blockchain, fail_msg));
     }
   }
 
@@ -164,26 +164,26 @@ loki_blockchain_entry &loki_chain_generator::add_block(const std::vector<crypton
   return result;
 }
 
-void loki_chain_generator::add_blocks_until_version(uint8_t hf_version)
+void sispop_chain_generator::add_blocks_until_version(uint8_t hf_version)
 {
   assert(hard_forks_.size());
   assert(hf_version_ <= hard_forks_.back().first);
   assert(blocks_.size() >= 1); // NOTE: We must have genesis block
   for (;;)
   {
-    loki_blockchain_entry entry = add_block();
+    sispop_blockchain_entry entry = add_block();
     if (entry.block.major_version == hf_version) return;
   }
 }
 
-void loki_chain_generator::add_n_blocks(int n)
+void sispop_chain_generator::add_n_blocks(int n)
 {
   for (auto i = 0; i < n; ++i) {
     add_block();
   }
 }
 
-void loki_chain_generator::add_blocks_until_next_checkpointable_height()
+void sispop_chain_generator::add_blocks_until_next_checkpointable_height()
 {
   if (height() % masternodes::CHECKPOINT_INTERVAL == 0)
   {
@@ -196,53 +196,53 @@ void loki_chain_generator::add_blocks_until_next_checkpointable_height()
   }
 }
 
-void loki_chain_generator::add_masternode_checkpoint(uint64_t block_height, size_t num_votes)
+void sispop_chain_generator::add_masternode_checkpoint(uint64_t block_height, size_t num_votes)
 {
-  loki_blockchain_entry &entry = blocks_[block_height];
+  sispop_blockchain_entry &entry = blocks_[block_height];
   entry.checkpointed           = true;
   entry.checkpoint             = create_masternode_checkpoint(block_height, num_votes);
   events_.push_back(entry.checkpoint);
 }
 
-void loki_chain_generator::add_mined_money_unlock_blocks()
+void sispop_chain_generator::add_mined_money_unlock_blocks()
 {
   add_n_blocks(CRYPTONOTE_MINED_MONEY_UNLOCK_WINDOW);
 }
 
-void loki_chain_generator::add_tx(cryptonote::transaction const &tx, bool can_be_added_to_blockchain, std::string const &fail_msg, bool kept_by_block)
+void sispop_chain_generator::add_tx(cryptonote::transaction const &tx, bool can_be_added_to_blockchain, std::string const &fail_msg, bool kept_by_block)
 {
-  loki_transaction tx_entry                       = {tx, kept_by_block};
-  loki_blockchain_addable<loki_transaction> entry = {std::move(tx_entry), can_be_added_to_blockchain, fail_msg};
+  sispop_transaction tx_entry                       = {tx, kept_by_block};
+  sispop_blockchain_addable<sispop_transaction> entry = {std::move(tx_entry), can_be_added_to_blockchain, fail_msg};
   events_.push_back(entry);
 }
 
-cryptonote::transaction loki_chain_generator::create_and_add_tx(const cryptonote::account_base &src,
+cryptonote::transaction sispop_chain_generator::create_and_add_tx(const cryptonote::account_base &src,
                                                                 const cryptonote::account_base &dest,
                                                                 uint64_t amount,
                                                                 uint64_t fee,
                                                                 bool kept_by_block)
 {
   cryptonote::transaction t;
-  loki_tx_builder(events_, t, blocks_.back().block, src, dest, amount, hf_version_).with_fee(fee).build();
+  sispop_tx_builder(events_, t, blocks_.back().block, src, dest, amount, hf_version_).with_fee(fee).build();
   add_tx(t, true /*can_be_added_to_blockchain*/, ""/*fail_msg*/, kept_by_block);
   return t;
 }
 
-cryptonote::transaction loki_chain_generator::create_and_add_state_change_tx(masternodes::new_state state, const crypto::public_key &pub_key, uint64_t height, const std::vector<uint64_t> &voters, uint64_t fee, bool kept_by_block)
+cryptonote::transaction sispop_chain_generator::create_and_add_state_change_tx(masternodes::new_state state, const crypto::public_key &pub_key, uint64_t height, const std::vector<uint64_t> &voters, uint64_t fee, bool kept_by_block)
 {
   cryptonote::transaction result = create_state_change_tx(state, pub_key, height, voters, fee);
   add_tx(result, true /*can_be_added_to_blockchain*/, "" /*fail_msg*/, kept_by_block);
   return result;
 }
 
-cryptonote::transaction loki_chain_generator::create_and_add_registration_tx(const cryptonote::account_base &src, const cryptonote::keypair &sn_keys, bool kept_by_block)
+cryptonote::transaction sispop_chain_generator::create_and_add_registration_tx(const cryptonote::account_base &src, const cryptonote::keypair &sn_keys, bool kept_by_block)
 {
   cryptonote::transaction result = create_registration_tx(src, sn_keys);
   add_tx(result, true /*can_be_added_to_blockchain*/, "" /*fail_msg*/, kept_by_block);
   return result;
 }
 
-cryptonote::transaction loki_chain_generator::create_registration_tx(const cryptonote::account_base &src, const cryptonote::keypair &masternode_keys) const
+cryptonote::transaction sispop_chain_generator::create_registration_tx(const cryptonote::account_base &src, const cryptonote::keypair &masternode_keys) const
 {
   uint64_t new_height                                          = get_block_height(top().block) + 1;
   uint8_t new_hf_version                                       = get_hf_version_at(new_height);
@@ -274,14 +274,14 @@ cryptonote::transaction loki_chain_generator::create_registration_tx(const crypt
     crypto::generate_signature(hash, masternode_keys.pub, masternode_keys.sec, signature);
     add_masternode_register_to_tx_extra(extra, contributors, operator_cut, portions, exp_timestamp, signature);
     add_masternode_contributor_to_tx_extra(extra, contributors.at(0));
-    loki_tx_builder(events_, result, head, src /*from*/, src /*to*/, amount, new_hf_version).is_staking(true).with_unlock_time(unlock_time).with_extra(extra).with_per_output_unlock(true).build();
+    sispop_tx_builder(events_, result, head, src /*from*/, src /*to*/, amount, new_hf_version).is_staking(true).with_unlock_time(unlock_time).with_extra(extra).with_per_output_unlock(true).build();
   }
 
   masternode_keys_[masternode_keys.pub] = masternode_keys.sec; // NOTE: Save generated key for reuse later if we need to interact with the node again
   return result;
 }
 
-cryptonote::transaction loki_chain_generator::create_state_change_tx(masternodes::new_state state, const crypto::public_key &pub_key, uint64_t height, const std::vector<uint64_t>& voters, uint64_t fee) const
+cryptonote::transaction sispop_chain_generator::create_state_change_tx(masternodes::new_state state, const crypto::public_key &pub_key, uint64_t height, const std::vector<uint64_t>& voters, uint64_t fee) const
 {
   if (height == UINT64_MAX)
     height = this->height();
@@ -329,7 +329,7 @@ cryptonote::transaction loki_chain_generator::create_state_change_tx(masternodes
     std::vector<uint8_t> extra;
     const bool full_tx_made = cryptonote::add_masternode_state_change_to_tx_extra(result.extra, state_change_extra, get_hf_version_at(height + 1));
     assert(full_tx_made);
-    if (fee) loki_tx_builder(events_, result, top().block, first_miner_, first_miner_, 0 /*amount*/, get_hf_version_at(height + 1)).with_fee(fee).with_extra(extra).with_per_output_unlock(true).build();
+    if (fee) sispop_tx_builder(events_, result, top().block, first_miner_, first_miner_, 0 /*amount*/, get_hf_version_at(height + 1)).with_fee(fee).with_extra(extra).with_per_output_unlock(true).build();
     result.version = cryptonote::transaction::get_max_version_for_hf(get_hf_version_at(height + 1), cryptonote::FAKECHAIN);
     result.type    = cryptonote::txtype::state_change;
   }
@@ -337,13 +337,13 @@ cryptonote::transaction loki_chain_generator::create_state_change_tx(masternodes
   return result;
 }
 
-cryptonote::checkpoint_t loki_chain_generator::create_masternode_checkpoint(uint64_t block_height, size_t num_votes) const
+cryptonote::checkpoint_t sispop_chain_generator::create_masternode_checkpoint(uint64_t block_height, size_t num_votes) const
 {
   assert(block_height % masternodes::CHECKPOINT_INTERVAL == 0);
   masternodes::testing_quorum const &quorum = *get_testing_quorum(masternodes::quorum_type::checkpointing, block_height);
   assert(num_votes < quorum.validators.size());
 
-  loki_blockchain_entry const &entry = blocks_[block_height];
+  sispop_blockchain_entry const &entry = blocks_[block_height];
   crypto::hash const block_hash      = cryptonote::get_block_hash(entry.block);
   cryptonote::checkpoint_t result    = masternodes::make_empty_masternode_checkpoint(block_hash, block_height);
   result.signatures.reserve(num_votes);
@@ -367,10 +367,10 @@ static void fill_nonce(cryptonote::block& blk, const cryptonote::difficulty_type
     blk.timestamp++;
 }
 
-loki_blockchain_entry loki_chain_generator::create_genesis_block(const cryptonote::account_base &miner, uint64_t timestamp)
+sispop_blockchain_entry sispop_chain_generator::create_genesis_block(const cryptonote::account_base &miner, uint64_t timestamp)
 {
   uint64_t height         = 0;
-  loki_blockchain_entry result = {};
+  sispop_blockchain_entry result = {};
   cryptonote::block &blk  = result.block;
   blk.major_version       = hf_version_;
   blk.minor_version       = hf_version_;
@@ -379,7 +379,7 @@ loki_blockchain_entry loki_chain_generator::create_genesis_block(const cryptonot
 
   // TODO(doyle): Does this evaluate to 0? If so we can simplify this a lot more
   size_t target_block_weight = get_transaction_weight(blk.miner_tx);
-  cryptonote::loki_miner_tx_context miner_tx_context(cryptonote::FAKECHAIN, {} /*winner*/);
+  cryptonote::sispop_miner_tx_context miner_tx_context(cryptonote::FAKECHAIN, {} /*winner*/);
 
   while (true)
   {
@@ -441,9 +441,9 @@ loki_blockchain_entry loki_chain_generator::create_genesis_block(const cryptonot
   return result;
 }
 
-bool loki_chain_generator::create_loki_blockchain_entry(loki_blockchain_entry &entry,
+bool sispop_chain_generator::create_sispop_blockchain_entry(sispop_blockchain_entry &entry,
                                                         uint8_t hf_version,
-                                                        loki_blockchain_entry &prev,
+                                                        sispop_blockchain_entry &prev,
                                                         const cryptonote::account_base &miner_acc,
                                                         uint64_t timestamp,
                                                         std::vector<uint64_t> &block_weights,
@@ -473,7 +473,7 @@ bool loki_chain_generator::create_loki_blockchain_entry(loki_blockchain_entry &e
   }
 
   // NOTE: Calculate governance
-  cryptonote::loki_miner_tx_context miner_tx_context(cryptonote::FAKECHAIN, block_winner);
+  cryptonote::sispop_miner_tx_context miner_tx_context(cryptonote::FAKECHAIN, block_winner);
   if (hf_version >= cryptonote::network_version_10_bulletproofs &&
       cryptonote::height_has_governance_output(cryptonote::FAKECHAIN, hf_version, height))
   {
@@ -485,7 +485,7 @@ bool loki_chain_generator::create_loki_blockchain_entry(loki_blockchain_entry &e
          i >= 0 && count <= (int)num_blocks;
          i--, count++)
     {
-      loki_blockchain_entry const &historical_entry = blocks_[i];
+      sispop_blockchain_entry const &historical_entry = blocks_[i];
       if (historical_entry.block.major_version < cryptonote::network_version_10_bulletproofs) break;
       miner_tx_context.batched_governance += cryptonote::derive_governance_from_block_reward(cryptonote::FAKECHAIN, historical_entry.block);
     }
@@ -559,7 +559,7 @@ bool loki_chain_generator::create_loki_blockchain_entry(loki_blockchain_entry &e
   }
 
   entry.masternode_state = prev.masternode_state;
-  // TODO(loki): State history culling
+  // TODO(sispop): State history culling
   state_history_.emplace_hint(state_history_.end(), entry.masternode_state);
   entry.masternode_state.update_from_block(db_, cryptonote::FAKECHAIN, state_history_, {} /*alt_states*/, entry.block, entry.txs, nullptr);
 
@@ -569,7 +569,7 @@ bool loki_chain_generator::create_loki_blockchain_entry(loki_blockchain_entry &e
   return true;
 }
 
-uint8_t loki_chain_generator::get_hf_version_at(uint64_t height) const {
+uint8_t sispop_chain_generator::get_hf_version_at(uint64_t height) const {
 
   uint8_t cur_hf_ver = 0;
   for (auto i = 0u; i < hard_forks_.size(); ++i)
@@ -582,7 +582,7 @@ uint8_t loki_chain_generator::get_hf_version_at(uint64_t height) const {
   return cur_hf_ver;
 }
 
-std::vector<uint64_t> loki_chain_generator::last_n_block_weights(uint64_t height, size_t num) const
+std::vector<uint64_t> sispop_chain_generator::last_n_block_weights(uint64_t height, size_t num) const
 {
   std::vector<uint64_t> result;
   if (num > height) num = height;
@@ -617,7 +617,7 @@ void test_generator::get_block_chain(std::vector<block_info>& blockchain, const 
   std::reverse(blockchain.begin(), blockchain.end());
 }
 
-// TODO(loki): Copypasta
+// TODO(sispop): Copypasta
 void test_generator::get_block_chain(std::vector<cryptonote::block> &blockchain,
                                      const crypto::hash &head,
                                      size_t n) const
@@ -674,7 +674,7 @@ void test_generator::add_block(const cryptonote::block& blk, size_t txs_weight, 
 
 static void manual_calc_batched_governance(const test_generator &generator,
                                            const crypto::hash &head,
-                                           cryptonote::loki_miner_tx_context &miner_tx_context,
+                                           cryptonote::sispop_miner_tx_context &miner_tx_context,
                                            int hard_fork_version,
                                            uint64_t height)
 {
@@ -746,7 +746,7 @@ bool test_generator::construct_block(cryptonote::block &blk,
 
   blk.miner_tx = AUTO_VAL_INIT(blk.miner_tx);
   size_t target_block_weight = txs_weight + get_transaction_weight(blk.miner_tx);
-  cryptonote::loki_miner_tx_context miner_tx_context(cryptonote::FAKECHAIN, winner);
+  cryptonote::sispop_miner_tx_context miner_tx_context(cryptonote::FAKECHAIN, winner);
   manual_calc_batched_governance(*this, prev_id, miner_tx_context, m_hf_version, height);
 
   while (true)
@@ -859,7 +859,7 @@ bool test_generator::construct_block_manually(cryptonote::block& blk, const cryp
   else
   {
     // TODO: This will work, until size of constructed block is less then CRYPTONOTE_BLOCK_GRANTED_FULL_REWARD_ZONE
-    cryptonote::loki_miner_tx_context miner_tx_context(cryptonote::FAKECHAIN);
+    cryptonote::sispop_miner_tx_context miner_tx_context(cryptonote::FAKECHAIN);
     manual_calc_batched_governance(*this, prev_id, miner_tx_context, m_hf_version, height);
 
     size_t current_block_weight = txs_weight + get_transaction_weight(blk.miner_tx);
@@ -917,7 +917,7 @@ cryptonote::transaction make_registration_tx(std::vector<test_event_entry>& even
   crypto::generate_signature(hash, masternode_keys.pub, masternode_keys.sec, signature);
   add_masternode_register_to_tx_extra(extra, contributors, operator_cut, portions, exp_timestamp, signature);
   add_masternode_contributor_to_tx_extra(extra, contributors.at(0));
-  loki_tx_builder(events, tx, head, account, account, amount, hf_version).is_staking(true).with_extra(extra).with_unlock_time(unlock_time).with_per_output_unlock(true).build();
+  sispop_tx_builder(events, tx, head, account, account, amount, hf_version).is_staking(true).with_extra(extra).with_unlock_time(unlock_time).with_per_output_unlock(true).build();
   events.push_back(tx);
   return tx;
 }
@@ -1662,7 +1662,7 @@ cryptonote::transaction construct_tx_with_fee(std::vector<test_event_entry> &eve
                                               uint64_t fee)
 {
   cryptonote::transaction tx;
-  loki_tx_builder(events, tx, blk_head, acc_from, acc_to, amount, cryptonote::network_version_7).with_fee(fee).build();
+  sispop_tx_builder(events, tx, blk_head, acc_from, acc_to, amount, cryptonote::network_version_7).with_fee(fee).build();
   events.push_back(tx);
   return tx;
 }
@@ -1827,36 +1827,36 @@ bool find_block_chain(const std::vector<test_event_entry> &events, std::vector<c
   for (const test_event_entry &ev : events)
   {
     if (typeid(cryptonote::block) == ev.type() ||
-        typeid(loki_blockchain_addable<loki_block_with_checkpoint>) == ev.type() ||
-        typeid(loki_blockchain_addable<cryptonote::block>) == ev.type())
+        typeid(sispop_blockchain_addable<sispop_block_with_checkpoint>) == ev.type() ||
+        typeid(sispop_blockchain_addable<cryptonote::block>) == ev.type())
     {
       if (typeid(cryptonote::block) == ev.type())
       {
         const auto *blk                   = &boost::get<cryptonote::block>(ev);
         block_index[get_block_hash(*blk)] = blk;
       }
-      else if (typeid(loki_blockchain_addable<loki_block_with_checkpoint>) == ev.type())
+      else if (typeid(sispop_blockchain_addable<sispop_block_with_checkpoint>) == ev.type())
       {
-        const auto *blk                        = &boost::get<loki_blockchain_addable<loki_block_with_checkpoint>>(ev);
+        const auto *blk                        = &boost::get<sispop_blockchain_addable<sispop_block_with_checkpoint>>(ev);
         block_index[get_block_hash(blk->data.block)] = &blk->data.block;
       }
-      else if (typeid(loki_blockchain_addable<cryptonote::block>) == ev.type())
+      else if (typeid(sispop_blockchain_addable<cryptonote::block>) == ev.type())
       {
-        const auto *blk = &boost::get<loki_blockchain_addable<cryptonote::block>>(ev);
+        const auto *blk = &boost::get<sispop_blockchain_addable<cryptonote::block>>(ev);
         block_index[get_block_hash(blk->data)] = &blk->data;
       }
     }
     else if (typeid(cryptonote::transaction) == ev.type() ||
-             typeid(loki_blockchain_addable<loki_transaction>) == ev.type())
+             typeid(sispop_blockchain_addable<sispop_transaction>) == ev.type())
     {
       if (typeid(cryptonote::transaction) == ev.type())
       {
         const auto &tx                = boost::get<cryptonote::transaction>(ev);
         mtx[get_transaction_hash(tx)] = &tx;
       }
-      else if (typeid(loki_blockchain_addable<loki_transaction>) == ev.type())
+      else if (typeid(sispop_blockchain_addable<sispop_transaction>) == ev.type())
       {
-        const auto &entry                        = boost::get<loki_blockchain_addable<loki_transaction>>(ev);
+        const auto &entry                        = boost::get<sispop_blockchain_addable<sispop_transaction>>(ev);
         mtx[get_transaction_hash(entry.data.tx)] = &entry.data.tx;
       }
     }
@@ -1885,36 +1885,36 @@ bool find_block_chain(const std::vector<test_event_entry> &events, std::vector<c
   for (const test_event_entry &ev : events)
   {
     if (typeid(cryptonote::block) == ev.type() ||
-        typeid(loki_blockchain_addable<loki_block_with_checkpoint>) == ev.type() ||
-        typeid(loki_blockchain_addable<cryptonote::block>) == ev.type())
+        typeid(sispop_blockchain_addable<sispop_block_with_checkpoint>) == ev.type() ||
+        typeid(sispop_blockchain_addable<cryptonote::block>) == ev.type())
     {
       if (typeid(cryptonote::block) == ev.type())
       {
         const auto *blk                   = &boost::get<cryptonote::block>(ev);
         block_index[get_block_hash(*blk)] = blk;
       }
-      else if (typeid(loki_blockchain_addable<loki_block_with_checkpoint>) == ev.type())
+      else if (typeid(sispop_blockchain_addable<sispop_block_with_checkpoint>) == ev.type())
       {
-        const auto *blk = &boost::get<loki_blockchain_addable<loki_block_with_checkpoint>>(ev);
+        const auto *blk = &boost::get<sispop_blockchain_addable<sispop_block_with_checkpoint>>(ev);
         block_index[get_block_hash(blk->data.block)] = &blk->data.block;
       }
-      else if (typeid(loki_blockchain_addable<cryptonote::block>) == ev.type())
+      else if (typeid(sispop_blockchain_addable<cryptonote::block>) == ev.type())
       {
-        const auto *blk = &boost::get<loki_blockchain_addable<cryptonote::block>>(ev);
+        const auto *blk = &boost::get<sispop_blockchain_addable<cryptonote::block>>(ev);
         block_index[get_block_hash(blk->data)] = &blk->data;
       }
     }
     else if (typeid(cryptonote::transaction) == ev.type() ||
-             typeid(loki_blockchain_addable<loki_transaction>) == ev.type())
+             typeid(sispop_blockchain_addable<sispop_transaction>) == ev.type())
     {
       if (typeid(cryptonote::transaction) == ev.type())
       {
         const auto &tx                = boost::get<cryptonote::transaction>(ev);
         mtx[get_transaction_hash(tx)] = &tx;
       }
-      else if (typeid(loki_blockchain_addable<loki_transaction>) == ev.type())
+      else if (typeid(sispop_blockchain_addable<sispop_transaction>) == ev.type())
       {
-        const auto &entry                        = boost::get<loki_blockchain_addable<loki_transaction>>(ev);
+        const auto &entry                        = boost::get<sispop_blockchain_addable<sispop_transaction>>(ev);
         mtx[get_transaction_hash(entry.data.tx)] = &entry.data.tx;
       }
     }

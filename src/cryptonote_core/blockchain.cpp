@@ -1,5 +1,5 @@
-// Copyright (c) 2014-2019, The Monero Project
-// Copyright (c)      2018, The Loki Project
+// Copyright (c) 2014-2023, The Monero Project
+// Copyright (c)      2023, The Oxen Project
 //
 // All rights reserved.
 //
@@ -61,8 +61,8 @@
 #include "common/varint.h"
 #include "common/pruning.h"
 
-#undef LOKI_DEFAULT_LOG_CATEGORY
-#define LOKI_DEFAULT_LOG_CATEGORY "blockchain"
+#undef SISPOP_DEFAULT_LOG_CATEGORY
+#define SISPOP_DEFAULT_LOG_CATEGORY "blockchain"
 
 #define FIND_BLOCKCHAIN_SUPPLEMENT_MAX_SIZE (100*1024*1024) // 100 MB
 
@@ -313,7 +313,7 @@ bool Blockchain::init(BlockchainDB* db, const network_type nettype, bool offline
 
   m_db = db;
 
-#if defined(LOKI_ENABLE_INTEGRATION_TEST_HOOKS)
+#if defined(SISPOP_ENABLE_INTEGRATION_TEST_HOOKS)
   // NOTE(doyle): Passing in test options in integration mode means we're
   // overriding fork heights for any nettype in our integration tests using
   // a command line argument. So m_nettype should just be nettype. In
@@ -1012,7 +1012,7 @@ bool Blockchain::switch_to_alternative_blockchain(const std::list<block_extended
 
   // pop blocks from the blockchain until the top block is the parent
   // of the front block of the alt chain.
-  std::list<block_and_checkpoint> disconnected_chain; // TODO(loki): use a vector and rbegin(), rend() because we don't have push_front
+  std::list<block_and_checkpoint> disconnected_chain; // TODO(sispop): use a vector and rbegin(), rend() because we don't have push_front
   while (m_db->top_block_hash() != alt_chain.front().bl.prev_id)
   {
     block_and_checkpoint entry = {};
@@ -1219,7 +1219,7 @@ bool Blockchain::validate_miner_transaction(const block& b, size_t cumulative_bl
   std::vector<uint64_t> last_blocks_weights;
   get_last_n_blocks_weights(last_blocks_weights, CRYPTONOTE_REWARD_BLOCKS_WINDOW);
 
-  loki_block_reward_context block_reward_context = {};
+  sispop_block_reward_context block_reward_context = {};
   block_reward_context.fee                       = fee;
   block_reward_context.height                    = height;
   if (!calc_batched_governance_reward(height, block_reward_context.batched_governance))
@@ -1229,7 +1229,7 @@ bool Blockchain::validate_miner_transaction(const block& b, size_t cumulative_bl
   }
 
   block_reward_parts reward_parts;
-  if (!get_loki_block_reward(epee::misc_utils::median(last_blocks_weights), cumulative_block_weight, already_generated_coins, version, reward_parts, block_reward_context))
+  if (!get_sispop_block_reward(epee::misc_utils::median(last_blocks_weights), cumulative_block_weight, already_generated_coins, version, reward_parts, block_reward_context))
   {
     MERROR_VER("block weight " << cumulative_block_weight << " is bigger than allowed for this blockchain");
     return false;
@@ -1555,7 +1555,7 @@ bool Blockchain::create_block_template(block& b, const crypto::hash *from_block,
    */
   //make blocks coin-base tx looks close to real coinbase tx to get truthful blob weight
   uint8_t hf_version = b.major_version;
-  loki_miner_tx_context miner_tx_context(m_nettype, m_masternode_list.get_block_winner());
+  sispop_miner_tx_context miner_tx_context(m_nettype, m_masternode_list.get_block_winner());
   if (!calc_batched_governance_reward(height, miner_tx_context.batched_governance))
   {
     LOG_ERROR("Failed to calculate batched governance reward");
@@ -1877,7 +1877,7 @@ bool Blockchain::handle_alternative_block(const block& b, const crypto::hash& id
       }
 
       alt_data.height                   = block_height;
-      // TODO(loki): Block cumulative weight wasn't being set in the fist place in bei?
+      // TODO(sispop): Block cumulative weight wasn't being set in the fist place in bei?
       // alt_data.cumulative_weight       = bei.block_cumulative_weight;
       alt_data.already_generated_coins  = get_outs_money_amount(b.miner_tx);
       alt_data.already_generated_coins += (alt_chain.size() ? prev_data.already_generated_coins : m_db->get_block_already_generated_coins(block_height - 1));
@@ -2207,7 +2207,7 @@ void Blockchain::get_output_key_mask_unlocked(const uint64_t& amount, const uint
 //------------------------------------------------------------------
 bool Blockchain::get_output_distribution(uint64_t amount, uint64_t from_height, uint64_t to_height, uint64_t &start_height, std::vector<uint64_t> &distribution, uint64_t &base) const
 {
-  // rct outputs don't exist before v4, NOTE(loki): we started from v7 so our start is always 0
+  // rct outputs don't exist before v4, NOTE(sispop): we started from v7 so our start is always 0
   start_height = 0;
   base = 0;
 
@@ -2785,12 +2785,12 @@ bool Blockchain::check_tx_outputs(const transaction& tx, tx_verification_context
   CRITICAL_REGION_LOCAL(m_blockchain_lock);
 
   for (const auto &o: tx.vout) {
-    if (o.amount != 0) { // in a v2 tx, all outputs must have 0 amount NOTE(loki): All loki tx's are atleast v2 from the beginning
+    if (o.amount != 0) { // in a v2 tx, all outputs must have 0 amount NOTE(sispop): All sispop tx's are atleast v2 from the beginning
       tvc.m_invalid_output = true;
       return false;
     }
 
-    // from hardfork v4, forbid invalid pubkeys NOTE(loki): We started from hf7 so always execute branch
+    // from hardfork v4, forbid invalid pubkeys NOTE(sispop): We started from hf7 so always execute branch
     if (o.target.type() == typeid(txout_to_key)) {
       const txout_to_key& out_to_key = boost::get<txout_to_key>(o.target);
       if (!crypto::check_key(out_to_key.key)) {
@@ -2820,7 +2820,7 @@ bool Blockchain::check_tx_outputs(const transaction& tx, tx_verification_context
       uint64_t curr_height = this->get_current_blockchain_height();
       if (curr_height == hf10_height)
       {
-        // NOTE(loki): Allow the hardforking block to contain a borromean proof
+        // NOTE(sispop): Allow the hardforking block to contain a borromean proof
         // incase there were some transactions in the TX Pool that were
         // generated pre-HF10 rules. Note, this isn't bulletproof. If there were
         // more than 1 blocks worth of borromean proof TX's sitting in the pool
@@ -3999,7 +3999,7 @@ leave:
     LOG_ERROR("Blocks that failed verification should not reach here");
   }
 
-  // TODO(loki): Not nice, making the hook take in a vector of pair<transaction,
+  // TODO(sispop): Not nice, making the hook take in a vector of pair<transaction,
   // blobdata> messes with masternode_list::init which only constructs
   // a vector of transactions and then subsequently calls block_added, so the
   // init step would have to intentionally allocate the blobs or retrieve them
@@ -4023,7 +4023,7 @@ leave:
 
   TIME_MEASURE_FINISH(addblock);
 
-  // TODO(loki): Temporary forking code.
+  // TODO(sispop): Temporary forking code.
   {
     uint64_t block_height = get_block_height(bl);
     // We have invalid checkpoints from the soft forking period we should cull
@@ -5107,7 +5107,7 @@ void Blockchain::cancel()
 }
 
 #if defined(PER_BLOCK_CHECKPOINT)
-static const char expected_block_hashes_hash[] = "63b6445540c13f74d73fd753906e80bb84328c57b5a5a90c73353ed8405e7043";
+static const char expected_block_hashes_hash[] = "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119";
 void Blockchain::load_compiled_in_block_hashes(const GetCheckpointsCallback& get_checkpoints)
 {
   if (get_checkpoints == nullptr || !m_fast_sync)

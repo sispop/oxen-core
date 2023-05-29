@@ -1,5 +1,5 @@
-# Copyright (c) 2018, The Loki Project
-# Copyright (c) 2017-2019, The Monero Project
+# Copyright (c) 2023, The Oxen Project
+# Copyright (c) 2017-2023, The Monero Project
 #
 # All rights reserved.
 #
@@ -30,7 +30,7 @@
 set(gen_multisig_sources
   gen_multisig.cpp)
 
-loki_add_executable(gen_multisig
+sispop_add_executable(gen_multisig
   ${gen_multisig_sources})
 target_link_libraries(gen_multisig
   PRIVATE
@@ -51,5 +51,5 @@ add_dependencies(gen_multisig
   version)
 set_property(TARGET gen_multisig
   PROPERTY
-    OUTPUT_NAME "loki-gen-trusted-multisig")
+    OUTPUT_NAME "sispop-gen-trusted-multisig")
 install(TARGETS gen_multisig DESTINATION bin)

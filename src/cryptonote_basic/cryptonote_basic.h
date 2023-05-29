@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2019, The Monero Project
+// Copyright (c) 2014-2023, The Monero Project
 // 
 // All rights reserved.
 // 
@@ -556,7 +556,7 @@ namespace cryptonote
   inline enum txversion transaction_prefix::get_min_version_for_hf(uint8_t hf_version, cryptonote::network_type nettype)
   {
     nettype = validate_nettype(nettype);
-    if (nettype == MAINNET) // NOTE(loki): Add an exception for mainnet as there are v2's on mainnet.
+    if (nettype == MAINNET) // NOTE(sispop): Add an exception for mainnet as there are v2's on mainnet.
     {
       if (hf_version == cryptonote::network_version_10)
         return txversion::v2_ringct;

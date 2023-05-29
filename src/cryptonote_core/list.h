@@ -1,4 +1,4 @@
-// Copyright (c)      2018, The Loki Project
+// Copyright (c)      2023, The Oxen Project
 //
 // All rights reserved.
 //
@@ -46,7 +46,7 @@ struct checkpoint_t;
 namespace masternodes
 {
   constexpr uint64_t INVALID_HEIGHT = static_cast<uint64_t>(-1);
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   struct checkpoint_vote_record
   {
     uint64_t height = INVALID_HEIGHT;
@@ -242,7 +242,7 @@ namespace masternodes
   };
 
   template<typename RandomIt>
-  void loki_shuffle(RandomIt begin, RandomIt end, uint64_t seed)
+  void sispop_shuffle(RandomIt begin, RandomIt end, uint64_t seed)
   {
     if (end <= begin + 1) return;
     const size_t size = std::distance(begin, end);

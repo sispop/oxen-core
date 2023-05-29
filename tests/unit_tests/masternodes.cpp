@@ -1,4 +1,4 @@
-// Copyright (c) 2018, The Loki Project
+// Copyright (c) 2018-2023, The Oxen Project
 // 
 // All rights reserved.
 // 
@@ -38,7 +38,7 @@
 
 TEST(masternodes, staking_requirement)
 {
-  // TODO(loki): The current reference values here for the staking requirement
+  // TODO(sispop): The current reference values here for the staking requirement
   // at certain heights has been derived from excel, so we have to use an
   // epsilon for dust amounts as amounts are off by a bit. When we switch to
   // integer math we can remove the need for this. Doyle - 2018-08-28

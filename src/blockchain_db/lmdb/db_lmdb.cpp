@@ -1,5 +1,5 @@
-// Copyright (c) 2014-2019, The Monero Project
-// Copyright (c)      2018, The Loki Project
+// Copyright (c) 2014-2023, The Monero Project
+// Copyright (c)      2023, The Oxen Project
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without modification, are
@@ -48,8 +48,8 @@
 #include "cryptonote_core/rules.h"
 #include "cryptonote_basic/hardfork.h"
 
-#undef LOKI_DEFAULT_LOG_CATEGORY
-#define LOKI_DEFAULT_LOG_CATEGORY "blockchain.db.lmdb"
+#undef SISPOP_DEFAULT_LOG_CATEGORY
+#define SISPOP_DEFAULT_LOG_CATEGORY "blockchain.db.lmdb"
 
 
 #if defined(__i386) || defined(__x86_64)
@@ -1484,7 +1484,7 @@ void BlockchainLMDB::open(const std::string& filename, cryptonote::network_type 
       if (mdb_flags & MDB_RDONLY)
       {
         MFATAL("Existing lmdb database needs to be converted, which cannot be done on a read-only database.");
-        MFATAL("Please run lokid once to convert the database.");
+        MFATAL("Please run sispopd once to convert the database.");
         failed = true;
       }
       else
@@ -3993,8 +3993,8 @@ std::vector<checkpoint_t> BlockchainLMDB::get_checkpoints_range(uint64_t start, 
   if (!get_top_checkpoint(top_checkpoint)) return result;
   if (!get_block_checkpoint_internal(0, bottom_checkpoint, MDB_FIRST)) return result;
 
-  start = loki::clamp_u64(start, bottom_checkpoint.height, top_checkpoint.height);
-  end   = loki::clamp_u64(end, bottom_checkpoint.height, top_checkpoint.height);
+  start = sispop::clamp_u64(start, bottom_checkpoint.height, top_checkpoint.height);
+  end   = sispop::clamp_u64(end, bottom_checkpoint.height, top_checkpoint.height);
   if (start > end)
   {
     if (start < bottom_checkpoint.height) return result;

@@ -1,5 +1,5 @@
-# Copyright (c) 2018, The Loki Project
-# Copyright (c) 2014-2019, The Monero Project
+# Copyright (c) 2023, The Oxen Project
+# Copyright (c) 2014-2023, The Monero Project
 #
 # All rights reserved.
 #
@@ -50,9 +50,9 @@ set(mnemonics_private_headers
   esperanto.h
   lojban.h)
 
-loki_private_headers(mnemonics
+sispop_private_headers(mnemonics
   ${mnemonics_private_headers})
-loki_add_library(mnemonics
+sispop_add_library(mnemonics
   ${mnemonics_sources}
   ${mnemonics_headers}
   ${mnemonics_private_headers})

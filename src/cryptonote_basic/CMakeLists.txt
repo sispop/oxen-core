@@ -1,5 +1,5 @@
-# Copyright (c) 2018, The Loki Project
-# Copyright (c) 2014-2019, The Monero Project
+# Copyright (c) 2023, The Oxen Project
+# Copyright (c) 2014-2023, The Monero Project
 #
 # All rights reserved.
 #
@@ -60,9 +60,9 @@ set(cryptonote_basic_private_headers
   tx_extra.h
   verification_context.h)
 
-loki_private_headers(cryptonote_basic
+sispop_private_headers(cryptonote_basic
   ${cryptonote_basic_private_headers})
-loki_add_library(cryptonote_basic
+sispop_add_library(cryptonote_basic
   ${cryptonote_basic_sources}
   ${cryptonote_basic_headers}
   ${cryptonote_basic_private_headers})

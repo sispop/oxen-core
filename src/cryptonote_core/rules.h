@@ -45,7 +45,7 @@ namespace masternodes {
   constexpr size_t   STATE_CHANGE_MIN_NODES_TO_TEST          = 50;
   constexpr uint64_t VOTE_LIFETIME                           = BLOCKS_EXPECTED_IN_HOURS(2);
 
-#if defined(LOKI_ENABLE_INTEGRATION_TEST_HOOKS)
+#if defined(SISPOP_ENABLE_INTEGRATION_TEST_HOOKS)
   constexpr size_t STATE_CHANGE_QUORUM_SIZE               = 5;
   constexpr size_t STATE_CHANGE_MIN_VOTES_TO_CHANGE_STATE = 1;
   constexpr int    MIN_TIME_IN_S_BEFORE_VOTING            = 0;
@@ -105,7 +105,7 @@ namespace masternodes {
 
   inline quorum_type max_quorum_type_for_hf(uint8_t hf_version)
   {
-    // TODO(loki): After switching to V13, we can change checkpointing quorums to activate on V13 since we delete all
+    // TODO(sispop): After switching to V13, we can change checkpointing quorums to activate on V13 since we delete all
     // v12 checkpoints so we don't need quorum data for it and save some space
     quorum_type result = (hf_version <= cryptonote::network_version_11) ? quorum_type::obligations
                                                                                          : quorum_type::checkpointing;
@@ -124,7 +124,7 @@ namespace masternodes {
   }
 
 static_assert(STAKING_PORTIONS != UINT64_MAX, "UINT64_MAX is used as the invalid value for failing to calculate the min_node_contribution");
-// return: UINT64_MAX if (num_contributions > the max number of contributions), otherwise the amount in loki atomic units
+// return: UINT64_MAX if (num_contributions > the max number of contributions), otherwise the amount in sispop atomic units
 uint64_t get_min_node_contribution            (uint8_t version, uint64_t staking_requirement, uint64_t total_reserved, size_t num_contributions);
 uint64_t get_min_node_contribution_in_portions(uint8_t version, uint64_t staking_requirement, uint64_t total_reserved, size_t num_contributions);
 

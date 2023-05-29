@@ -1,4 +1,4 @@
-// Copyright (c)      2023, The Loki Project
+// Copyright (c)      2023, The Sispop Project
 //
 // All rights reserved.
 //
@@ -49,8 +49,8 @@
 #include "swarm.h"
 #include "version.h"
 
-#undef LOKI_DEFAULT_LOG_CATEGORY
-#define LOKI_DEFAULT_LOG_CATEGORY "masternodes"
+#undef SISPOP_DEFAULT_LOG_CATEGORY
+#define SISPOP_DEFAULT_LOG_CATEGORY "masternodes"
 
 namespace masternodes
 {
@@ -144,12 +144,12 @@ namespace masternodes
     if (store_to_disk) store();
   }
 
-  // TODO(loki): Temporary HF13 code, remove when we hit HF13 because we delete all HF12 checkpoints and don't need conditionals for HF12/HF13 checkpointing code
+  // TODO(sispop): Temporary HF13 code, remove when we hit HF13 because we delete all HF12 checkpoints and don't need conditionals for HF12/HF13 checkpointing code
   static uint64_t hf13_height;
 
   void masternode_list::init()
   {
-    // TODO(loki): Temporary HF13 code, remove when we hit HF13 because we delete all HF12 checkpoints and don't need conditionals for HF12/HF13 checkpointing code
+    // TODO(sispop): Temporary HF13 code, remove when we hit HF13 because we delete all HF12 checkpoints and don't need conditionals for HF12/HF13 checkpointing code
     hf13_height = m_blockchain.get_earliest_ideal_height_for_version(cryptonote::network_version_13);
 
     std::lock_guard<boost::recursive_mutex> lock(m_sn_mutex);
@@ -669,7 +669,7 @@ namespace masternodes
                               });
       if (cit != contributor.locked_contributions.end())
       {
-        // NOTE(loki): This should be checked in blockchain check_tx_inputs already
+        // NOTE(sispop): This should be checked in blockchain check_tx_inputs already
         crypto::hash const hash = masternodes::generate_request_stake_unlock_hash(unlock.nonce);
         if (crypto::check_signature(hash, cit->key_image_pub_key, unlock.signature))
         {
@@ -931,7 +931,7 @@ namespace masternodes
 
     if (hf_version >= cryptonote::network_version_11)
     {
-      // NOTE(loki): Grace period is not used anymore with infinite staking. So, if someone somehow reregisters, we just ignore it
+      // NOTE(sispop): Grace period is not used anymore with infinite staking. So, if someone somehow reregisters, we just ignore it
       const auto iter = masternodes_infos.find(key);
       if (iter != masternodes_infos.end())
         return false;
@@ -1172,11 +1172,11 @@ namespace masternodes
     // reuse the same seed for both partial shuffles, but again, that isn't an issue.
     if ((0 < sublist_size && sublist_size < list_size) && (0 < sublist_up_to && sublist_up_to < list_size)) {
       assert(sublist_size <= sublist_up_to); // Can't select N random items from M items when M < N
-      loki_shuffle(result.begin(), result.begin() + sublist_up_to, seed);
-      loki_shuffle(result.begin() + sublist_size, result.end(), seed);
+      sispop_shuffle(result.begin(), result.begin() + sublist_up_to, seed);
+      sispop_shuffle(result.begin() + sublist_size, result.end(), seed);
     }
     else {
-      loki_shuffle(result.begin(), result.end(), seed);
+      sispop_shuffle(result.begin(), result.end(), seed);
     }
     return result;
   }
@@ -1224,12 +1224,12 @@ namespace masternodes
 
         size_t total_nodes = active_snode_list.size();
 
-        // TODO(loki): Soft fork, remove when testnet gets reset
+        // TODO(sispop): Soft fork, remove when testnet gets reset
         if (nettype == cryptonote::TESTNET && state.height < 85357)
           total_nodes = active_snode_list.size() + decomm_snode_list.size();
 
 
-        // TODO(loki): We can remove after switching to V13 since we delete all V12 and below checkpoints where we introduced this kind of quorum
+        // TODO(sispop): We can remove after switching to V13 since we delete all V12 and below checkpoints where we introduced this kind of quorum
         if (hf_version >= cryptonote::network_version_13 && total_nodes < CHECKPOINT_QUORUM_SIZE)
         {
           // NOTE: Although insufficient nodes, generate the empty quorum so we can distinguish between a height with
@@ -1468,7 +1468,7 @@ namespace masternodes
         m_state_history.erase(std::next(it), m_state_history.end());
     }
 
-    // TODO(loki): We should loop through the prev 10k heights for robustness, but avoid for v4.0.5. Already enough changes going in
+    // TODO(sispop): We should loop through the prev 10k heights for robustness, but avoid for v4.0.5. Already enough changes going in
     if (reinitialise) // Try finding the next closest old state at 10k intervals
     {
       uint64_t prev_interval = revert_to_height - (revert_to_height % STORE_LONG_TERM_STATE_INTERVAL);
@@ -1508,7 +1508,7 @@ namespace masternodes
     std::vector<crypto::public_key> expired_nodes;
     uint64_t const lock_blocks = staking_num_lock_blocks(nettype);
 
-    // TODO(loki): This should really use the registration height instead of getting the block and expiring nodes.
+    // TODO(sispop): This should really use the registration height instead of getting the block and expiring nodes.
     // But there's something subtly off when using registration height causing syncing problems.
     if (hf_version == cryptonote::network_version_9)
     {
@@ -1625,7 +1625,7 @@ namespace masternodes
     if (hf_version < 9)
       return true;
 
-    // NOTE(loki): Masternode reward distribution is calculated from the
+    // NOTE(sispop): Masternode reward distribution is calculated from the
     // original amount, i.e. 50% of the original base reward goes to service
     // nodes not 50% of the reward after removing the governance component (the
     // adjusted base reward post hardfork 10).
@@ -1828,7 +1828,7 @@ namespace masternodes
          it != m_state_history.end() && it->height <= max_short_term_height;
          it++)
     {
-      // TODO(loki): There are 2 places where we convert a state_t to be a serialized state_t without quorums. We should only do this in one location for clarity.
+      // TODO(sispop): There are 2 places where we convert a state_t to be a serialized state_t without quorums. We should only do this in one location for clarity.
       m_cache_short_term_data.states.push_back(serialize_masternode_state_object(hf_version, *it, it->height < max_short_term_height /*only_serialize_quorums*/));
     }
 
@@ -1905,9 +1905,9 @@ namespace masternodes
                                                                                     uint16_t storage_port) const
   {
     cryptonote::NOTIFY_UPTIME_PROOF::request result = {};
-    result.snode_version_major                      = static_cast<uint16_t>(LOKI_VERSION_MAJOR);
-    result.snode_version_minor                      = static_cast<uint16_t>(LOKI_VERSION_MINOR);
-    result.snode_version_patch                      = static_cast<uint16_t>(LOKI_VERSION_PATCH);
+    result.snode_version_major                      = static_cast<uint16_t>(SISPOP_VERSION_MAJOR);
+    result.snode_version_minor                      = static_cast<uint16_t>(SISPOP_VERSION_MINOR);
+    result.snode_version_patch                      = static_cast<uint16_t>(SISPOP_VERSION_PATCH);
     result.timestamp                                = time(nullptr);
     result.pubkey                                   = pubkey;
     result.public_ip                                = public_ip;
@@ -1935,23 +1935,23 @@ namespace masternodes
       if (hf_version >= cryptonote::network_version_13 && proof.snode_version_major < 5)
       {
         LOG_PRINT_L2("Rejecting uptime proof from " << proof.pubkey
-                                                    << ": v5+ loki version is required for v13+ network proofs");
+                                                    << ": v5+ sispop version is required for v13+ network proofs");
         return false;
       }
       if (hf_version >= cryptonote::network_version_12 && proof.snode_version_major < 4)
       {
         LOG_PRINT_L2("Rejecting uptime proof from " << proof.pubkey
-                                                    << ": v4+ loki version is required for v12+ network proofs");
+                                                    << ": v4+ sispop version is required for v12+ network proofs");
         return false;
       }
       else if (hf_version >= cryptonote::network_version_11 && proof.snode_version_major < 3)
       {
-        LOG_PRINT_L2("Rejecting uptime proof from " << proof.pubkey << ": v3+ loki version is required for v11+ network proofs");
+        LOG_PRINT_L2("Rejecting uptime proof from " << proof.pubkey << ": v3+ sispop version is required for v11+ network proofs");
         return false;
       }
       else if (hf_version >= cryptonote::network_version_10 && proof.snode_version_major < 2)
       {
-        LOG_PRINT_L2("Rejecting uptime proof from " << proof.pubkey << ": v2+ loki version is required for v10+ network proofs");
+        LOG_PRINT_L2("Rejecting uptime proof from " << proof.pubkey << ": v2+ sispop version is required for v10+ network proofs");
         return false;
       }
     }
@@ -1962,7 +1962,7 @@ namespace masternodes
     {
       crypto::hash hash = make_uptime_proof_hash(proof.pubkey, proof.timestamp, proof.public_ip, proof.storage_port);
       bool signature_ok = crypto::check_signature(hash, proof.pubkey, proof.sig);
-      if (epee::net_utils::is_ip_local(proof.public_ip) || epee::net_utils::is_ip_loopback(proof.public_ip)) return false; // Sanity check; we do the same on lokid startup
+      if (epee::net_utils::is_ip_local(proof.public_ip) || epee::net_utils::is_ip_loopback(proof.public_ip)) return false; // Sanity check; we do the same on sispopd startup
 
       if (!signature_ok)
       {
@@ -2371,7 +2371,7 @@ namespace masternodes
     }
 
     //
-    // FIXME(doyle): FIXME(loki) !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // FIXME(doyle): FIXME(sispop) !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     // This is temporary code to redistribute the insufficient portion dust
     // amounts between contributors. It should be removed in HF12.
     //
@@ -2379,13 +2379,13 @@ namespace masternodes
     std::array<uint64_t, MAX_NUMBER_OF_CONTRIBUTORS * masternodes::MAX_KEY_IMAGES_PER_CONTRIBUTOR> min_contributions;
     {
       // NOTE: Calculate excess portions from each contributor
-      uint64_t loki_reserved = 0;
+      uint64_t sispop_reserved = 0;
       for (size_t index = 0; index < addr_to_portions.size(); ++index)
       {
         addr_to_portion_t const &addr_to_portion = addr_to_portions[index];
-        uint64_t min_contribution_portions       = masternodes::get_min_node_contribution_in_portions(hf_version, staking_requirement, loki_reserved, index);
-        uint64_t loki_amount                     = masternodes::portions_to_amount(staking_requirement, addr_to_portion.portions);
-        loki_reserved                           += loki_amount;
+        uint64_t min_contribution_portions       = masternodes::get_min_node_contribution_in_portions(hf_version, staking_requirement, sispop_reserved, index);
+        uint64_t sispop_amount                     = masternodes::portions_to_amount(staking_requirement, addr_to_portion.portions);
+        sispop_reserved                           += sispop_amount;
 
         uint64_t excess = 0;
         if (addr_to_portion.portions > min_contribution_portions)
@@ -2454,8 +2454,8 @@ namespace masternodes
       portions_left += portions_to_steal;
       result.addresses.push_back(addr_to_portion.info.address);
       result.portions.push_back(addr_to_portion.portions);
-      uint64_t loki_amount = masternodes::portions_to_amount(addr_to_portion.portions, staking_requirement);
-      total_reserved      += loki_amount;
+      uint64_t sispop_amount = masternodes::portions_to_amount(addr_to_portion.portions, staking_requirement);
+      total_reserved      += sispop_amount;
     }
 
     result.success = true;

@@ -1,5 +1,6 @@
-# Copyright (c) 2018, The Loki Project
-# Copyright (c) 2014-2019, The Monero Project
+# Copyright (c)      2023, The Sispop Project
+# Copyright (c) 2018-2023, The Oxen Project
+# Copyright (c) 2014-2023, The Monero Project
 #
 # All rights reserved.
 #
@@ -43,7 +44,7 @@ endif()
 cmake_minimum_required(VERSION 2.8.7)
 message(STATUS "CMake version ${CMAKE_VERSION}")
 
-project(loki)
+project(sispop)
 
 function (die msg)
   if (NOT WIN32)
@@ -207,7 +208,7 @@ set(CMAKE_C_FLAGS_RELEASE "-DNDEBUG ${OPT_FLAGS_RELEASE}")
 set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG ${OPT_FLAGS_RELEASE}")
 
 # set this to 0 if per-block checkpoint needs to be disabled
-set(PER_BLOCK_CHECKPOINT 0)
+set(PER_BLOCK_CHECKPOINT 1)
 
 if(PER_BLOCK_CHECKPOINT)
   add_definitions("-DPER_BLOCK_CHECKPOINT")
@@ -963,7 +964,7 @@ if (HIDAPI_FOUND OR LibUSB_COMPILE_TEST_PASSED)
 endif()
 
 if (BUILD_INTEGRATION)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D LOKI_ENABLE_INTEGRATION_TEST_HOOKS")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D SISPOP_ENABLE_INTEGRATION_TEST_HOOKS")
 else()
   option(USE_READLINE "Build with GNU readline support." ON)
   if(USE_READLINE)

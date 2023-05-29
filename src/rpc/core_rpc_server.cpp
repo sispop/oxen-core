@@ -1,5 +1,5 @@
-// Copyright (c) 2014-2019, The Monero Project
-// Copyright (c)      2018, The Loki Project
+// Copyright (c) 2014-2023, The Monero Project
+// Copyright (c)      2023, The Oxen Project
 //
 // All rights reserved.
 //
@@ -41,7 +41,7 @@ using namespace epee;
 #include "common/command_line.h"
 #include "common/updates.h"
 #include "common/download.h"
-#include "common/loki.h"
+#include "common/sispop.h"
 #include "common/util.h"
 #include "common/perf_timer.h"
 #include "cryptonote_basic/cryptonote_format_utils.h"
@@ -58,8 +58,8 @@ using namespace epee;
 #include "p2p/net_node.h"
 #include "version.h"
 
-#undef LOKI_DEFAULT_LOG_CATEGORY
-#define LOKI_DEFAULT_LOG_CATEGORY "daemon.rpc"
+#undef SISPOP_DEFAULT_LOG_CATEGORY
+#define SISPOP_DEFAULT_LOG_CATEGORY "daemon.rpc"
 
 #define MAX_RESTRICTED_FAKE_OUTS_COUNT 40
 #define MAX_RESTRICTED_GLOBAL_FAKE_OUTS_COUNT 5000
@@ -238,7 +238,7 @@ namespace cryptonote
     if (restricted)
       res.database_size = round_up(res.database_size, 5ull* 1024 * 1024 * 1024);
     res.update_available = restricted ? false : m_core.is_update_available();
-    res.version = restricted ? "" : LOKI_VERSION;
+    res.version = restricted ? "" : SISPOP_VERSION;
     res.status = CORE_RPC_STATUS_OK;
     return true;
   }
@@ -951,7 +951,7 @@ namespace cryptonote
     const uint8_t major_version = m_core.get_blockchain_storage().get_current_hard_fork_version();
 
     res.pow_algorithm =
-        major_version >= network_version_12    ? "RandomX (LOKI variant)"               :
+        major_version >= network_version_12    ? "RandomX (SISPOP variant)"               :
         major_version == network_version_11 ? "Cryptonight Turtle Light (Variant 2)" :
                                                                "Cryptonight Heavy (Variant 2)";
 
@@ -1129,7 +1129,7 @@ namespace cryptonote
   //------------------------------------------------------------------------------------------------------------------------------
 
   //
-  // Loki
+  // Sispop
   //
   bool core_rpc_server::on_get_output_blacklist_bin(const COMMAND_RPC_GET_OUTPUT_BLACKLIST::request& req, COMMAND_RPC_GET_OUTPUT_BLACKLIST::response& res, const connection_context *ctx)
   {
@@ -2150,7 +2150,7 @@ namespace cryptonote
       return true;
     }
 
-    static const char software[] = "loki";
+    static const char software[] = "sispop";
 #ifdef BUILD_TAG
     static const char buildtag[] = BOOST_PP_STRINGIZE(BUILD_TAG);
     static const char subdir[] = "cli";
@@ -2171,7 +2171,7 @@ namespace cryptonote
       res.status = "Error checking for updates";
       return true;
     }
-    if (tools::vercmp(version.c_str(), LOKI_VERSION) <= 0)
+    if (tools::vercmp(version.c_str(), SISPOP_VERSION) <= 0)
     {
       res.update = false;
       res.status = CORE_RPC_STATUS_OK;
@@ -2486,7 +2486,7 @@ namespace cryptonote
     };
 
   //
-  // Loki
+  // Sispop
   //
   bool core_rpc_server::on_get_quorum_state(const COMMAND_RPC_GET_QUORUM_STATE::request& req, COMMAND_RPC_GET_QUORUM_STATE::response& res, epee::json_rpc::error& error_resp, const connection_context *ctx)
   {
@@ -2611,7 +2611,7 @@ namespace cryptonote
     if (!m_core.get_masternode_keys(masternode_pubkey, masternode_key))
     {
       error_resp.code    = CORE_RPC_ERROR_CODE_WRONG_PARAM;
-      error_resp.message = "Daemon has not been started in masternode mode, please relaunch with --service-node flag.";
+      error_resp.message = "Daemon has not been started in masternode mode, please relaunch with --node flag.";
       return false;
     }
 
@@ -2706,7 +2706,7 @@ namespace cryptonote
     else
     {
       error_resp.code    = CORE_RPC_ERROR_CODE_INTERNAL_ERROR;
-      error_resp.message = "Daemon queried is not a masternode or did not launch with --service-node";
+      error_resp.message = "Daemon queried is not a masternode or did not launch with --node";
       return false;
     }
 
@@ -2725,7 +2725,7 @@ namespace cryptonote
     for (const auto& key : keys)
     {
       std::string const hex64 = string_tools::pod_to_hex(key);
-      res.keys[i++]           = loki::hex64_to_base32z(hex64);
+      res.keys[i++]           = sispop::hex64_to_base32z(hex64);
     }
     return true;
   }

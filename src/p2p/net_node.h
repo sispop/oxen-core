@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2019, The Monero Project
+// Copyright (c) 2014-2023, The Monero Project
 //
 // All rights reserved.
 //
@@ -273,7 +273,7 @@ namespace nodetool
   private:
     const std::vector<std::string> m_seed_nodes_list =
     {
-      // TODO(loki): "seeds.loki.network"
+      // TODO(sispop): "seeds.syssitia.xyz"
     };
 
     bool islimitup=false;

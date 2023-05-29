@@ -1,5 +1,5 @@
-// Copyright (c) 2014-2019, The Monero Project
-// Copyright (c)      2018, The Loki Project
+// Copyright (c) 2014-2023, The Monero Project
+// Copyright (c)      2023, The Oxen Project
 // 
 // All rights reserved.
 // 
@@ -40,8 +40,8 @@
 #include "wallet_rpc_server_commands_defs.h"
 #include "wallet2.h"
 
-#undef LOKI_DEFAULT_LOG_CATEGORY
-#define LOKI_DEFAULT_LOG_CATEGORY "wallet.rpc"
+#undef SISPOP_DEFAULT_LOG_CATEGORY
+#define SISPOP_DEFAULT_LOG_CATEGORY "wallet.rpc"
 
 namespace tools
 {
@@ -158,7 +158,7 @@ namespace tools
         MAP_JON_RPC_WE("get_version",        on_get_version,        wallet_rpc::COMMAND_RPC_GET_VERSION)
 
         //
-        // Loki
+        // Sispop
         //
         MAP_JON_RPC_WE("stake", on_stake, wallet_rpc::COMMAND_RPC_STAKE)
         MAP_JON_RPC_WE("register_masternode", on_register_masternode, wallet_rpc::COMMAND_RPC_REGISTER_MASTERNODE)

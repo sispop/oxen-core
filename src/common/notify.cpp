@@ -1,4 +1,4 @@
-// Copyright (c) 2019, The Monero Project
+// Copyright (c) 2023, The Monero Project
 // 
 // All rights reserved.
 // 
@@ -33,8 +33,8 @@
 #include "spawn.h"
 #include "notify.h"
 
-#undef LOKI_DEFAULT_LOG_CATEGORY
-#define LOKI_DEFAULT_LOG_CATEGORY "notify"
+#undef SISPOP_DEFAULT_LOG_CATEGORY
+#define SISPOP_DEFAULT_LOG_CATEGORY "notify"
 
 namespace tools
 {

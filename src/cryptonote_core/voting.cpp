@@ -1,4 +1,4 @@
-// Copyright (c)      2018, The Loki Project
+// Copyright (c)      2023, The Oxen Project
 //
 // All rights reserved.
 //
@@ -44,8 +44,8 @@
 
 #include <boost/endian/conversion.hpp>
 
-#undef LOKI_DEFAULT_LOG_CATEGORY
-#define LOKI_DEFAULT_LOG_CATEGORY "masternodes"
+#undef SISPOP_DEFAULT_LOG_CATEGORY
+#define SISPOP_DEFAULT_LOG_CATEGORY "masternodes"
 
 namespace masternodes
 {
@@ -276,7 +276,7 @@ namespace masternodes
           }
         }
 
-        // TODO(loki): Temporary HF13 code, remove when we hit HF13 because we delete all HF12 checkpoints and don't need conditionals for HF12/HF13 checkpointing code
+        // TODO(sispop): Temporary HF13 code, remove when we hit HF13 because we delete all HF12 checkpoints and don't need conditionals for HF12/HF13 checkpointing code
         std::vector<crypto::public_key> const &quorum_keys =
             (hf_version >= cryptonote::network_version_13) ? quorum.validators : quorum.workers;
         if (hf_version >= cryptonote::network_version_13)
@@ -306,7 +306,7 @@ namespace masternodes
     {
       if (checkpoint.signatures.size() != 0)
       {
-        LOG_PRINT_L1("Non service-node checkpoints should have no signatures, checkpoint failed at height: " << checkpoint.height);
+        LOG_PRINT_L1("Non masternode checkpoints should have no signatures, checkpoint failed at height: " << checkpoint.height);
         return false;
       }
     }
@@ -333,7 +333,7 @@ namespace masternodes
     result.type                  = quorum_type::checkpointing;
     result.checkpoint.block_hash = block_hash;
     result.block_height          = block_height;
-    // TODO(loki): Temporary HF13 code, remove when we hit HF13 because we delete all HF12 checkpoints and don't need conditionals for HF12/HF13 checkpointing code
+    // TODO(sispop): Temporary HF13 code, remove when we hit HF13 because we delete all HF12 checkpoints and don't need conditionals for HF12/HF13 checkpointing code
     result.group                 = (hf_version >= cryptonote::network_version_13) ? quorum_group::validator : quorum_group::worker;
     result.index_in_group        = index_in_quorum;
     result.signature             = make_signature_from_vote(result, pub_key, sec_key);
@@ -434,7 +434,7 @@ namespace masternodes
 
       case quorum_type::checkpointing:
       {
-        // TODO(loki): Temporary HF13 code, remove when we hit HF13 because we delete all HF12 checkpoints and don't need conditionals for HF12/HF13 checkpointing code
+        // TODO(sispop): Temporary HF13 code, remove when we hit HF13 because we delete all HF12 checkpoints and don't need conditionals for HF12/HF13 checkpointing code
         quorum_group expected_group =
             (hf_version >= cryptonote::network_version_13) ? quorum_group::validator : quorum_group::worker;
         if (vote.group != expected_group)
@@ -527,7 +527,7 @@ namespace masternodes
     CRITICAL_REGION_LOCAL(m_lock);
 
     // TODO(doyle): Rate-limiting: A better threshold value that follows suite with transaction relay time back-off
-#if defined(LOKI_ENABLE_INTEGRATION_TEST_HOOKS)
+#if defined(SISPOP_ENABLE_INTEGRATION_TEST_HOOKS)
     constexpr uint64_t TIME_BETWEEN_RELAY = 0;
 #else
     constexpr uint64_t TIME_BETWEEN_RELAY = 60 * 2;

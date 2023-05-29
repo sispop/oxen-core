@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2019, The Monero Project
+// Copyright (c) 2017-2023, The Monero Project
 // 
 // All rights reserved.
 // 
@@ -35,8 +35,8 @@
 namespace hw {
   namespace io {
  
-    #undef LOKI_DEFAULT_LOG_CATEGORY
-    #define LOKI_DEFAULT_LOG_CATEGORY "device.io"
+    #undef SISPOP_DEFAULT_LOG_CATEGORY
+    #define SISPOP_DEFAULT_LOG_CATEGORY "device.io"
  
     #define ASSERT_X(exp,msg)    CHECK_AND_ASSERT_THROW_MES(exp, msg); 
 

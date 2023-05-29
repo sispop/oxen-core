@@ -1,5 +1,5 @@
-// Copyright (c) 2014-2019, The Monero Project
-// Copyright (c)      2018, The Loki Project
+// Copyright (c) 2014-2023, The Monero Project
+// Copyright (c)      2023, The Oxen Project
 //
 // All rights reserved.
 //
@@ -43,10 +43,10 @@ using namespace epee;
 #include "crypto/hash.h"
 #include "int-util.h"
 #include "common/dns_utils.h"
-#include "common/loki.h"
+#include "common/sispop.h"
 
-#undef LOKI_DEFAULT_LOG_CATEGORY
-#define LOKI_DEFAULT_LOG_CATEGORY "cn"
+#undef SISPOP_DEFAULT_LOG_CATEGORY
+#define SISPOP_DEFAULT_LOG_CATEGORY "cn"
 
 namespace cryptonote {
 

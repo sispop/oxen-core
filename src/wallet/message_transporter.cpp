@@ -1,4 +1,4 @@
-// Copyright (c) 2019, The Monero Project
+// Copyright (c) 2023, The Monero Project
 //
 // All rights reserved.
 //
@@ -34,8 +34,8 @@
 #include "net/net_parse_helpers.h"
 #include <algorithm>
 
-#undef LOKI_DEFAULT_LOG_CATEGORY
-#define LOKI_DEFAULT_LOG_CATEGORY "wallet.mms"
+#undef SISPOP_DEFAULT_LOG_CATEGORY
+#define SISPOP_DEFAULT_LOG_CATEGORY "wallet.mms"
 #define PYBITMESSAGE_DEFAULT_API_PORT 8442
 
 namespace mms

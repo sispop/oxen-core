@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2019, The Monero Project
+// Copyright (c) 2014-2023, The Monero Project
 //
 // All rights reserved.
 //
@@ -43,7 +43,7 @@
 
 #include "cryptonote_core/quorum_cop.h"
 #include "cryptonote_core/list.h"
-#include "common/loki.h"
+#include "common/sispop.h"
 
 namespace
 {
@@ -96,7 +96,7 @@ namespace cryptonote
 #define MAKE_CORE_RPC_VERSION(major,minor) (((major)<<16)|(minor))
 #define CORE_RPC_VERSION MAKE_CORE_RPC_VERSION(CORE_RPC_VERSION_MAJOR, CORE_RPC_VERSION_MINOR)
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Get the node's current height.
   struct COMMAND_RPC_GET_HEIGHT
   {
@@ -124,7 +124,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Get all blocks info. Binary request.
   struct COMMAND_RPC_GET_BLOCKS_FAST
   {
@@ -184,7 +184,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Get blocks by height. Binary request.
   struct COMMAND_RPC_GET_BLOCKS_BY_HEIGHT
   {
@@ -214,7 +214,7 @@ namespace cryptonote
   };
 
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Get the known blocks hashes which are not on the main chain.
   struct COMMAND_RPC_GET_ALT_BLOCKS_HASHES
   {
@@ -240,7 +240,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Get hashes. Binary request.
   struct COMMAND_RPC_GET_HASHES_FAST
   {
@@ -276,7 +276,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   struct COMMAND_RPC_GET_RANDOM_OUTS
   {
       struct request_t
@@ -328,7 +328,7 @@ namespace cryptonote
       typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // TODO: Undocumented light wallet RPC call
   struct COMMAND_RPC_SUBMIT_RAW_TX
   {
@@ -360,7 +360,7 @@ namespace cryptonote
       typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // TODO: Undocumented light wallet RPC call
   struct COMMAND_RPC_LOGIN
   {
@@ -393,7 +393,7 @@ namespace cryptonote
       typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // TODO: Undocumented light wallet RPC call
   struct COMMAND_RPC_IMPORT_WALLET_REQUEST
   {
@@ -430,7 +430,7 @@ namespace cryptonote
       typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Look up one or more transactions by hash.
   struct COMMAND_RPC_GET_TRANSACTIONS
   {
@@ -513,7 +513,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Check if outputs have been spent using the key image associated with the output.
   struct COMMAND_RPC_IS_KEY_IMAGE_SPENT
   {
@@ -551,7 +551,7 @@ namespace cryptonote
   };
 
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Get global outputs of transactions. Binary request.
   struct COMMAND_RPC_GET_TX_GLOBAL_OUTPUTS_INDEXES
   {
@@ -581,10 +581,10 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   struct get_outputs_out
   {
-    uint64_t amount; // Amount of Loki in TXID.
+    uint64_t amount; // Amount of Sispop in TXID.
     uint64_t index;  
 
     BEGIN_KV_SERIALIZE_MAP()
@@ -593,7 +593,7 @@ namespace cryptonote
     END_KV_SERIALIZE_MAP()
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Get outputs. Binary request.
   struct COMMAND_RPC_GET_OUTPUTS_BIN
   {
@@ -641,7 +641,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   struct COMMAND_RPC_GET_OUTPUTS
   {
     struct request_t
@@ -688,7 +688,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Broadcast a raw transaction to the network.
   struct COMMAND_RPC_SEND_RAW_TX
   {
@@ -728,7 +728,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Start mining on the daemon.
   struct COMMAND_RPC_START_MINING
   {
@@ -759,7 +759,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Retrieve general information about the state of your node and the network.
   struct COMMAND_RPC_GET_INFO
   {
@@ -846,7 +846,7 @@ namespace cryptonote
   };
 
   //-----------------------------------------------
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   struct COMMAND_RPC_GET_NET_STATS
   {
     struct request_t
@@ -880,7 +880,7 @@ namespace cryptonote
   };
 
   //-----------------------------------------------
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Retrieve all MasterNode Keys.
   struct COMMAND_RPC_GET_ALL_MASTERNODES_KEYS
   {
@@ -895,7 +895,7 @@ namespace cryptonote
 
     struct response_t
     {
-      std::vector<std::string> keys; // Returns as base32z of the hex key, for Lokinet internal usage
+      std::vector<std::string> keys; // Returns as base32z of the hex key, for Sispopnet internal usage
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(keys)
       END_KV_SERIALIZE_MAP()
@@ -903,7 +903,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Stop mining on the daemon.
   struct COMMAND_RPC_STOP_MINING
   {
@@ -925,7 +925,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Get the mining status of the daemon.
   struct COMMAND_RPC_MINING_STATUS
   {
@@ -974,7 +974,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Save the blockchain. The blockchain does not need saving and is always saved when modified, 
   // however it does a sync to flush the filesystem cache onto the disk for safety purposes against Operating System or Hardware crashes.
   struct COMMAND_RPC_SAVE_BC
@@ -997,7 +997,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Look up how many blocks are in the longest chain known to the node.
   struct COMMAND_RPC_GETBLOCKCOUNT
   {
@@ -1016,7 +1016,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Look up a block's hash by its height.
   struct COMMAND_RPC_GETBLOCKHASH
   {
@@ -1024,7 +1024,7 @@ namespace cryptonote
     typedef std::string response;          // Block hash (string).
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Get a block template on which mining a new block.
   struct COMMAND_RPC_GETBLOCKTEMPLATE
   {
@@ -1073,7 +1073,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Submit a mined block to the network.
   struct COMMAND_RPC_SUBMITBLOCK
   {
@@ -1089,7 +1089,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Developer only.
   struct COMMAND_RPC_GENERATEBLOCKS
   {
@@ -1124,22 +1124,22 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   struct block_header_response
   {
-      uint8_t major_version;                  // The major version of the loki protocol at this block height.
-      uint8_t minor_version;                  // The minor version of the loki protocol at this block height.
+      uint8_t major_version;                  // The major version of the sispop protocol at this block height.
+      uint8_t minor_version;                  // The minor version of the sispop protocol at this block height.
       uint64_t timestamp;                     // The unix time at which the block was recorded into the blockchain.
       std::string prev_hash;                  // The hash of the block immediately preceding this block in the chain.
-      uint32_t nonce;                         // A cryptographic random one-time number used in mining a Loki block.
+      uint32_t nonce;                         // A cryptographic random one-time number used in mining a Sispop block.
       bool orphan_status;                     // Usually `false`. If `true`, this block is not part of the longest chain.
       uint64_t height;                        // The number of blocks preceding this block on the blockchain.
       uint64_t depth;                         // The number of blocks succeeding this block on the blockchain. A larger number means an older block.
       std::string hash;                       // The hash of this block.
-      difficulty_type difficulty;             // The strength of the Loki network based on mining power.
-      difficulty_type cumulative_difficulty;  // The cumulative strength of the Loki network based on mining power.
-      uint64_t reward;                        // The amount of new generated in this block and rewarded to the miner, foundation and service Nodes. Note: 1 LOKI = 1e12 atomic units.
-      uint64_t miner_reward;                  // The amount of new generated in this block and rewarded to the miner. Note: 1 LOKI = 1e12 atomic units. 
+      difficulty_type difficulty;             // The strength of the Sispop network based on mining power.
+      difficulty_type cumulative_difficulty;  // The cumulative strength of the Sispop network based on mining power.
+      uint64_t reward;                        // The amount of new generated in this block and rewarded to the miner, foundation and service Nodes. Note: 1 SISPOP = 1e12 atomic units.
+      uint64_t miner_reward;                  // The amount of new generated in this block and rewarded to the miner. Note: 1 SISPOP = 1e12 atomic units. 
       uint64_t block_size;                    // The block size in bytes.
       uint64_t block_weight;                  // The block weight in bytes.
       uint64_t num_txes;                      // Number of transactions in the block, not counting the coinbase tx.
@@ -1170,7 +1170,7 @@ namespace cryptonote
       END_KV_SERIALIZE_MAP()
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Block header information for the most recent block is easily retrieved with this method. No inputs are needed.
   struct COMMAND_RPC_GET_LAST_BLOCK_HEADER
   {
@@ -1199,7 +1199,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Block header information can be retrieved using either a block's hash or height. This method includes a block's hash as an input parameter to retrieve basic information about the block.
   struct COMMAND_RPC_GET_BLOCK_HEADER_BY_HASH
   {
@@ -1230,7 +1230,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Similar to get_block_header_by_hash above, this method includes a block's height as an input parameter to retrieve basic information about the block.
   struct COMMAND_RPC_GET_BLOCK_HEADER_BY_HEIGHT
   {
@@ -1261,7 +1261,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Full block information can be retrieved by either block height or hash, like with the above block header calls. 
   // For full block information, both lookups use the same method, but with different input parameters.
   struct COMMAND_RPC_GET_BLOCK
@@ -1303,13 +1303,13 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   struct peer 
   {
     uint64_t id;           // Peer id.
     std::string host;      // IP address in string format.
     uint32_t ip;           // IP address in integer format.
-    uint16_t port;         // TCP port the peer is using to connect to loki network.
+    uint16_t port;         // TCP port the peer is using to connect to sispop network.
     uint16_t rpc_port;     // RPC port the peer is using
     uint64_t last_seen;    // Unix time at which the peer has been seen for the last time
     uint32_t pruning_seed; //
@@ -1337,7 +1337,7 @@ namespace cryptonote
     END_KV_SERIALIZE_MAP()
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Get the known peers list.
   struct COMMAND_RPC_GET_PEER_LIST
   {
@@ -1363,7 +1363,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Set the log hash rate display mode.
   struct COMMAND_RPC_SET_LOG_HASH_RATE
   {
@@ -1387,7 +1387,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Set the daemon log level. By default, log level is set to `0`.
   struct COMMAND_RPC_SET_LOG_LEVEL
   {
@@ -1411,7 +1411,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Set the daemon log categories. Categories are represented as a comma separated list of `<Category>:<level>` (similarly to syslog standard `<Facility>:<Severity-level>`), where:
   // Category is one of the following: * (all facilities), default, net, net.http, net.p2p, logging, net.trottle, blockchain.db, blockchain.db.lmdb, bcutil, checkpoints, net.dns, net.dl,
   // i18n, perf,stacktrace, updates, account, cn ,difficulty, hardfork, miner, blockchain, txpool, cn.block_queue, net.cn, daemon, debugtools.deserialize, debugtools.objectsizes, device.ledger, 
@@ -1446,7 +1446,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   struct tx_info
   {
     std::string id_hash;                // The transaction ID hash.
@@ -1486,7 +1486,7 @@ namespace cryptonote
     END_KV_SERIALIZE_MAP()
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   struct spent_key_image_info
   {
     std::string id_hash;                 // Key image.
@@ -1498,7 +1498,7 @@ namespace cryptonote
     END_KV_SERIALIZE_MAP()
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Show information about valid transactions seen by the node but not yet mined into a block, 
   // as well as spent key image information for the txpool in the node's memory.
   struct COMMAND_RPC_GET_TRANSACTION_POOL
@@ -1527,7 +1527,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Get hashes from transaction pool. Binary request.
   struct COMMAND_RPC_GET_TRANSACTION_POOL_HASHES_BIN
   {
@@ -1553,7 +1553,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Get hashes from transaction pool.
   struct COMMAND_RPC_GET_TRANSACTION_POOL_HASHES
   {
@@ -1579,15 +1579,15 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   struct tx_backlog_entry
   {
     uint64_t weight;       // 
-    uint64_t fee;          // Fee in Loki measured in atomic units.
+    uint64_t fee;          // Fee in Sispop measured in atomic units.
     uint64_t time_in_pool;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Get all transaction pool backlog.
   struct COMMAND_RPC_GET_TRANSACTION_POOL_BACKLOG
   {
@@ -1613,7 +1613,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   struct txpool_histo
   {
     uint32_t txs;   // Number of transactions.
@@ -1625,7 +1625,7 @@ namespace cryptonote
     END_KV_SERIALIZE_MAP()
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   struct txpool_stats
   {
     uint64_t bytes_total;            // Total size of all transactions in pool.
@@ -1661,7 +1661,7 @@ namespace cryptonote
     END_KV_SERIALIZE_MAP()
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Get the transaction pool statistics.
   struct COMMAND_RPC_GET_TRANSACTION_POOL_STATS
   {
@@ -1687,7 +1687,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Retrieve information about incoming and outgoing connections to your node.
   struct COMMAND_RPC_GET_CONNECTIONS
   {
@@ -1711,7 +1711,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Similar to get_block_header_by_height above, but for a range of blocks. 
   // This method includes a starting block height and an ending block height as 
   // parameters to retrieve basic information about the range of blocks.
@@ -1746,7 +1746,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Send a command to the daemon to safely disconnect and shut down.
   struct COMMAND_RPC_STOP_DAEMON
   {
@@ -1768,7 +1768,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Get daemon bandwidth limits.
   struct COMMAND_RPC_GET_LIMIT
   {
@@ -1796,7 +1796,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Set daemon bandwidth limits.
   struct COMMAND_RPC_SET_LIMIT
   {
@@ -1827,7 +1827,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Limit number of Outgoing peers.
   struct COMMAND_RPC_OUT_PEERS
   {
@@ -1851,7 +1851,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Limit number of Incoming peers.
   struct COMMAND_RPC_IN_PEERS
   {
@@ -1875,7 +1875,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Look up information regarding hard fork voting and readiness.
   struct COMMAND_RPC_HARD_FORK_INFO
   {
@@ -1918,7 +1918,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Get list of banned IPs.
   struct COMMAND_RPC_GETBANS
   {
@@ -1955,7 +1955,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Ban another node by IP.
   struct COMMAND_RPC_SETBANS
   {
@@ -1995,7 +1995,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Determine whether a given IP address is banned
   struct COMMAND_RPC_BANNED
   {
@@ -2024,7 +2024,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Flush tx ids from transaction pool..
   struct COMMAND_RPC_FLUSH_TRANSACTION_POOL
   {
@@ -2049,7 +2049,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Get a histogram of output amounts. For all amounts (possibly filtered by parameters), 
   // gives the number of outputs on the chain for that amount. RingCT outputs counts as 0 amount.
   struct COMMAND_RPC_GET_OUTPUT_HISTOGRAM
@@ -2106,7 +2106,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Get node current version.
   struct COMMAND_RPC_GET_VERSION
   {
@@ -2132,7 +2132,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Get the coinbase amount and the fees amount for n last blocks starting at particular height.
   struct COMMAND_RPC_GET_COINBASE_TX_SUM
   {
@@ -2163,7 +2163,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Gives an estimation of per-output + per-byte fees
   struct COMMAND_RPC_GET_BASE_FEE_ESTIMATE
   {
@@ -2196,7 +2196,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Display alternative chains seen by the node.
   struct COMMAND_RPC_GET_ALTERNATE_CHAINS
   {
@@ -2239,7 +2239,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Update daemon.
   struct COMMAND_RPC_UPDATE
   {
@@ -2278,7 +2278,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Relay a list of transaction IDs.
   struct COMMAND_RPC_RELAY_TX
   {
@@ -2303,7 +2303,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Get synchronisation information.
   struct COMMAND_RPC_SYNC_INFO
   {
@@ -2367,7 +2367,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   struct COMMAND_RPC_GET_OUTPUT_DISTRIBUTION
   {
     struct request_t
@@ -2447,7 +2447,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   struct COMMAND_RPC_POP_BLOCKS
   {
     struct request_t
@@ -2473,7 +2473,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   struct COMMAND_RPC_PRUNE_BLOCKCHAIN
   {
     struct request_t
@@ -2502,7 +2502,7 @@ namespace cryptonote
   };
 
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Get the quorum state which is the list of public keys of the nodes who are voting, and the list of public keys of the nodes who are being tested.
   struct COMMAND_RPC_GET_QUORUM_STATE
   {
@@ -2570,7 +2570,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   struct COMMAND_RPC_GET_MASTERNODE_REGISTRATION_CMD_RAW
   {
     struct request_t
@@ -2600,13 +2600,13 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   struct COMMAND_RPC_GET_MASTERNODE_REGISTRATION_CMD
   {
     struct contribution_t
     {
       std::string address; // The wallet address for the contributor
-      uint64_t amount;     // The amount that the contributor will reserve in Loki atomic units towards the staking requirement
+      uint64_t amount;     // The amount that the contributor will reserve in Sispop atomic units towards the staking requirement
 
       BEGIN_KV_SERIALIZE_MAP()
         KV_SERIALIZE(address)
@@ -2641,9 +2641,9 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Get the masternode public key of the queried daemon. 
-  // The daemon must be started in --service-node mode otherwise this RPC command will fail.
+  // The daemon must be started in --node mode otherwise this RPC command will fail.
   struct COMMAND_RPC_GET_MASTERNODE_KEY
   {
     struct request_t
@@ -2666,7 +2666,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // TODO: Undocumented, -- unused
   struct COMMAND_RPC_PERFORM_BLOCKCHAIN_TEST
   {
@@ -2693,7 +2693,7 @@ namespace cryptonote
     };
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   struct masternode_contribution
   {
     std::string key_image;         // The contribution's key image that is locked on the network.
@@ -2707,11 +2707,11 @@ namespace cryptonote
     END_KV_SERIALIZE_MAP()
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   struct masternode_contributor
   {
-    uint64_t amount;                                             // The total amount of locked Loki in atomic units for this contributor.
-    uint64_t reserved;                                           // The amount of Loki in atomic units reserved by this contributor for this MasterNode.
+    uint64_t amount;                                             // The total amount of locked Sispop in atomic units for this contributor.
+    uint64_t reserved;                                           // The amount of Sispop in atomic units reserved by this contributor for this MasterNode.
     std::string address;                                         // The wallet address for this contributor rewards are sent to and contributions came from.
     std::vector<masternode_contribution> locked_contributions; // Array of contributions from this contributor.
 
@@ -2723,7 +2723,7 @@ namespace cryptonote
     END_KV_SERIALIZE_MAP()
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Get information on MasterNodes.
   struct COMMAND_RPC_GET_MASTERNODES
   {
@@ -2756,8 +2756,8 @@ namespace cryptonote
         int64_t                               earned_downtime_blocks;        // The number of blocks earned towards decommissioning, or the number of blocks remaining until deregistration if currently decommissioned
         std::vector<uint16_t>                 masternode_version;          // The major, minor, patch version of the MasterNode respectively.
         std::vector<masternode_contributor> contributors;                  // Array of contributors, contributing to this MasterNode.
-        uint64_t                              total_contributed;             // The total amount of Loki in atomic units contributed to this MasterNode.
-        uint64_t                              total_reserved;                // The total amount of Loki in atomic units reserved in this MasterNode.
+        uint64_t                              total_contributed;             // The total amount of Sispop in atomic units contributed to this MasterNode.
+        uint64_t                              total_reserved;                // The total amount of Sispop in atomic units reserved in this MasterNode.
         uint64_t                              staking_requirement;           // The staking requirement in atomic units that is required to be contributed to become a MasterNode.
         uint64_t                              portions_for_operator;         // The operator percentage cut to take from each reward expressed in portions, see cryptonote_config.h's STAKING_PORTIONS.
         uint64_t                              swarm_id;                      // The identifier of the MasterNode's current swarm.
@@ -2828,7 +2828,7 @@ namespace cryptonote
   #define KV_SERIALIZE_ENTRY_FIELD_IF_REQUESTED(var) \
   if (this_ref.requested_fields.var || !this_ref.requested_fields.explicitly_set) KV_SERIALIZE(var)
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Get information on a random subset of MasterNodes.
   struct COMMAND_RPC_GET_N_MASTERNODES
   {
@@ -2949,8 +2949,8 @@ namespace cryptonote
         int64_t                               earned_downtime_blocks;        // The number of blocks earned towards decommissioning, or the number of blocks remaining until deregistration if currently decommissioned
         std::vector<uint16_t>                 masternode_version;          // The major, minor, patch version of the MasterNode respectively.
         std::vector<masternode_contributor> contributors;                  // Array of contributors, contributing to this MasterNode.
-        uint64_t                              total_contributed;             // The total amount of Loki in atomic units contributed to this MasterNode.
-        uint64_t                              total_reserved;                // The total amount of Loki in atomic units reserved in this MasterNode.
+        uint64_t                              total_contributed;             // The total amount of Sispop in atomic units contributed to this MasterNode.
+        uint64_t                              total_reserved;                // The total amount of Sispop in atomic units reserved in this MasterNode.
         uint64_t                              staking_requirement;           // The staking requirement in atomic units that is required to be contributed to become a MasterNode.
         uint64_t                              portions_for_operator;         // The operator percentage cut to take from each reward expressed in portions, see cryptonote_config.h's STAKING_PORTIONS.
         uint64_t                              swarm_id;                      // The identifier of the MasterNode's current swarm.
@@ -3029,7 +3029,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   struct COMMAND_RPC_STORAGE_SERVER_PING
   {
     struct request
@@ -3053,8 +3053,8 @@ namespace cryptonote
     };
   };
 
-  LOKI_RPC_DOC_INTROSPECT
-  // Get the required amount of Loki to become a MasterNode at the queried height. 
+  SISPOP_RPC_DOC_INTROSPECT
+  // Get the required amount of Sispop to become a MasterNode at the queried height. 
   // For stagenet and testnet values, ensure the daemon is started with the 
   // `--stagenet` or `--testnet` flags respectively.
   struct COMMAND_RPC_GET_STAKING_REQUIREMENT
@@ -3071,7 +3071,7 @@ namespace cryptonote
 
     struct response_t
     {
-      uint64_t staking_requirement; // The staking requirement in Loki, in atomic units.
+      uint64_t staking_requirement; // The staking requirement in Sispop, in atomic units.
       std::string status;           // Generic RPC error code. "OK" is the success value.
 
       BEGIN_KV_SERIALIZE_MAP()
@@ -3082,7 +3082,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Get information on blacklisted MasterNode key images.
   struct COMMAND_RPC_GET_MASTERNODE_BLACKLISTED_KEY_IMAGES
   {
@@ -3117,7 +3117,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Get information on output blacklist.
   struct COMMAND_RPC_GET_OUTPUT_BLACKLIST
   {
@@ -3143,7 +3143,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Query hardcoded/masternode checkpoints stored for the blockchain. Omit all arguments to retrieve the latest "count" checkpoints.
   struct COMMAND_RPC_GET_CHECKPOINTS
   {
@@ -3240,7 +3240,7 @@ namespace cryptonote
     typedef epee::misc_utils::struct_init<response_t> response;
   };
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   // Query hardcoded/masternode checkpoints stored for the blockchain. Omit all arguments to retrieve the latest "count" checkpoints.
   struct COMMAND_RPC_GET_SN_STATE_CHANGES
   {
@@ -3286,7 +3286,7 @@ namespace cryptonote
   };
 
 
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   struct COMMAND_RPC_REPORT_PEER_SS_STATUS
   {
     struct request

@@ -1,5 +1,5 @@
-# Copyright (c) 2018, The Loki Project
-# Copyright (c) 2014-2019, The Monero Project
+# Copyright (c) 2023, The Oxen Project
+# Copyright (c) 2014-2023, The Monero Project
 #
 # All rights reserved.
 #
@@ -78,9 +78,9 @@ set(crypto_private_headers
   skein_port.h
   cn_heavy_hash.hpp)
 
-loki_private_headers(cncrypto
+sispop_private_headers(cncrypto
   ${crypto_private_headers})
-loki_add_library(cncrypto
+sispop_add_library(cncrypto
   ${crypto_sources}
   ${crypto_headers}
   ${crypto_private_headers})

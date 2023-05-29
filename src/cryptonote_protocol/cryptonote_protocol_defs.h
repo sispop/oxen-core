@@ -1,4 +1,4 @@
-// Copyright (c) 2014-2019, The Monero Project
+// Copyright (c) 2014-2023, The Monero Project
 // 
 // All rights reserved.
 // 
@@ -36,7 +36,7 @@
 #include "net/net_utils_base.h"
 #include "cryptonote_basic/blobdatatype.h"
 
-#include "common/loki.h"
+#include "common/sispop.h"
 
 namespace masternodes
 {
@@ -122,7 +122,7 @@ namespace cryptonote
   /************************************************************************/
   /*                                                                      */
   /************************************************************************/
-  LOKI_RPC_DOC_INTROSPECT
+  SISPOP_RPC_DOC_INTROSPECT
   struct block_complete_entry
   {
     blobdata block;
