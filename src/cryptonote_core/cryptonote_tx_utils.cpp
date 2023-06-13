@@ -994,25 +994,9 @@ namespace cryptonote
     const_cast<int &>(miners) = 0;
 #endif
 
-    if (hf_version >= network_version_12) {
-      uint64_t seed_height, main_height;
-      crypto::hash hash;
-      if (pbc != NULL)
-      {
-        seed_height = rx_seedheight(height);
-        hash = pbc->get_pending_block_id_by_height(seed_height);
-        main_height = pbc->get_current_blockchain_height();
-      } else
-      {
-        memset(&hash, 0, sizeof(hash));  // only happens when generating genesis block
-        seed_height = 0;
-        main_height = 0;
-      }
-      rx_slow_hash(main_height, seed_height, hash.data, bd.data(), bd.size(), res.data, miners, 0);
-      return true;
-    }
-
-    if (hf_version >= network_version_11)
+    if (hf_version >= network_version_12)
+      cn_type = crypto::cn_slow_hash_type::heavy_v2;
+    else if (hf_version >= network_version_11)
       cn_type = cn_slow_hash_type::turtle_lite_v2;
     else if (hf_version >= network_version_7)
       cn_type = crypto::cn_slow_hash_type::heavy_v2;

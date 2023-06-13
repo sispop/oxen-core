@@ -951,7 +951,7 @@ namespace cryptonote
     const uint8_t major_version = m_core.get_blockchain_storage().get_current_hard_fork_version();
 
     res.pow_algorithm =
-        major_version >= network_version_12    ? "RandomX (SISPOP variant)"               :
+        major_version >= network_version_12    ? "Cryptonight Heavy (Variant 2)"               :
         major_version == network_version_11 ? "Cryptonight Turtle Light (Variant 2)" :
                                                                "Cryptonight Heavy (Variant 2)";
 
