@@ -321,7 +321,20 @@ typedef struct mdb_block_info_3
   uint64_t bi_long_term_block_weight;
 } mdb_block_info_3;
 
-typedef mdb_block_info_3 mdb_block_info;
+typedef struct mdb_block_info_4
+{
+  uint64_t bi_height;
+  uint64_t bi_timestamp;
+  uint64_t bi_coins;
+  uint64_t bi_weight; // a size_t really but we need 32-bit compat
+  uint64_t bi_diff_lo;
+  uint64_t bi_diff_hi;
+  crypto::hash bi_hash;
+  uint64_t bi_cum_rct;
+  uint64_t bi_long_term_block_weight;
+} mdb_block_info_4;
+
+typedef mdb_block_info_4 mdb_block_info;
 
 #pragma pack(push, 1)
 struct blk_checkpoint_header
@@ -786,7 +799,10 @@ void BlockchainLMDB::add_block(const block& blk, size_t block_weight, uint64_t l
   bi.bi_timestamp = blk.timestamp;
   bi.bi_coins = coins_generated;
   bi.bi_weight = block_weight;
-  bi.bi_diff = cumulative_difficulty;
+//  bi.bi_diff_hi = ((cumulative_difficulty >> 64) & 0xffffffffffffffff).convert_to<uint64_t>();
+ // bi.bi_diff_lo = (cumulative_difficulty & 0xffffffffffffffff).convert_to<uint64_t>();
+  bi.bi_diff_hi = static_cast<uint64_t>((cumulative_difficulty >> 64) & 0xffffffffffffffff);
+  bi.bi_diff_lo = static_cast<uint64_t>(cumulative_difficulty  & 0xffffffffffffffff);
   bi.bi_hash = blk_hash;
   bi.bi_cum_rct = num_rct_outs;
   if (blk.major_version >= 4 && m_height > 0)
@@ -2718,7 +2734,9 @@ difficulty_type BlockchainLMDB::get_block_cumulative_difficulty(const uint64_t& 
     throw0(DB_ERROR("Error attempting to retrieve a cumulative difficulty from the db"));
 
   mdb_block_info *bi = (mdb_block_info *)result.mv_data;
-  difficulty_type ret = bi->bi_diff;
+  difficulty_type ret = bi->bi_diff_hi;
+  ret <<= 64;
+  ret |= bi->bi_diff_lo;
   TXN_POSTFIX_RDONLY();
   return ret;
 }
@@ -2738,6 +2756,43 @@ difficulty_type BlockchainLMDB::get_block_difficulty(const uint64_t& height) con
   }
 
   return diff1 - diff2;
+}
+
+void BlockchainLMDB::correct_block_cumulative_difficulties(const uint64_t& start_height, const std::vector<difficulty_type>& new_cumulative_difficulties)
+{
+  LOG_PRINT_L3("BlockchainLMDB::" << __func__);
+  check_open();
+  mdb_txn_cursors *m_cursors = &m_wcursors;
+
+  int result = 0;
+  block_wtxn_start();
+  CURSOR(block_info)
+
+  const uint64_t bc_height = height();
+  if (start_height + new_cumulative_difficulties.size() != bc_height)
+  {
+    block_wtxn_abort();
+    throw0(DB_ERROR("Incorrect new_cumulative_difficulties size"));
+  }
+
+  for (uint64_t height = start_height; height < bc_height; ++height)
+  {
+    MDB_val_set(key, height);
+    result = mdb_cursor_get(m_cur_block_info, (MDB_val *)&zerokval, &key, MDB_GET_BOTH);
+    if (result)
+      throw1(BLOCK_DNE(lmdb_error("Failed to get block info: ", result).c_str()));
+
+    mdb_block_info bi = *(mdb_block_info*)key.mv_data;
+    const difficulty_type d = new_cumulative_difficulties[height - start_height];
+    bi.bi_diff_hi = static_cast<uint64_t>((d >> 64) & 0xffffffffffffffff);
+    bi.bi_diff_lo = static_cast<uint64_t>(d  & 0xffffffffffffffff);
+    MDB_val_set(key2, height);
+    MDB_val_set(val, bi);
+    result = mdb_cursor_put(m_cur_block_info, &key2, &val, MDB_CURRENT);
+    if (result)
+      throw0(DB_ERROR(lmdb_error("Failed to overwrite block info to db transaction: ", result).c_str()));
+  }
+  block_wtxn_stop();
 }
 
 uint64_t BlockchainLMDB::get_block_already_generated_coins(const uint64_t& height) const
@@ -4694,12 +4749,12 @@ void BlockchainLMDB::fixup(fixup_context const context)
             throw1(BLOCK_DNE(lmdb_error("Failed to get block info in recalculate difficulty: ", result).c_str()));
 
         mdb_block_info block_info    = *(mdb_block_info *)key.mv_data;
-        uint64_t old_cumulative_diff = block_info.bi_diff;
-        block_info.bi_diff           = prev_cumulative_diff + diff;
-        prev_cumulative_diff         = block_info.bi_diff;
+        uint64_t old_cumulative_diff = block_info.bi_diff_lo;
+        block_info.bi_diff_lo           = prev_cumulative_diff + diff;
+        prev_cumulative_diff         = block_info.bi_diff_lo;
 
-        if (old_cumulative_diff != block_info.bi_diff)
-          LOG_PRINT_L0("Height: " << curr_height << " prev difficulty: " << old_cumulative_diff <<  ", new difficulty: " << block_info.bi_diff);
+        if (old_cumulative_diff != block_info.bi_diff_lo)
+          LOG_PRINT_L0("Height: " << curr_height << " prev difficulty: " << old_cumulative_diff <<  ", new difficulty: " << block_info.bi_diff_lo);
         else
           LOG_PRINT_L2("Height: " << curr_height << " difficulty unchanged (" << old_cumulative_diff << ")");
 
@@ -4708,7 +4763,7 @@ void BlockchainLMDB::fixup(fixup_context const context)
             throw1(BLOCK_DNE(lmdb_error("Failed to put block info: ", result).c_str()));
 
         timestamps.push_back(block_info.bi_timestamp);
-        difficulties.push_back(block_info.bi_diff);
+        difficulties.push_back(block_info.bi_diff_lo);
 
         while (timestamps.size() > DIFFICULTY_BLOCKS_COUNT_V2) timestamps.erase(timestamps.begin());
         while (difficulties.size() > DIFFICULTY_BLOCKS_COUNT_V2) difficulties.erase(difficulties.begin());
@@ -5721,13 +5776,14 @@ void BlockchainLMDB::migrate_3_4()
       }
       else if (result)
         throw0(DB_ERROR(lmdb_error("Failed to get a record from block_info: ", result).c_str()));
-      const mdb_block_info_2 *bi_old = (const mdb_block_info_2*)v.mv_data;
-      mdb_block_info_3 bi;
+      const mdb_block_info_3 *bi_old = (const mdb_block_info_3*)v.mv_data;
+      mdb_block_info_4 bi;
       bi.bi_height = bi_old->bi_height;
       bi.bi_timestamp = bi_old->bi_timestamp;
       bi.bi_coins = bi_old->bi_coins;
       bi.bi_weight = bi_old->bi_weight;
-      bi.bi_diff = bi_old->bi_diff;
+      bi.bi_diff_lo = bi_old->bi_diff;
+      bi.bi_diff_hi = 0;
       bi.bi_hash = bi_old->bi_hash;
       bi.bi_cum_rct = bi_old->bi_cum_rct;
 

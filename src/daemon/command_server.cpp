@@ -111,33 +111,33 @@ t_command_server::t_command_server(
     , "Print the quorum state for the range of block heights, omit the height to print the latest quorum"
     );
   m_command_lookup.set_handler(
-      "print_sn_key"
-    , std::bind(&t_command_parser_executor::print_sn_key, &m_parser, p::_1)
-    , "print_sn_key"
+      "print_masternode_key"
+    , std::bind(&t_command_parser_executor::print_masternode_key, &m_parser, p::_1)
+    , "print_masternode_key"
     , "Print this daemon's masternode key, if it is one and launched in masternode mode."
     );
   m_command_lookup.set_handler(
-      "print_sr"
-    , std::bind(&t_command_parser_executor::print_sr, &m_parser, p::_1)
-    , "print_sr <height>"
+      "print_mrequirement"
+    , std::bind(&t_command_parser_executor::print_mrequirement, &m_parser, p::_1)
+    , "print_mrequirement <height>"
     , "Print the staking requirement for the height."
     );
   m_command_lookup.set_handler(
-      "prepare_registration"
-    , std::bind(&t_command_parser_executor::prepare_registration, &m_parser)
-    , "prepare_registration"
+      "masternode_setup"
+    , std::bind(&t_command_parser_executor::masternode_setup, &m_parser)
+    , "masternode_setup"
     , "Interactive prompt to prepare a masternode registration command. The resulting registration command can be run in the command-line wallet to send the registration to the blockchain."
     );
   m_command_lookup.set_handler(
-      "print_sn"
-    , std::bind(&t_command_parser_executor::print_sn, &m_parser, p::_1)
-    , "print_sn [<pubkey> [...]] [+json|+detail]"
+      "print_masternode"
+    , std::bind(&t_command_parser_executor::print_masternode, &m_parser, p::_1)
+    , "print_masternode [<pubkey> [...]] [+json|+detail]"
     , "Print masternode registration info for the current height"
     );
   m_command_lookup.set_handler(
-      "print_sn_status"
-    , std::bind(&t_command_parser_executor::print_sn_status, &m_parser, p::_1)
-    , "print_sn_status [+json|+detail]"
+      "print_masternode_status"
+    , std::bind(&t_command_parser_executor::print_masternode_status, &m_parser, p::_1)
+    , "print_masternode_status [+json|+detail]"
     , "Print masternode registration info for this masternode"
     );
   m_command_lookup.set_handler(
@@ -359,9 +359,9 @@ t_command_server::t_command_server(
     , "Query the available checkpoints between the range, omit arguments to print the last 60 checkpoints"
     );
     m_command_lookup.set_handler(
-      "print_sn_state_changes"
-    , std::bind(&t_command_parser_executor::print_sn_state_changes, &m_parser, p::_1)
-    , "print_sn_state_changes <start_height> [end height]"
+      "print_masternode_state_changes"
+    , std::bind(&t_command_parser_executor::print_masternode_state_changes, &m_parser, p::_1)
+    , "print_masternode_state_changes <start_height> [end height]"
     , "Query the state changes between the range, omit the last argument to scan until the current block"
     );
 #if defined(SISPOP_ENABLE_INTEGRATION_TEST_HOOKS)

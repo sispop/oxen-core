@@ -319,7 +319,7 @@ bool t_rpc_command_executor::print_checkpoints(uint64_t start_height, uint64_t e
   return true;
 }
 
-bool t_rpc_command_executor::print_sn_state_changes(uint64_t start_height, uint64_t end_height)
+bool t_rpc_command_executor::print_masternode_state_changes(uint64_t start_height, uint64_t end_height)
 {
   cryptonote::COMMAND_RPC_GET_SN_STATE_CHANGES::request  req;
   cryptonote::COMMAND_RPC_GET_SN_STATE_CHANGES::response res;
@@ -2575,7 +2575,7 @@ static void append_printable_masternode_list_entry(cryptonote::network_type nett
   buffer.append(stream.str());
 }
 
-bool t_rpc_command_executor::print_sn(const std::vector<std::string> &args)
+bool t_rpc_command_executor::print_masternode(const std::vector<std::string> &args)
 {
     cryptonote::COMMAND_RPC_GET_MASTERNODES::request req = {};
     cryptonote::COMMAND_RPC_GET_MASTERNODES::response res = {};
@@ -2721,15 +2721,15 @@ bool t_rpc_command_executor::print_sn(const std::vector<std::string> &args)
     }
 
     if (unregistered.size() > 0)
-      tools::msg_writer() << "MasterNode Unregistered State [" << unregistered.size() << "]\n" << unregistered_print_data;
+      tools::msg_writer() << "Masternode Unregistered State [" << unregistered.size() << "]\n" << unregistered_print_data;
 
     if (registered.size() > 0)
-      tools::msg_writer() << "MasterNode Registration State [" << registered.size() << "]\n"   << registered_print_data;
+      tools::msg_writer() << "Masternode Registration Status [" << registered.size() << "]\n"   << registered_print_data;
 
     return true;
 }
 
-bool t_rpc_command_executor::print_sn_status(const std::vector<std::string>& args)
+bool t_rpc_command_executor::print_masternode_status(const std::vector<std::string>& args)
 {
   cryptonote::COMMAND_RPC_GET_MASTERNODE_KEY::response res = {};
   {
@@ -2766,11 +2766,11 @@ bool t_rpc_command_executor::print_sn_status(const std::vector<std::string>& arg
   real_args.push_back(res.masternode_pubkey);
   for (const std::string &arg : args) real_args.push_back(arg);
 
-  bool result = print_sn(real_args);
+  bool result = print_masternode(real_args);
   return result;
 }
 
-bool t_rpc_command_executor::print_sr(uint64_t height)
+bool t_rpc_command_executor::print_mrequirement(uint64_t height)
 {
   cryptonote::COMMAND_RPC_GET_STAKING_REQUIREMENT::request req = {};
   cryptonote::COMMAND_RPC_GET_STAKING_REQUIREMENT::response res = {};
@@ -2827,7 +2827,7 @@ bool t_rpc_command_executor::pop_blocks(uint64_t num_blocks)
   return true;
 }
 
-bool t_rpc_command_executor::print_sn_key()
+bool t_rpc_command_executor::print_masternode_key()
 {
   cryptonote::COMMAND_RPC_GET_MASTERNODE_KEY::request req = {};
   cryptonote::COMMAND_RPC_GET_MASTERNODE_KEY::response res = {};
@@ -2876,7 +2876,7 @@ static uint64_t get_actual_amount(uint64_t amount, uint64_t portions)
   return resultlo;
 }
 
-bool t_rpc_command_executor::prepare_registration()
+bool t_rpc_command_executor::masternode_setup()
 {
   // RAII-style class to temporarily clear categories and restore upon destruction (i.e. upon returning).
   struct clear_log_categories {
@@ -3024,7 +3024,7 @@ bool t_rpc_command_executor::prepare_registration()
     cancelled_by_user,
   };
 
-  struct prepare_registration_state
+  struct masternode_setup_state
   {
     register_step            prev_step                    = register_step::ask_is_solo_stake;
     bool                     is_solo_stake;
@@ -3036,8 +3036,8 @@ bool t_rpc_command_executor::prepare_registration()
     std::vector<uint64_t>    contributions;
   };
 
-  prepare_registration_state state = {};
-  std::stack<prepare_registration_state> state_stack;
+  masternode_setup_state state = {};
+  std::stack<masternode_setup_state> state_stack;
   state_stack.push(state);
 
   bool finished = false;

@@ -72,7 +72,7 @@ public:
 
   bool print_checkpoints(uint64_t start_height, uint64_t end_height, bool print_json);
 
-  bool print_sn_state_changes(uint64_t start_height, uint64_t end_height);
+  bool print_masternode_state_changes(uint64_t start_height, uint64_t end_height);
 
   bool print_peer_list(bool white = true, bool gray = true, size_t limit = 0);
 
@@ -164,15 +164,15 @@ public:
 
   bool pop_blocks(uint64_t num_blocks);
 
-  bool print_sn_key();
+  bool print_masternode_key();
 
-  bool print_sn_status(const std::vector<std::string>& args);
+  bool print_masternode_status(const std::vector<std::string>& args);
 
-  bool print_sr(uint64_t height);
+  bool print_mrequirement(uint64_t height);
 
-  bool prepare_registration();
+  bool masternode_setup();
 
-  bool print_sn(const std::vector<std::string> &args);
+  bool print_masternode(const std::vector<std::string> &args);
 
   bool prune_blockchain();
 

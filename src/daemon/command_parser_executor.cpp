@@ -95,7 +95,7 @@ bool t_command_parser_executor::print_checkpoints(const std::vector<std::string>
   return m_executor.print_checkpoints(start_height, end_height, print_json);
 }
 
-bool t_command_parser_executor::print_sn_state_changes(const std::vector<std::string> &args)
+bool t_command_parser_executor::print_masternode_state_changes(const std::vector<std::string> &args)
 {
   uint64_t start_height;
   uint64_t end_height = cryptonote::COMMAND_RPC_GET_SN_STATE_CHANGES::HEIGHT_SENTINEL_VALUE;
@@ -119,13 +119,13 @@ bool t_command_parser_executor::print_sn_state_changes(const std::vector<std::st
 
   if (!args_list.empty())
   {
-    std::cout << "use: print_sn_state_changes <start_height> [end height]"
+    std::cout << "use: print_masternode_state_changes <start_height> [end height]"
               << "(omit arguments to scan until the current block)"
               << std::endl;
     return false;
   }
 
-  return m_executor.print_sn_state_changes(start_height, end_height);
+  return m_executor.print_masternode_state_changes(start_height, end_height);
 }
 
 bool t_command_parser_executor::print_peer_list(const std::vector<std::string>& args)
@@ -261,14 +261,14 @@ bool t_command_parser_executor::print_quorum_state(const std::vector<std::string
   return m_executor.print_quorum_state(start_height, end_height);
 }
 
-bool t_command_parser_executor::print_sn_key(const std::vector<std::string>& args)
+bool t_command_parser_executor::print_masternode_key(const std::vector<std::string>& args)
 {
   if (!args.empty()) return false;
-  bool result = m_executor.print_sn_key();
+  bool result = m_executor.print_masternode_key();
   return result;
 }
 
-bool t_command_parser_executor::print_sr(const std::vector<std::string>& args)
+bool t_command_parser_executor::print_mrequirement(const std::vector<std::string>& args)
 {
   if (args.size() != 1)
   {
@@ -283,25 +283,25 @@ bool t_command_parser_executor::print_sr(const std::vector<std::string>& args)
     return false;
   }
 
-  bool result = m_executor.print_sr(height);
+  bool result = m_executor.print_mrequirement(height);
   return result;
 }
 
-bool t_command_parser_executor::prepare_registration()
+bool t_command_parser_executor::masternode_setup()
 {
-  bool result = m_executor.prepare_registration();
+  bool result = m_executor.masternode_setup();
   return result;
 }
 
-bool t_command_parser_executor::print_sn(const std::vector<std::string>& args)
+bool t_command_parser_executor::print_masternode(const std::vector<std::string>& args)
 {
-  bool result = m_executor.print_sn(args);
+  bool result = m_executor.print_masternode(args);
   return result;
 }
 
-bool t_command_parser_executor::print_sn_status(const std::vector<std::string>& args)
+bool t_command_parser_executor::print_masternode_status(const std::vector<std::string>& args)
 {
-  bool result = m_executor.print_sn_status(args);
+  bool result = m_executor.print_masternode_status(args);
   return result;
 }
 

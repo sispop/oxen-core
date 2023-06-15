@@ -61,33 +61,34 @@ static uint8_t get_block_version(const cryptonote::block &b)
 static constexpr HardFork::Params mainnet_hard_forks[] =
 {
   { network_version_7,     1,      0,  1341378000},
-  { network_version_8,     2,     0,  1685115121},
-  { network_version_9,     3,    0,  1685115421},
-  { network_version_10,    4,    0,  1685115601}, //
-  { network_version_11,    200,    0,  1685115781}, //
-  { network_version_12,    250,    0,  1685116021}, //
+  { network_version_8,     2,      0,  1685115121},
+  { network_version_9,     3,      0,  1685115421},
+  { network_version_10,    4,      0,  1685115601},
+  { network_version_11,    200,    0,  1685115781},
+  { network_version_12,    250,    0,  1685116021},
   { network_version_13,    290,    0,  1685116201},
 };
 
 static constexpr HardFork::Params testnet_hard_forks[] =
 {
-  { network_version_7,                      1,      0, 1533631121 },
-  { network_version_8,                      2,      0, 1533631122 },
-  { network_version_9,        3,      0, 1533631123 },
-  { network_version_10,        4,      0, 1542681077 },
-  { network_version_11,    5,      0, 1551223964 },
-  { network_version_12,       75471,  0, 1561608000 }, // 2019-06-28 14:00AEDT
-  { network_version_13, 127028, 0, 1568440800 }, // 2019-09-13 16:00AEDT
+  { network_version_7,     1,      0,  1341378000},
+  { network_version_8,     2,      0,  1685115121},
+  { network_version_9,     3,      0,  1685115421},
+  { network_version_10,    4,      0,  1685115601},
+  { network_version_11,    200,    0,  1685115781},
+  { network_version_12,    250,    0,  1685116021},
+  { network_version_13,    290,    0,  1685116201},
 };
 
 static constexpr HardFork::Params stagenet_hard_forks[] =
 {
-  { network_version_7,                   1,      0, 1341378000 },
-  { network_version_8,                   64324,  0, 1533006000 },
-  { network_version_9,     96210,  0, 1536840000 },
-  { network_version_10,     96211,  0, 1536840120 },
-  { network_version_11, 147029, 0, 1551223964 }, // 2019-02-27 12:30 AEDT
-  { network_version_12,    213125, 0, 1561608000 }, // 2019-06-28 14:00 AEDT
+  { network_version_7,     1,      0,  1341378000},
+  { network_version_8,     2,      0,  1685115121},
+  { network_version_9,     3,      0,  1685115421},
+  { network_version_10,    4,      0,  1685115601},
+  { network_version_11,    200,    0,  1685115781},
+  { network_version_12,    250,    0,  1685116021},
+  { network_version_13,    290,    0,  1685116201},
 };
 
 uint64_t HardFork::get_hardcoded_hard_fork_height(network_type nettype, cryptonote::network_version version)

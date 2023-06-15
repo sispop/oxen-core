@@ -2719,7 +2719,7 @@ namespace wallet_rpc
   {
     struct request_t
     {
-      std::string register_masternode_str; // String supplied by the prepare_registration command.
+      std::string register_masternode_str; // String supplied by the masternode_setup command.
       bool        get_tx_key;                // (Optional) Return the transaction key after sending.
       bool        do_not_relay;              // (Optional) If true, the newly created transaction will not be relayed to the sispop network. (Defaults to false)
       bool        get_tx_hex;                // Return the transaction as hex string after sending (Defaults to false)

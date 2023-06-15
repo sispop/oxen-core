@@ -3169,7 +3169,7 @@ simple_wallet::simple_wallet()
   m_cmd_binder.set_handler("register_masternode",
                            boost::bind(&simple_wallet::register_masternode, this, _1),
                            tr(USAGE_REGISTER_MASTERNODE),
-                           tr("Send <amount> to this wallet's main account and lock it as an operator stake for a new MasterNode. This command is typically generated on the MasterNode via the `prepare_registration' sispopd command. The optional index= and <priority> parameters work as in the `transfer' command."));
+                           tr("Send <amount> to this wallet's main account and lock it as an operator stake for a new MasterNode. This command is typically generated on the MasterNode via the `masternode_setup' sispopd command. The optional index= and <priority> parameters work as in the `transfer' command."));
   m_cmd_binder.set_handler("stake",
                            boost::bind(&simple_wallet::stake, this, _1),
                            tr(USAGE_STAKE),
@@ -6684,7 +6684,7 @@ bool simple_wallet::sweep_main_internal(sweep_type_t sweep_type, std::vector<too
   if (sweep_type == sweep_type_t::register_stake && submitted_to_network)
   {
     success_msg_writer() << tr("Wait for transaction to be included in a block before registration is complete.\n")
-                         << tr("Use the print_sn command in the daemon to check the status.");
+                         << tr("Use the print_masternode command in the daemon to check the status.");
   }
 
   return true;
