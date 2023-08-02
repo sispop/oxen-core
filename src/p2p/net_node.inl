@@ -586,9 +586,9 @@ namespace nodetool
     }
     else
     {
-      full_addrs.insert("129.151.164.202:22345");  // Hetzner seed node
-      full_addrs.insert("129.151.165.124:22345");  // Hetzner seed node
-      full_addrs.insert("129.151.164.223:22345");  // Jason's seed node
+      full_addrs.insert("129.151.164.202:20000");  // Hetzner seed node
+      full_addrs.insert("129.151.165.124:20000");  // Hetzner seed node
+      full_addrs.insert("129.151.164.223:20000");  // Jason's seed node
     }
     return full_addrs;
   }
