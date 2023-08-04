@@ -1,5 +1,5 @@
 // Parts of this file are originally copyright (c) 2012-2013 The Cryptonote developers
-// Copyright (c) 2014-2023, The Monero Project
+// Copyright (c) 2014-2019, The Monero Project
 // Copyright (c) 2014-2018, The Aeon Project
 // Copyright (c) 2018, The TurtleCoin Developers
 //
@@ -188,7 +188,7 @@ extern int aesb_pseudo_round(const uint8_t *in, uint8_t *out, const uint8_t *exp
     lo ^= *(U64(hp_state + (j ^ 0x20)) + 1); \
   } while (0)
 
-#if !defined NO_AES && (defined(__x86_64__) || (defined(_MSC_VER) && defined(_WIN64)))
+#if defined(__AES__) && (defined(__x86_64__) || (defined(_MSC_VER) && defined(_WIN64)))
 // Optimised code below, uses x86-specific intrinsics, SSE2, AES-NI
 // Fall back to more portable code is down at the bottom
 
@@ -581,7 +581,7 @@ BOOL SetLockPagesPrivilege(HANDLE hProcess, BOOL bEnable)
  * the allocated buffer.
  */
 
-void slow_hash_allocate_state(uint32_t page_size)
+void cn_slow_hash_allocate_state(uint32_t page_size)
 {
     if(hp_state != NULL)
         return;
@@ -611,10 +611,10 @@ void slow_hash_allocate_state(uint32_t page_size)
 }
 
 /**
- *@brief frees the state allocated by slow_hash_allocate_state
+ *@brief frees the state allocated by cn_slow_hash_allocate_state
  */
 
-void slow_hash_free_state(uint32_t page_size)
+void cn_slow_hash_free_state(uint32_t page_size)
 {
     if(hp_state == NULL)
         return;
@@ -691,7 +691,7 @@ void cn_turtle_hash(const void *data, size_t length, char *hash, int light, int 
       hash_extra_blake, hash_extra_groestl, hash_extra_jh, hash_extra_skein
   };
 
-  slow_hash_allocate_state(CN_TURTLE_PAGE_SIZE);
+  cn_slow_hash_allocate_state(CN_TURTLE_PAGE_SIZE);
 
   /* CryptoNight Step 1:  Use Keccak1600 to initialize the 'state' (and 'text') buffers from the data. */
   if (prehashed) {
@@ -801,17 +801,17 @@ void cn_turtle_hash(const void *data, size_t length, char *hash, int light, int 
   memcpy(state.init, text, INIT_SIZE_BYTE);
   hash_permutation(&state.hs);
   extra_hashes[state.hs.b[0] & 3](&state, 200, hash);
-  slow_hash_free_state(CN_TURTLE_PAGE_SIZE);
+  cn_slow_hash_free_state(CN_TURTLE_PAGE_SIZE);
 }
 
-#elif !defined NO_AES && (defined(__arm__) || defined(__aarch64__))
-void slow_hash_allocate_state(void)
+#elif defined(__arm__) || defined(__aarch64__)
+void cn_slow_hash_allocate_state(void)
 {
   // Do nothing, this is just to maintain compatibility with the upgraded slow-hash.c
   return;
 }
 
-void slow_hash_free_state(void)
+void cn_slow_hash_free_state(void)
 {
   // As above
   return;
@@ -1376,13 +1376,13 @@ void cn_turtle_hash(const void *data, size_t length, char *hash, int light, int 
 #else
 // Portable implementation as a fallback
 
-void slow_hash_allocate_state(void)
+void cn_slow_hash_allocate_state(void)
 {
   // Do nothing, this is just to maintain compatibility with the upgraded slow-hash.c
   return;
 }
 
-void slow_hash_free_state(void)
+void cn_slow_hash_free_state(void)
 {
   // As above
   return;
@@ -1566,3 +1566,17 @@ void cn_turtle_hash(const void *data, size_t length, char *hash, int light, int 
 }
 
 #endif
+
+
+
+void slow_hash_allocate_state(void)
+{
+  cn_slow_hash_allocate_state(CN_TURTLE_PAGE_SIZE);
+  rx_slow_hash_allocate_state();
+}
+
+void slow_hash_free_state(void)
+{
+  cn_slow_hash_free_state(CN_TURTLE_PAGE_SIZE);
+  rx_slow_hash_free_state();
+}

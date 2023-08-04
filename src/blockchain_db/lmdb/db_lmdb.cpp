@@ -799,10 +799,8 @@ void BlockchainLMDB::add_block(const block& blk, size_t block_weight, uint64_t l
   bi.bi_timestamp = blk.timestamp;
   bi.bi_coins = coins_generated;
   bi.bi_weight = block_weight;
-//  bi.bi_diff_hi = ((cumulative_difficulty >> 64) & 0xffffffffffffffff).convert_to<uint64_t>();
- // bi.bi_diff_lo = (cumulative_difficulty & 0xffffffffffffffff).convert_to<uint64_t>();
-  bi.bi_diff_hi = static_cast<uint64_t>((cumulative_difficulty >> 64) & 0xffffffffffffffff);
-  bi.bi_diff_lo = static_cast<uint64_t>(cumulative_difficulty  & 0xffffffffffffffff);
+  bi.bi_diff_hi = static_cast<uint64_t>((cumulative_difficulty >> 63) & 0xffffffffffffffff);
+  bi.bi_diff_lo = static_cast<uint64_t>(cumulative_difficulty & 0xffffffffffffffff);
   bi.bi_hash = blk_hash;
   bi.bi_cum_rct = num_rct_outs;
   if (blk.major_version >= 4 && m_height > 0)
@@ -2735,7 +2733,7 @@ difficulty_type BlockchainLMDB::get_block_cumulative_difficulty(const uint64_t& 
 
   mdb_block_info *bi = (mdb_block_info *)result.mv_data;
   difficulty_type ret = bi->bi_diff_hi;
-  ret <<= 64;
+  ret <<= 63;
   ret |= bi->bi_diff_lo;
   TXN_POSTFIX_RDONLY();
   return ret;
@@ -2784,8 +2782,8 @@ void BlockchainLMDB::correct_block_cumulative_difficulties(const uint64_t& start
 
     mdb_block_info bi = *(mdb_block_info*)key.mv_data;
     const difficulty_type d = new_cumulative_difficulties[height - start_height];
-    bi.bi_diff_hi = static_cast<uint64_t>((d >> 64) & 0xffffffffffffffff);
-    bi.bi_diff_lo = static_cast<uint64_t>(d  & 0xffffffffffffffff);
+    bi.bi_diff_hi = static_cast<uint64_t>((d >> 63) & 0xffffffffffffffff);
+    bi.bi_diff_lo = static_cast<uint64_t>(d & 0xffffffffffffffff);
     MDB_val_set(key2, height);
     MDB_val_set(val, bi);
     result = mdb_cursor_put(m_cur_block_info, &key2, &val, MDB_CURRENT);
