@@ -973,7 +973,9 @@ namespace cryptonote
     bl.minor_version = 7;
     bl.timestamp = 0;
     bl.nonce = nonce;
-    miner::find_nonce_for_given_block(NULL, bl, 1, 0);
+    miner::find_nonce_for_given_block([](const cryptonote::block &b, uint64_t height, unsigned int threads, crypto::hash &hash){
+      return cryptonote::get_block_longhash(NULL, b, hash, height, threads);
+    }, bl, 1, 0);
     bl.invalidate_hashes();
     return true;
   }
@@ -986,15 +988,9 @@ namespace cryptonote
 
   bool get_block_longhash(const Blockchain *pbc, const block& b, crypto::hash& res, const uint64_t height, const int miners)
   {
-    const blobdata bd                 = get_block_hashing_blob(b);
-    const uint8_t hf_version          = b.major_version;
-    crypto::cn_slow_hash_type cn_type = cn_slow_hash_type::heavy_v1;
-
-#if defined(SISPOP_ENABLE_INTEGRATION_TEST_HOOKS)
-    const_cast<int &>(miners) = 0;
-#endif
-
-    if (hf_version >= network_version_7) {
+    blobdata bd = get_block_hashing_blob(b);
+    if (b.major_version >= network_version_7)
+    {
       uint64_t seed_height, main_height;
       crypto::hash hash;
       if (pbc != NULL)
@@ -1009,10 +1005,7 @@ namespace cryptonote
         main_height = 0;
       }
       rx_slow_hash(main_height, seed_height, hash.data, bd.data(), bd.size(), res.data, miners, 0);
-      return true;
     }
-
-    crypto::cn_slow_hash(bd.data(), bd.size(), res, cn_type);
     return true;
   }
 

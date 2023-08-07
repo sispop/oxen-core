@@ -1195,7 +1195,6 @@ bool Blockchain::switch_to_alternative_blockchain(const std::list<block_extended
   }
 
   m_hardfork->reorganize_from_chain_height(split_height);
-  get_block_longhash_reorg(split_height);
 
   std::shared_ptr<tools::Notify> reorg_notify = m_reorg_notify;
   if (reorg_notify)
@@ -1918,7 +1917,7 @@ bool Blockchain::handle_alternative_block(const block& b, const crypto::hash& id
       bvc.m_verifivation_failed = true;
       return false;
     }
-
+    block_extended_info bei = {};
     // Check the block's hash against the difficulty target for its alt chain
     difficulty_type current_diff = get_next_difficulty_for_alternative_chain(alt_chain, block_height);
     CHECK_AND_ASSERT_MES(current_diff, false, "!!!!!!! DIFFICULTY OVERHEAD !!!!!!!");
@@ -1927,7 +1926,7 @@ bool Blockchain::handle_alternative_block(const block& b, const crypto::hash& id
     if (b.major_version >= cryptonote::network_version_7)
     {
       crypto::hash seedhash = null_hash;
-      uint64_t seedheight = rx_seedheight(block_height);
+      uint64_t seedheight = rx_seedheight(bei.height);
       // seedblock is on the alt chain somewhere
       if (alt_chain.size() && alt_chain.front().height <= seedheight)
       {
@@ -1943,10 +1942,7 @@ bool Blockchain::handle_alternative_block(const block& b, const crypto::hash& id
       {
         seedhash = get_block_id_by_height(seedheight);
       }
-      get_altblock_longhash(b, proof_of_work, curr_blockchain_height, block_height, seedheight, seedhash);
-    } else
-    {
-      get_block_longhash(this, b, proof_of_work, block_height, 0);
+     get_altblock_longhash(bei.bl, proof_of_work, get_current_blockchain_height(), bei.height, seedheight, seedhash);
     }
     if(!check_hash(proof_of_work, current_diff))
     {

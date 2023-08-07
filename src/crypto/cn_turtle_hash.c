@@ -22,6 +22,12 @@
 #define INIT_SIZE_BLK          8
 #define INIT_SIZE_BYTE         (INIT_SIZE_BLK * AES_BLOCK_SIZE)
 
+#if defined(_MSC_VER)
+#define THREADV __declspec(thread)
+#else
+#define THREADV __thread
+#endif
+
 extern int aesb_single_round(const uint8_t *in, uint8_t*out, const uint8_t *expandedKey);
 extern int aesb_pseudo_round(const uint8_t *in, uint8_t *out, const uint8_t *expandedKey);
 
@@ -279,12 +285,6 @@ extern int aesb_pseudo_round(const uint8_t *in, uint8_t *out, const uint8_t *exp
   VARIANT1_2(p + 1); \
   _b1 = _b; \
   _b = _c; \
-
-#if defined(_MSC_VER)
-#define THREADV __declspec(thread)
-#else
-#define THREADV __thread
-#endif
 
 #pragma pack(push, 1)
 union cn_turtle_hash_state
@@ -804,7 +804,45 @@ void cn_turtle_hash(const void *data, size_t length, char *hash, int light, int 
   cn_slow_hash_free_state(CN_TURTLE_PAGE_SIZE);
 }
 
-#elif defined(__arm__) || defined(__aarch64__)
+#elif !defined NO_AES && (defined(__arm__) || defined(__aarch64__))
+#ifdef __aarch64__
+#include <sys/mman.h>
+THREADV uint8_t *hp_state = NULL;
+THREADV int hp_malloced = 0;
+
+void cn_slow_hash_allocate_state(void)
+{
+    if(hp_state != NULL)
+        return;
+
+#ifndef	MAP_HUGETLB
+#define	MAP_HUGETLB	0
+#endif
+    hp_state = mmap(0, MEMORY, PROT_READ | PROT_WRITE,
+                    MAP_PRIVATE | MAP_ANON | MAP_HUGETLB, -1, 0);
+
+    if(hp_state == MAP_FAILED)
+        hp_state = NULL;
+    if(hp_state == NULL)
+    {
+        hp_malloced = 1;
+        hp_state = (uint8_t *) malloc(MEMORY);
+    }
+}
+
+void cn_slow_hash_free_state(void)
+{
+    if(hp_state == NULL)
+        return;
+
+    if (hp_malloced)
+        free(hp_state);
+    else
+        munmap(hp_state, MEMORY);
+    hp_state = NULL;
+    hp_malloced = 0;
+}
+#else
 void cn_slow_hash_allocate_state(void)
 {
   // Do nothing, this is just to maintain compatibility with the upgraded slow-hash.c
@@ -816,6 +854,7 @@ void cn_slow_hash_free_state(void)
   // As above
   return;
 }
+#endif
 
 #if defined(__GNUC__)
 #define RDATA_ALIGN16 __attribute__ ((aligned(16)))
@@ -1044,13 +1083,7 @@ void cn_turtle_hash(const void *data, size_t length, char *hash, int light, int 
 
   RDATA_ALIGN16 uint8_t expandedKey[240];
 
-#ifndef FORCE_USE_HEAP
-  RDATA_ALIGN16 uint8_t hp_state[CN_TURTLE_PAGE_SIZE];
-#else
-#warning "ACTIVATING FORCE_USE_HEAP IN aarch64 + crypto in slow-hash.c"
-  uint8_t *hp_state = (uint8_t *)aligned_malloc(CN_TURTLE_PAGE_SIZE,16);
-#endif
-
+    uint8_t *local_hp_state;
   uint8_t text[INIT_SIZE_BYTE];
   RDATA_ALIGN16 uint64_t a[2];
   RDATA_ALIGN16 uint64_t b[4];
@@ -1067,6 +1100,14 @@ void cn_turtle_hash(const void *data, size_t length, char *hash, int light, int 
       hash_extra_blake, hash_extra_groestl, hash_extra_jh, hash_extra_skein
   };
 
+    // this isn't supposed to happen, but guard against it for now.
+    if(hp_state == NULL)
+        cn_slow_hash_allocate_state();
+
+    // locals to avoid constant TLS dereferencing
+    local_hp_state = hp_state;
+
+    // locals to avoid constant TLS dereferencing
   /* CryptoNight Step 1:  Use Keccak1600 to initialize the 'state' (and 'text') buffers from the data. */
 
   if (prehashed) {
@@ -1135,10 +1176,6 @@ void cn_turtle_hash(const void *data, size_t length, char *hash, int light, int 
   memcpy(state.init, text, INIT_SIZE_BYTE);
   hash_permutation(&state.hs);
   extra_hashes[state.hs.b[0] & 3](&state, 200, hash);
-
-#ifdef FORCE_USE_HEAP
-  aligned_free(hp_state);
-#endif
 }
 #else /* aarch64 && crypto */
 

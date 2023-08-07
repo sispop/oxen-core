@@ -4330,6 +4330,22 @@ public:
       wrpc->send_stop_signal();
     });
     LOG_PRINT_L0(tools::wallet_rpc_server::tr("Starting wallet RPC server"));
+    MGINFO_GREEN(ENDL <<
+      "\n \n"
+      "                                               \n"
+      "          Run Your Own Masternode Using Sispop \n"
+      "       Welcome To Sispop                       \n"
+      "               00000   00  00000               \n"
+      "              0        00 0		      \n"
+      "               0 0 0   00  0 0 0		      \n"
+      "          	   0  00       0              \n"
+      "               0 0 0   00  0 0 0		      \n"
+      "       					      \n"
+      "\n \n" << ENDL);
+    MGINFO_YELLOW(ENDL << "**********************************************************************" << ENDL
+      << "NOTE: Sispop is highly experimental software, that needs more inputs from developers" << ENDL
+      << "Please join us to achieve more....." << ENDL
+      << "**********************************************************************" << ENDL);
     try
     {
       wrpc->run();
