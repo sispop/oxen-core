@@ -1,5 +1,5 @@
 // Copyright (c) 2014-2019, The Monero Project
-// Copyright (c)      2018, The Loki Project
+// Copyright (c)      2018, The Sispop Project
 //
 // All rights reserved.
 //
@@ -43,11 +43,11 @@ using namespace epee;
 #include "crypto/hash.h"
 #include "int-util.h"
 #include "common/dns_utils.h"
-#include "common/loki.h"
+#include "common/sispop.h"
 #include <cfenv>
 
-#undef LOKI_DEFAULT_LOG_CATEGORY
-#define LOKI_DEFAULT_LOG_CATEGORY "cn"
+#undef SISPOP_DEFAULT_LOG_CATEGORY
+#define SISPOP_DEFAULT_LOG_CATEGORY "cn"
 
 namespace cryptonote {
 
@@ -80,7 +80,7 @@ namespace cryptonote {
     return CRYPTONOTE_MAX_TX_SIZE;
   }
   //-----------------------------------------------------------------------------------------------
-  // TODO(loki): Move into loki_economy, this will require access to loki::exp2
+  // TODO(sispop): Move into sispop_economy, this will require access to sispop::exp2
   uint64_t block_reward_unpenalized_formula_v7(uint64_t already_generated_coins, uint64_t height)
   {
     uint64_t emission_supply_component = (already_generated_coins * EMISSION_SUPPLY_MULTIPLIER) / EMISSION_SUPPLY_DIVISOR;
@@ -95,26 +95,22 @@ namespace cryptonote {
   uint64_t block_reward_unpenalized_formula_v8(uint64_t height)
   {
     std::fesetround(FE_TONEAREST);
-    uint64_t result = 28'000'000'000. + 100'000'000'000. / loki::exp2(height / (720. * 90)); // halve every 90 days.
+    uint64_t result = 28'000'000'000. + 100'000'000'000. / sispop::exp2(height / (720. * 90)); // halve every 90 days.
     return result;
   }
 
   bool get_base_block_reward(size_t median_weight, size_t current_block_weight, uint64_t already_generated_coins, uint64_t &reward, uint64_t &reward_unpenalized, uint8_t version, uint64_t height) {
 
-    //premine reward
+    //reward in the genesis block for monero
     if (already_generated_coins == 0)
     {
-      reward = 22'500'000 * COIN;
+      reward = 17'592'186'044'415 * COIN;
       return true;
     }
 
     static_assert(DIFFICULTY_TARGET_V2%60==0,"difficulty targets must be a multiple of 60");
 
-    uint64_t base_reward =
-      version >= network_version_16 ? BLOCK_REWARD_HF16 :
-      version >= network_version_15_lns ? BLOCK_REWARD_HF15 :
-      version >= network_version_8  ? block_reward_unpenalized_formula_v8(height) :
-        block_reward_unpenalized_formula_v7(already_generated_coins, height);
+    uint64_t base_reward = BLOCK_REWARD_HF16;
 
     uint64_t full_reward_zone = get_min_block_weight(version);
 

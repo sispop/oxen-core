@@ -1,4 +1,4 @@
-# Copyright (c) 2018, The Loki Project
+# Copyright (c) 2018, The Sispop Project
 # Copyright (c) 2014-2019, The Monero Project
 #
 # All rights reserved.
@@ -35,7 +35,7 @@ add_library(common
   download.cpp
   error.cpp
   expect.cpp
-  loki.cpp
+  sispop.cpp
   util.cpp
   i18n.cpp
   rules.cpp
@@ -68,7 +68,7 @@ add_dependencies(common generate_translations_header)
 target_link_libraries(common
   PUBLIC
     cncrypto
-    lokimq::lokimq
+    sispopmq::sispopmq
   PRIVATE
     libunbound
     Boost::regex
