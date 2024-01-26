@@ -1,8 +1,8 @@
 #include <bitset>
-#include "loki_name_system.h"
+#include "sispop_name_system.h"
 
 #include "checkpoints/checkpoints.h"
-#include "common/loki.h"
+#include "common/sispop.h"
 #include "common/util.h"
 #include "common/base32z.h"
 #include "crypto/hash.h"
@@ -12,10 +12,10 @@
 #include "cryptonote_core/cryptonote_tx_utils.h"
 #include "cryptonote_basic/tx_extra.h"
 #include "cryptonote_core/blockchain.h"
-#include "loki_economy.h"
+#include "sispop_economy.h"
 #include "string_coding.h"
 
-#include <lokimq/hex.h>
+#include <sispopmq/hex.h>
 
 #include <sqlite3.h>
 
@@ -24,8 +24,8 @@ extern "C"
 #include <sodium.h>
 }
 
-#undef LOKI_DEFAULT_LOG_CATEGORY
-#define LOKI_DEFAULT_LOG_CATEGORY "lns"
+#undef SISPOP_DEFAULT_LOG_CATEGORY
+#define SISPOP_DEFAULT_LOG_CATEGORY "lns"
 
 namespace lns
 {
@@ -92,7 +92,7 @@ static char const *mapping_record_column_string(mapping_record_column col)
   }
 }
 
-static std::string lns_extra_string(cryptonote::network_type nettype, cryptonote::tx_extra_loki_name_system const &data)
+static std::string lns_extra_string(cryptonote::network_type nettype, cryptonote::tx_extra_sispop_name_system const &data)
 {
   std::stringstream stream;
   stream << "LNS Extra={";
@@ -285,7 +285,7 @@ static bool sql_compile_statement(sqlite3 *db, char const *query, int query_len,
   return result;
 }
 
-sqlite3 *init_loki_name_system(char const *file_path)
+sqlite3 *init_sispop_name_system(char const *file_path)
 {
   sqlite3 *result = nullptr;
   int sql_init    = sqlite3_initialize();
@@ -309,14 +309,14 @@ uint64_t expiry_blocks(cryptonote::network_type nettype, mapping_type type, uint
 {
   uint64_t renew_window_ = 0;
   uint64_t result        = NO_EXPIRY;
-  if (is_lokinet_type(type))
+  if (is_sispopnet_type(type))
   {
     renew_window_ = BLOCKS_EXPECTED_IN_DAYS(31);
 
-    if (type == mapping_type::lokinet_1year)        result = BLOCKS_EXPECTED_IN_YEARS(1);
-    else if (type == mapping_type::lokinet_2years)  result = BLOCKS_EXPECTED_IN_YEARS(2);
-    else if (type == mapping_type::lokinet_5years)  result = BLOCKS_EXPECTED_IN_YEARS(5);
-    else if (type == mapping_type::lokinet_10years) result = BLOCKS_EXPECTED_IN_YEARS(10);
+    if (type == mapping_type::sispopnet_1year)        result = BLOCKS_EXPECTED_IN_YEARS(1);
+    else if (type == mapping_type::sispopnet_2years)  result = BLOCKS_EXPECTED_IN_YEARS(2);
+    else if (type == mapping_type::sispopnet_5years)  result = BLOCKS_EXPECTED_IN_YEARS(5);
+    else if (type == mapping_type::sispopnet_10years) result = BLOCKS_EXPECTED_IN_YEARS(10);
 
     result += renew_window_;
     if (nettype == cryptonote::FAKECHAIN)
@@ -484,12 +484,12 @@ static bool check_condition(bool condition, std::string* reason, T&&... args) {
 bool validate_lns_name(mapping_type type, std::string name, std::string *reason)
 {
   std::stringstream err_stream;
-  LOKI_DEFER { if (reason) *reason = err_stream.str(); };
+  SISPOP_DEFER { if (reason) *reason = err_stream.str(); };
 
-  bool const is_lokinet = is_lokinet_type(type);
+  bool const is_sispopnet = is_sispopnet_type(type);
   size_t max_name_len   = 0;
 
-  if (is_lokinet)                         max_name_len = lns::LOKINET_DOMAIN_NAME_MAX;
+  if (is_sispopnet)                         max_name_len = lns::SISPOPNET_DOMAIN_NAME_MAX;
   else if (type == mapping_type::session) max_name_len = lns::SESSION_DISPLAY_NAME_MAX;
   else if (type == mapping_type::wallet)  max_name_len = lns::WALLET_NAME_MAX;
   else
@@ -504,32 +504,32 @@ bool validate_lns_name(mapping_type type, std::string name, std::string *reason)
     return false;
 
   // NOTE: Validate domain specific requirements
-  if (is_lokinet)
+  if (is_sispopnet)
   {
-    // LOKINET
-    // Domain has to start with an alphanumeric, and can have (alphanumeric or hyphens) in between, the character before the suffix <char>'.loki' must be alphanumeric followed by the suffix '.loki'
-    // ^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.loki$
+    // SISPOPNET
+    // Domain has to start with an alphanumeric, and can have (alphanumeric or hyphens) in between, the character before the suffix <char>'.sispop' must be alphanumeric followed by the suffix '.sispop'
+    // ^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.sispop$
 
-    if (check_condition(name == "localhost.loki", reason, "LNS type=", type, ", specifies mapping from name->value using protocol reserved name=", name))
+    if (check_condition(name == "localhost.sispop", reason, "LNS type=", type, ", specifies mapping from name->value using protocol reserved name=", name))
       return false;
 
     // Must start with alphanumeric
     if (check_condition(!char_is_alphanum(name.front()), reason, "LNS type=", type, ", specifies mapping from name->value where the name does not start with an alphanumeric character, name=", name))
       return false;
 
-    char const SHORTEST_DOMAIN[] = "a.loki";
-    if (check_condition((name.size() < static_cast<int>(loki::char_count(SHORTEST_DOMAIN))), reason, "LNS type=", type, ", specifies mapping from name->value where the name is shorter than the shortest possible name=", SHORTEST_DOMAIN, ", given name=", name))
+    char const SHORTEST_DOMAIN[] = "a.sispop";
+    if (check_condition((name.size() < static_cast<int>(sispop::char_count(SHORTEST_DOMAIN))), reason, "LNS type=", type, ", specifies mapping from name->value where the name is shorter than the shortest possible name=", SHORTEST_DOMAIN, ", given name=", name))
       return false;
 
-    // Must end with .loki
-    char const SUFFIX[]     = ".loki";
-    char const *name_suffix = name.data() + (name.size() - loki::char_count(SUFFIX));
-    if (check_condition((memcmp(name_suffix, SUFFIX, loki::char_count(SUFFIX)) != 0), reason, "LNS type=", type, ", specifies mapping from name->value where the name does not end with the domain .loki, name=", name))
+    // Must end with .sispop
+    char const SUFFIX[]     = ".sispop";
+    char const *name_suffix = name.data() + (name.size() - sispop::char_count(SUFFIX));
+    if (check_condition((memcmp(name_suffix, SUFFIX, sispop::char_count(SUFFIX)) != 0), reason, "LNS type=", type, ", specifies mapping from name->value where the name does not end with the domain .sispop, name=", name))
       return false;
 
     // Characted preceeding suffix must be alphanumeric
     char const *char_preceeding_suffix = name_suffix - 1;
-    if (check_condition(!char_is_alphanum(char_preceeding_suffix[0]), reason, "LNS type=", type ,", specifies mapping from name->value where the character preceeding the <char>.loki is not alphanumeric, char=", char_preceeding_suffix[0], ", name=", name))
+    if (check_condition(!char_is_alphanum(char_preceeding_suffix[0]), reason, "LNS type=", type ,", specifies mapping from name->value where the character preceeding the <char>.sispop is not alphanumeric, char=", char_preceeding_suffix[0], ", name=", name))
       return false;
 
     for (char const *it = (name.data() + 1); it < char_preceeding_suffix; it++) // Inbetween start and preceeding suffix, (alphanumeric or hyphen) characters permitted
@@ -614,7 +614,7 @@ bool validate_mapping_value(cryptonote::network_type nettype, mapping_type type,
   else
   {
     int max_value_len = 0;
-    if (is_lokinet_type(type))              max_value_len = (LOKINET_ADDRESS_BINARY_LENGTH * 2);
+    if (is_sispopnet_type(type))              max_value_len = (SISPOPNET_ADDRESS_BINARY_LENGTH * 2);
     else if (type == mapping_type::session) max_value_len = (SESSION_PUBLIC_KEY_BINARY_LENGTH * 2);
     else
     {
@@ -639,9 +639,9 @@ bool validate_mapping_value(cryptonote::network_type nettype, mapping_type type,
       memcpy(blob->buffer.data(), &addr_info.address, blob->len);
     }
   }
-  else if (is_lokinet_type(type))
+  else if (is_sispopnet_type(type))
   {
-    if (check_condition(value.size() != 52, reason, "The lokinet value=", value, ", should be a 52 char base32z string, length=", value.size()))
+    if (check_condition(value.size() != 52, reason, "The sispopnet value=", value, ", should be a 52 char base32z string, length=", value.size()))
       return false;
 
     crypto::ed25519_public_key pkey;
@@ -661,14 +661,14 @@ bool validate_mapping_value(cryptonote::network_type nettype, mapping_type type,
     if (check_condition((value.size() % 2) != 0, reason, "The value=", value, ", should be a hex string that has an even length to be convertible back into binary, length=", value.size()))
       return false;
 
-    if (check_condition(!lokimq::is_hex(value), reason, ", specifies name -> value mapping where the value is not a hex string given value="))
+    if (check_condition(!sispopmq::is_hex(value), reason, ", specifies name -> value mapping where the value is not a hex string given value="))
       return false;
 
     if (blob) // NOTE: Given blob, write the binary output
     {
       blob->len = value.size() / 2;
       assert(blob->len <= blob->buffer.size());
-      lokimq::from_hex(value.begin(), value.end(), blob->buffer.begin());
+      sispopmq::from_hex(value.begin(), value.end(), blob->buffer.begin());
     }
 
     // NOTE: Session public keys are 33 bytes, with the first byte being 0x05 and the remaining 32 being the public key.
@@ -683,7 +683,7 @@ bool validate_encrypted_mapping_value(mapping_type type, std::string const &valu
 {
   std::stringstream err_stream;
   int max_value_len = crypto_secretbox_MACBYTES;
-  if (is_lokinet_type(type)) max_value_len              += LOKINET_ADDRESS_BINARY_LENGTH;
+  if (is_sispopnet_type(type)) max_value_len              += SISPOPNET_ADDRESS_BINARY_LENGTH;
   else if (type == mapping_type::session) max_value_len += SESSION_PUBLIC_KEY_BINARY_LENGTH;
   else if (type == mapping_type::wallet)  max_value_len += WALLET_ACCOUNT_BINARY_LENGTH;
   else
@@ -721,10 +721,10 @@ static bool verify_lns_signature(crypto::hash const &hash, lns::generic_signatur
   }
 }
 
-static bool validate_against_previous_mapping(lns::name_system_db const &lns_db, uint64_t blockchain_height, cryptonote::transaction const &tx, cryptonote::tx_extra_loki_name_system const &lns_extra, std::string *reason = nullptr)
+static bool validate_against_previous_mapping(lns::name_system_db const &lns_db, uint64_t blockchain_height, cryptonote::transaction const &tx, cryptonote::tx_extra_sispop_name_system const &lns_extra, std::string *reason = nullptr)
 {
   std::stringstream err_stream;
-  LOKI_DEFER { if (reason && reason->empty()) *reason = err_stream.str(); };
+  SISPOP_DEFER { if (reason && reason->empty()) *reason = err_stream.str(); };
 
   crypto::hash expected_prev_txid = crypto::null_hash;
   std::string name_hash           = hash_to_base64(lns_extra.name_hash);
@@ -738,7 +738,7 @@ static bool validate_against_previous_mapping(lns::name_system_db const &lns_db,
     expected_prev_txid = mapping.txid;
     if (lns_extra.is_updating())
     {
-      if (check_condition(is_lokinet_type(lns_extra.type) && !mapping.active(lns_db.network_type(), blockchain_height), reason, tx, ", ", lns_extra_string(lns_db.network_type(), lns_extra), " TX requested to update mapping that has already expired"))
+      if (check_condition(is_sispopnet_type(lns_extra.type) && !mapping.active(lns_db.network_type(), blockchain_height), reason, tx, ", ", lns_extra_string(lns_db.network_type(), lns_extra), " TX requested to update mapping that has already expired"))
         return false;
 
       auto span_a = epee::strspan<uint8_t>(lns_extra.encrypted_value);
@@ -760,7 +760,7 @@ static bool validate_against_previous_mapping(lns::name_system_db const &lns_db,
                                                     lns_extra.field_is_set(lns::extra_field::owner) ? &lns_extra.owner : nullptr,
                                                     lns_extra.field_is_set(lns::extra_field::backup_owner) ? &lns_extra.backup_owner : nullptr,
                                                     expected_prev_txid);
-        if (check_condition(!hash, reason, tx, ", ", lns_extra_string(lns_db.network_type(), lns_extra), " unexpectedly failed to generate signature hash, please inform the Loki developers"))
+        if (check_condition(!hash, reason, tx, ", ", lns_extra_string(lns_db.network_type(), lns_extra), " unexpectedly failed to generate signature hash, please inform the Sispop developers"))
           return false;
 
         if (check_condition(!verify_lns_signature(hash, lns_extra.signature, mapping.owner) &&
@@ -773,9 +773,9 @@ static bool validate_against_previous_mapping(lns::name_system_db const &lns_db,
     }
     else
     {
-      if (!is_lokinet_type(lns_extra.type))
+      if (!is_sispopnet_type(lns_extra.type))
       {
-        if (check_condition(true, reason, tx, ", ", lns_extra_string(lns_db.network_type(), lns_extra), " non-lokinet entries can NOT be renewed, mapping already exists with name_hash=", mapping.name_hash, ", owner=", mapping.owner.to_string(lns_db.network_type()), ", type=", mapping.type))
+        if (check_condition(true, reason, tx, ", ", lns_extra_string(lns_db.network_type(), lns_extra), " non-sispopnet entries can NOT be renewed, mapping already exists with name_hash=", mapping.name_hash, ", owner=", mapping.owner.to_string(lns_db.network_type()), ", type=", mapping.type))
           return false;
       }
 
@@ -795,7 +795,7 @@ static bool validate_against_previous_mapping(lns::name_system_db const &lns_db,
 
       if (mapping.active(lns_db.network_type(), blockchain_height))
       {
-        // Lokinet entry expired i.e. it's no longer active. A purchase for this name is valid
+        // Sispopnet entry expired i.e. it's no longer active. A purchase for this name is valid
         // Check that the request originates from the owner of this mapping
         lns::owner_record const requester = lns_db.get_owner_by_key(lns_extra.owner);
         if (check_condition(requester, reason, tx, ", ", lns_extra_string(lns_db.network_type(), lns_extra), " trying to renew existing mapping but owner specified in LNS extra does not exist, rejected"))
@@ -819,18 +819,18 @@ static bool validate_against_previous_mapping(lns::name_system_db const &lns_db,
   return true;
 }
 
-bool name_system_db::validate_lns_tx(uint8_t hf_version, uint64_t blockchain_height, cryptonote::transaction const &tx, cryptonote::tx_extra_loki_name_system *lns_extra, std::string *reason) const
+bool name_system_db::validate_lns_tx(uint8_t hf_version, uint64_t blockchain_height, cryptonote::transaction const &tx, cryptonote::tx_extra_sispop_name_system *lns_extra, std::string *reason) const
 {
   // -----------------------------------------------------------------------------------------------
   // Pull out LNS Extra from TX
   // -----------------------------------------------------------------------------------------------
-  cryptonote::tx_extra_loki_name_system lns_extra_;
+  cryptonote::tx_extra_sispop_name_system lns_extra_;
   {
     if (!lns_extra) lns_extra = &lns_extra_;
-    if (check_condition(tx.type != cryptonote::txtype::loki_name_system, reason, tx, ", uses wrong tx type, expected=", cryptonote::txtype::loki_name_system))
+    if (check_condition(tx.type != cryptonote::txtype::sispop_name_system, reason, tx, ", uses wrong tx type, expected=", cryptonote::txtype::sispop_name_system))
       return false;
 
-    if (check_condition(!cryptonote::get_loki_name_system_from_tx_extra(tx.extra, *lns_extra), reason, tx, ", didn't have loki name service in the tx_extra"))
+    if (check_condition(!cryptonote::get_sispop_name_system_from_tx_extra(tx.extra, *lns_extra), reason, tx, ", didn't have sispop name service in the tx_extra"))
       return false;
   }
 
@@ -905,7 +905,7 @@ bool name_system_db::validate_lns_tx(uint8_t hf_version, uint64_t blockchain_hei
     if (burn != burn_required)
     {
       char const *over_or_under = burn > burn_required ? "too much " : "insufficient ";
-      if (check_condition(true, reason, tx, ", ", lns_extra_string(nettype, *lns_extra), " burned ", over_or_under, "loki=", burn, ", require=", burn_required))
+      if (check_condition(true, reason, tx, ", ", lns_extra_string(nettype, *lns_extra), " burned ", over_or_under, "sispop=", burn, ", require=", burn_required))
         return false;
     }
   }
@@ -963,7 +963,7 @@ static unsigned char const ENCRYPTION_NONCE[crypto_secretbox_NONCEBYTES] = {}; /
 bool encrypt_mapping_value(std::string const &name, mapping_value const &value, mapping_value &encrypted_value)
 {
   static_assert(mapping_value::BUFFER_SIZE >= SESSION_PUBLIC_KEY_BINARY_LENGTH + crypto_secretbox_MACBYTES, "Value blob assumes the largest size required, all other values should be able to fit into this buffer");
-  static_assert(mapping_value::BUFFER_SIZE >= LOKINET_ADDRESS_BINARY_LENGTH    + crypto_secretbox_MACBYTES, "Value blob assumes the largest size required, all other values should be able to fit into this buffer");
+  static_assert(mapping_value::BUFFER_SIZE >= SISPOPNET_ADDRESS_BINARY_LENGTH    + crypto_secretbox_MACBYTES, "Value blob assumes the largest size required, all other values should be able to fit into this buffer");
   static_assert(mapping_value::BUFFER_SIZE >= WALLET_ACCOUNT_BINARY_LENGTH     + crypto_secretbox_MACBYTES, "Value blob assumes the largest size required, all other values should be able to fit into this buffer");
 
   bool result                 = false;
@@ -1093,14 +1093,14 @@ AND NOT EXISTS   (SELECT * FROM "mappings" WHERE "owner"."id" = "mappings"."back
       !sql_compile_statement(db, get_mappings_by_owner_str.c_str(),            get_mappings_by_owner_str.size(),            &get_mappings_by_owner_sql) ||
       !sql_compile_statement(db, get_mappings_on_height_and_newer_str.c_str(), get_mappings_on_height_and_newer_str.size(), &get_mappings_on_height_and_newer_sql) ||
       !sql_compile_statement(db, get_mapping_str.c_str(),                      get_mapping_str.size(),                      &get_mapping_sql) ||
-      !sql_compile_statement(db, GET_SETTINGS_STR,                             loki::array_count(GET_SETTINGS_STR),         &get_settings_sql) ||
-      !sql_compile_statement(db, GET_OWNER_BY_ID_STR,                          loki::array_count(GET_OWNER_BY_ID_STR),      &get_owner_by_id_sql) ||
-      !sql_compile_statement(db, GET_OWNER_BY_KEY_STR,                         loki::array_count(GET_OWNER_BY_KEY_STR),     &get_owner_by_key_sql) ||
-      !sql_compile_statement(db, PRUNE_MAPPINGS_STR,                           loki::array_count(PRUNE_MAPPINGS_STR),       &prune_mappings_sql) ||
-      !sql_compile_statement(db, PRUNE_OWNERS_STR,                             loki::array_count(PRUNE_OWNERS_STR),         &prune_owners_sql) ||
-      !sql_compile_statement(db, SAVE_MAPPING_STR,                             loki::array_count(SAVE_MAPPING_STR),         &save_mapping_sql) ||
-      !sql_compile_statement(db, SAVE_SETTINGS_STR,                            loki::array_count(SAVE_SETTINGS_STR),        &save_settings_sql) ||
-      !sql_compile_statement(db, SAVE_OWNER_STR,                               loki::array_count(SAVE_OWNER_STR),           &save_owner_sql)
+      !sql_compile_statement(db, GET_SETTINGS_STR,                             sispop::array_count(GET_SETTINGS_STR),         &get_settings_sql) ||
+      !sql_compile_statement(db, GET_OWNER_BY_ID_STR,                          sispop::array_count(GET_OWNER_BY_ID_STR),      &get_owner_by_id_sql) ||
+      !sql_compile_statement(db, GET_OWNER_BY_KEY_STR,                         sispop::array_count(GET_OWNER_BY_KEY_STR),     &get_owner_by_key_sql) ||
+      !sql_compile_statement(db, PRUNE_MAPPINGS_STR,                           sispop::array_count(PRUNE_MAPPINGS_STR),       &prune_mappings_sql) ||
+      !sql_compile_statement(db, PRUNE_OWNERS_STR,                             sispop::array_count(PRUNE_OWNERS_STR),         &prune_owners_sql) ||
+      !sql_compile_statement(db, SAVE_MAPPING_STR,                             sispop::array_count(SAVE_MAPPING_STR),         &save_mapping_sql) ||
+      !sql_compile_statement(db, SAVE_SETTINGS_STR,                            sispop::array_count(SAVE_SETTINGS_STR),        &save_settings_sql) ||
+      !sql_compile_statement(db, SAVE_OWNER_STR,                               sispop::array_count(SAVE_OWNER_STR),           &save_owner_sql)
     )
   {
     return false;
@@ -1175,7 +1175,7 @@ scoped_db_transaction::~scoped_db_transaction()
   lns_db.transaction_begun = false;
 }
 
-static int64_t add_or_get_owner_id(lns::name_system_db &lns_db, crypto::hash const &tx_hash, cryptonote::tx_extra_loki_name_system const &entry, lns::generic_owner const &key)
+static int64_t add_or_get_owner_id(lns::name_system_db &lns_db, crypto::hash const &tx_hash, cryptonote::tx_extra_sispop_name_system const &entry, lns::generic_owner const &key)
 {
   int64_t result = 0;
   if (owner_record owner = lns_db.get_owner_by_key(key)) result = owner.id;
@@ -1190,7 +1190,7 @@ static int64_t add_or_get_owner_id(lns::name_system_db &lns_db, crypto::hash con
   return result;
 }
 
-static bool add_lns_entry(lns::name_system_db &lns_db, uint64_t height, cryptonote::tx_extra_loki_name_system const &entry, crypto::hash const &tx_hash)
+static bool add_lns_entry(lns::name_system_db &lns_db, uint64_t height, cryptonote::tx_extra_sispop_name_system const &entry, crypto::hash const &tx_hash)
 {
   // -----------------------------------------------------------------------------------------------
   // New Mapping Insert or Completely Replace
@@ -1332,10 +1332,10 @@ bool name_system_db::add_block(const cryptonote::block &block, const std::vector
   {
     for (cryptonote::transaction const &tx : txs)
     {
-      if (tx.type != cryptonote::txtype::loki_name_system)
+      if (tx.type != cryptonote::txtype::sispop_name_system)
         continue;
 
-      cryptonote::tx_extra_loki_name_system entry = {};
+      cryptonote::tx_extra_sispop_name_system entry = {};
       std::string fail_reason;
       if (!validate_lns_tx(block.major_version, height, tx, &entry, &fail_reason))
       {
@@ -1356,7 +1356,7 @@ bool name_system_db::add_block(const cryptonote::block &block, const std::vector
   return true;
 }
 
-static bool get_txid_lns_entry(cryptonote::Blockchain const &blockchain, crypto::hash txid, cryptonote::tx_extra_loki_name_system &extra)
+static bool get_txid_lns_entry(cryptonote::Blockchain const &blockchain, crypto::hash txid, cryptonote::tx_extra_sispop_name_system &extra)
 {
   if (txid == crypto::null_hash) return false;
   std::vector<cryptonote::transaction> txs;
@@ -1364,7 +1364,7 @@ static bool get_txid_lns_entry(cryptonote::Blockchain const &blockchain, crypto:
   if (!blockchain.get_transactions({txid}, txs, missed_txs) || txs.empty())
     return false;
 
-  return cryptonote::get_loki_name_system_from_tx_extra(txs[0].extra, extra);
+  return cryptonote::get_sispop_name_system_from_tx_extra(txs[0].extra, extra);
 }
 
 struct lns_update_history
@@ -1373,11 +1373,11 @@ struct lns_update_history
   uint64_t owner_last_update_height        = static_cast<uint64_t>(-1);
   uint64_t backup_owner_last_update_height = static_cast<uint64_t>(-1);
 
-  void     update(uint64_t height, cryptonote::tx_extra_loki_name_system const &lns_extra);
+  void     update(uint64_t height, cryptonote::tx_extra_sispop_name_system const &lns_extra);
   uint64_t newest_update_height() const;
 };
 
-void lns_update_history::update(uint64_t height, cryptonote::tx_extra_loki_name_system const &lns_extra)
+void lns_update_history::update(uint64_t height, cryptonote::tx_extra_sispop_name_system const &lns_extra)
 {
   if (lns_extra.field_is_set(lns::extra_field::encrypted_value))
     value_last_update_height = height;
@@ -1399,7 +1399,7 @@ struct replay_lns_tx
 {
   uint64_t                              height;
   crypto::hash                          tx_hash;
-  cryptonote::tx_extra_loki_name_system entry;
+  cryptonote::tx_extra_sispop_name_system entry;
 };
 
 static std::vector<replay_lns_tx> find_lns_txs_to_replay(cryptonote::Blockchain const &blockchain, lns::mapping_record const &mapping, uint64_t blockchain_height)
@@ -1440,7 +1440,7 @@ static std::vector<replay_lns_tx> find_lns_txs_to_replay(cryptonote::Blockchain 
        update_history.newest_update_height() >= blockchain_height;
       )
   {
-    cryptonote::tx_extra_loki_name_system curr_lns_extra = {};
+    cryptonote::tx_extra_sispop_name_system curr_lns_extra = {};
     if (!get_txid_lns_entry(blockchain, curr_txid, curr_lns_extra))
     {
       if (curr_txid != crypto::null_hash)
@@ -1501,7 +1501,7 @@ bool name_system_db::save_owner(lns::generic_owner const &owner, int64_t *row_id
   return result;
 }
 
-bool name_system_db::save_mapping(crypto::hash const &tx_hash, cryptonote::tx_extra_loki_name_system const &src, uint64_t height, int64_t owner_id, int64_t backup_owner_id)
+bool name_system_db::save_mapping(crypto::hash const &tx_hash, cryptonote::tx_extra_sispop_name_system const &src, uint64_t height, int64_t owner_id, int64_t backup_owner_id)
 {
   if (!src.is_buying())
     return false;

@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2020, The Loki Project
+// Copyright (c) 2019-2020, The Sispop Project
 //
 // All rights reserved.
 //
@@ -37,12 +37,12 @@
 #include "common/random.h"
 #include "common/lock.h"
 
-#include <lokimq/lokimq.h>
-#include <lokimq/hex.h>
+#include <sispopmq/sispopmq.h>
+#include <sispopmq/hex.h>
 #include <shared_mutex>
 
-#undef LOKI_DEFAULT_LOG_CATEGORY
-#define LOKI_DEFAULT_LOG_CATEGORY "qnet"
+#undef SISPOP_DEFAULT_LOG_CATEGORY
+#define SISPOP_DEFAULT_LOG_CATEGORY "qnet"
 
 namespace quorumnet {
 
@@ -50,8 +50,8 @@ namespace {
 
 using namespace service_nodes;
 using namespace std::literals;
-using namespace lokimq;
-using namespace lokimq::literals;
+using namespace sispopmq;
+using namespace sispopmq::literals;
 
 using blink_tx = cryptonote::blink_tx;
 
@@ -69,7 +69,7 @@ struct pending_signature_hash {
 using pending_signature_set = std::unordered_set<pending_signature, pending_signature_hash>;
 
 struct SNNWrapper {
-    LokiMQ lmq;
+    SispopMQ lmq;
     cryptonote::core &core;
 
     // Track submitted blink txes here; unlike the blinks stored in the mempool we store these ones
@@ -155,8 +155,8 @@ constexpr el::Level easylogging_level(LogLevel level) {
     return el::Level::Unknown;
 };
 void snn_write_log(LogLevel level, const char *file, int line, std::string msg) {
-    if (ELPP->vRegistry()->allowed(easylogging_level(level), LOKI_DEFAULT_LOG_CATEGORY))
-        el::base::Writer(easylogging_level(level), file, line, ELPP_FUNC, el::base::DispatchAction::NormalLog).construct(LOKI_DEFAULT_LOG_CATEGORY) << msg;
+    if (ELPP->vRegistry()->allowed(easylogging_level(level), SISPOP_DEFAULT_LOG_CATEGORY))
+        el::base::Writer(easylogging_level(level), file, line, ELPP_FUNC, el::base::DispatchAction::NormalLog).construct(SISPOP_DEFAULT_LOG_CATEGORY) << msg;
 }
 
 void setup_endpoints(SNNWrapper& snw);
@@ -194,7 +194,7 @@ void *new_snnwrapper(cryptonote::core &core, const std::string &bind) {
         seckey = get_data_as_string(keys->key_x25519.data);
         sn = true;
     } else {
-        MINFO("Starting remote-only lokimq instance");
+        MINFO("Starting remote-only sispopmq instance");
         sn = false;
     }
 
@@ -332,7 +332,7 @@ public:
     }
 
 private:
-    LokiMQ &lmq;
+    SispopMQ &lmq;
 
     /// Looks up a pubkey in known remotes and adds it to `peers`.  If strong, it is added with an
     /// address, otherwise it is added with an empty address.  If the element already exists, it
@@ -827,7 +827,7 @@ void process_blink_signatures(SNNWrapper &snw, const std::shared_ptr<blink_tx> &
 ///     "#" - precomputed tx hash.  This much match the actual hash of the transaction (the blink
 ///           submission will fail immediately if it does not).
 ///
-void handle_blink(lokimq::Message& m, SNNWrapper& snw) {
+void handle_blink(sispopmq::Message& m, SNNWrapper& snw) {
     // TODO: if someone sends an invalid tx (i.e. one that doesn't get to the distribution stage)
     // then put a timeout on that IP during which new submissions from them are dropped for a short
     // time.

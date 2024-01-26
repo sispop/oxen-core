@@ -33,7 +33,7 @@
 #include "cryptonote_basic/cryptonote_basic_impl.h"
 #include "cryptonote_core/service_node_voting.h"
 
-#include "common/loki.h"
+#include "common/sispop.h"
 
 namespace cryptonote
 {

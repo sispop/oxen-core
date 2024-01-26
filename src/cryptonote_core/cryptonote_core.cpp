@@ -70,10 +70,10 @@ extern "C" {
 #include "net/local_ip.h"
 #include "cryptonote_protocol/quorumnet.h"
 
-#include "common/loki_integration_test_hooks.h"
+#include "common/sispop_integration_test_hooks.h"
 
-#undef LOKI_DEFAULT_LOG_CATEGORY
-#define LOKI_DEFAULT_LOG_CATEGORY "cn"
+#undef SISPOP_DEFAULT_LOG_CATEGORY
+#define SISPOP_DEFAULT_LOG_CATEGORY "cn"
 
 DISABLE_VS_WARNINGS(4355)
 
@@ -294,7 +294,7 @@ namespace cryptonote
               m_nettype(UNDEFINED),
               m_update_available(false),
               m_last_storage_server_ping(0),
-              m_last_lokinet_ping(0),
+              m_last_sispopnet_ping(0),
               m_pad_transactions(false)
   {
     m_checkpoints_updating.clear();
@@ -380,7 +380,7 @@ namespace cryptonote
 
     command_line::add_arg(desc, arg_recalculate_difficulty);
     command_line::add_arg(desc, arg_store_quorum_history);
-#if defined(LOKI_ENABLE_INTEGRATION_TEST_HOOKS)
+#if defined(SISPOP_ENABLE_INTEGRATION_TEST_HOOKS)
     command_line::add_arg(desc, integration_test::arg_hardforks_override);
     command_line::add_arg(desc, integration_test::arg_pipe_name);
 #endif
@@ -573,7 +573,7 @@ namespace cryptonote
         s += ", storage: ";
         s += time_ago_str(now, c.m_last_storage_server_ping);
         s += ", sispopnet: ";
-        s += time_ago_str(now, c.m_last_lokinet_ping);
+        s += time_ago_str(now, c.m_last_sispopnet_ping);
       }
     }
     return s;
@@ -585,7 +585,7 @@ namespace cryptonote
   {
     start_time = std::time(nullptr);
 
-#if defined(LOKI_ENABLE_INTEGRATION_TEST_HOOKS)
+#if defined(SISPOP_ENABLE_INTEGRATION_TEST_HOOKS)
     const std::string arg_hardforks_override = command_line::get_arg(vm, integration_test::arg_hardforks_override);
 
     std::vector<std::pair<uint8_t, uint64_t>> integration_test_hardforks;
@@ -688,7 +688,7 @@ namespace cryptonote
     uint64_t sync_threshold = 1;
 
     std::string const lns_db_file_path = m_config_folder + "/lns.db";
-#if !defined(LOKI_ENABLE_INTEGRATION_TEST_HOOKS) // In integration mode, don't delete the DB. This should be explicitly done in the tests. Otherwise the more likely behaviour is persisting the DB across multiple daemons in the same test.
+#if !defined(SISPOP_ENABLE_INTEGRATION_TEST_HOOKS) // In integration mode, don't delete the DB. This should be explicitly done in the tests. Otherwise the more likely behaviour is persisting the DB across multiple daemons in the same test.
     if (m_nettype == FAKECHAIN)
     {
       // reset the db by removing the database file before opening it
@@ -853,7 +853,7 @@ namespace cryptonote
       m_checkpoints_path = checkpoint_json_hashfile_fullpath.string();
     }
 
-    sqlite3 *lns_db = lns::init_loki_name_system(lns_db_file_path.c_str());
+    sqlite3 *lns_db = lns::init_sispop_name_system(lns_db_file_path.c_str());
     if (!lns_db) return false;
 
     const difficulty_type fixed_difficulty = command_line::get_arg(vm, arg_fixed_difficulty);
@@ -1624,12 +1624,12 @@ namespace cryptonote
   {
     uint64_t emission_amount = 0;
     uint64_t total_fee_amount = 0;
-    uint64_t burnt_loki = 0;
+    uint64_t burnt_sispop = 0;
     if (count)
     {
       const uint64_t end = start_offset + count - 1;
       m_blockchain_storage.for_blocks_range(start_offset, end,
-        [this, &emission_amount, &total_fee_amount, &burnt_loki](uint64_t, const crypto::hash& hash, const block& b){
+        [this, &emission_amount, &total_fee_amount, &burnt_sispop](uint64_t, const crypto::hash& hash, const block& b){
       std::vector<transaction> txs;
       std::vector<crypto::hash> missed_txs;
       uint64_t coinbase_amount = get_outs_money_amount(b.miner_tx);
@@ -1640,7 +1640,7 @@ namespace cryptonote
         tx_fee_amount += get_tx_miner_fee(tx, b.major_version >= HF_VERSION_FEE_BURNING);
         if(b.major_version >= HF_VERSION_FEE_BURNING)
         {
-          burnt_loki += get_burned_amount_from_tx_extra(tx.extra);
+          burnt_sispop += get_burned_amount_from_tx_extra(tx.extra);
         }
       }
       
@@ -1650,7 +1650,7 @@ namespace cryptonote
       });
     }
 
-    return std::tuple<uint64_t, uint64_t, uint64_t>(emission_amount, total_fee_amount, burnt_loki);
+    return std::tuple<uint64_t, uint64_t, uint64_t>(emission_amount, total_fee_amount, burnt_sispop);
   }
   //-----------------------------------------------------------------------------------------------
   bool core::check_tx_inputs_keyimages_diff(const transaction& tx) const
@@ -1851,7 +1851,7 @@ namespace cryptonote
     std::vector<block_complete_entry> blocks;
     m_miner.pause();
     {
-      LOKI_DEFER { m_miner.resume(); };
+      SISPOP_DEFER { m_miner.resume(); };
       try
       {
         blocks.push_back(get_block_complete_entry(b, m_mempool));
@@ -2067,7 +2067,7 @@ namespace cryptonote
           return;
         }
         uint8_t hf_version = get_blockchain_storage().get_current_hard_fork_version();
-        if (!check_external_ping(m_last_lokinet_ping, LOKINET_PING_LIFETIME, "sispopnet"))
+        if (!check_external_ping(m_last_sispopnet_ping, SISPOPNET_PING_LIFETIME, "sispopnet"))
         {
           if (hf_version >= cryptonote::network_version_14_blink)
           {
@@ -2134,7 +2134,7 @@ namespace cryptonote
     m_miner.on_idle();
     m_mempool.on_idle();
 
-#if defined(LOKI_ENABLE_INTEGRATION_TEST_HOOKS)
+#if defined(SISPOP_ENABLE_INTEGRATION_TEST_HOOKS)
     integration_test::state.core_is_idle = true;
 #endif
 
@@ -2212,7 +2212,7 @@ namespace cryptonote
     if (!tools::check_updates(software, buildtag, version, hash))
       return false;
 
-    if (tools::vercmp(version.c_str(), LOKI_VERSION_STR) <= 0)
+    if (tools::vercmp(version.c_str(), SISPOP_VERSION_STR) <= 0)
     {
       m_update_available = false;
       return true;
@@ -2371,7 +2371,7 @@ namespace cryptonote
       return true;
     }
 
-#if defined(LOKI_ENABLE_INTEGRATION_TEST_HOOKS)
+#if defined(SISPOP_ENABLE_INTEGRATION_TEST_HOOKS)
     MDEBUG("Not checking block rate, integration test mode");
     return true;
 #endif
