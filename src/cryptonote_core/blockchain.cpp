@@ -3912,6 +3912,8 @@ bool Blockchain::handle_block_to_main_chain(const block& bl, const crypto::hash&
   // Hence this hack: starting at that block until the next hard fork, we allow a slight grace
   // (0.2%) on the required difficulty (but we don't *change* the actual difficulty value used for
   // diff calculation).
+  uint64_t const block_height = get_block_height(bl);
+
     if (block_height >= 99714 && block_height < 99845)
     {
       required_diff = (required_diff * 18 ) / 10000;
