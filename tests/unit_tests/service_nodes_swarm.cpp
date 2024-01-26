@@ -35,8 +35,8 @@
 #include <functional>
 #include <iterator>
 
-#undef LOKI_DEFAULT_LOG_CATEGORY
-#define LOKI_DEFAULT_LOG_CATEGORY "sn_unit_tests"
+#undef SISPOP_DEFAULT_LOG_CATEGORY
+#define SISPOP_DEFAULT_LOG_CATEGORY "sn_unit_tests"
 
 using namespace service_nodes;
 

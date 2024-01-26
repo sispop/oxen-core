@@ -43,7 +43,7 @@ endif()
 cmake_minimum_required(VERSION 3.7)
 message(STATUS "CMake version ${CMAKE_VERSION}")
 
-project(loki)
+project(sispop)
 
 function (add_c_flag_if_supported flag var)
   string(REPLACE "-" "_" supported ${flag}_c)
@@ -217,7 +217,7 @@ if(NOT MANUAL_SUBMODULES)
     check_submodule(external/rapidjson)
     check_submodule(external/trezor-common)
     check_submodule(external/randomx)
-    check_submodule(external/loki-mq mapbox-variant cppzmq)
+    check_submodule(external/sispop-mq mapbox-variant cppzmq)
   endif()
 endif()
 
@@ -884,7 +884,7 @@ endif()
 add_library(readline INTERFACE)
 
 if (BUILD_INTEGRATION)
-  target_compile_definitions(extra INTERFACE LOKI_ENABLE_INTEGRATION_TEST_HOOKS)
+  target_compile_definitions(extra INTERFACE SISPOP_ENABLE_INTEGRATION_TEST_HOOKS)
 else()
   option(USE_READLINE "Build with GNU readline support." ON)
   if(USE_READLINE AND NOT DEPENDS)
@@ -917,8 +917,8 @@ if(CMAKE_C_COMPILER_ID STREQUAL "Clang" AND ARCH_WIDTH EQUAL "32" AND NOT IOS AN
   endif()
 endif()
 
-option(LOKI_DEBUG_SHORT_PROOFS "Developer option to substantially reduce uptime proof intervals for local test network debugging (the result lokid will not be usable on the live networks)" OFF)
-if (LOKI_DEBUG_SHORT_PROOFS)
+option(SISPOP_DEBUG_SHORT_PROOFS "Developer option to substantially reduce uptime proof intervals for local test network debugging (the result sispopd will not be usable on the live networks)" OFF)
+if (SISPOP_DEBUG_SHORT_PROOFS)
   add_definitions(-DUPTIME_PROOF_BASE_MINUTE=3) # 20x faster uptime proofs
 endif()
 
