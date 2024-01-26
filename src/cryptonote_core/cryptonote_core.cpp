@@ -170,7 +170,7 @@ namespace cryptonote
   };
   static const command_line::arg_descriptor<std::string> arg_check_updates = {
     "check-updates"
-  , "Check for new versions of loki: [disabled|notify|download|update]"
+  , "Check for new versions of sispop: [disabled|notify|download|update]"
   , "notify"
   };
   static const command_line::arg_descriptor<bool> arg_pad_transactions  = {
@@ -189,7 +189,7 @@ namespace cryptonote
   };
   static const command_line::arg_descriptor<std::string> arg_public_ip = {
     "service-node-public-ip"
-  , "Public IP address on which this service node's services (such as the Loki "
+  , "Public IP address on which this service node's services (such as the sispop "
     "storage server) are accessible. This IP address will be advertised to the "
     "network via the service node uptime proofs. Required if operating as a "
     "service node."
@@ -198,7 +198,7 @@ namespace cryptonote
     "storage-server-port"
   , "The port on which this service node's storage server is accessible. A listening "
     "storage server is required for service nodes. (This option is specified "
-    "automatically when using Loki Launcher.)"
+    "automatically when using sispop Launcher.)"
   , 0};
   static const command_line::arg_descriptor<uint16_t, false, true, 2> arg_quorumnet_port = {
     "quorumnet-port"
@@ -371,7 +371,7 @@ namespace cryptonote
     command_line::add_arg(desc, arg_quorumnet_port);
     command_line::add_arg(desc, arg_pad_transactions);
     command_line::add_arg(desc, arg_block_notify);
-#if 0 // TODO(loki): Pruning not supported because of Service Node List
+#if 0 // TODO(sispop): Pruning not supported because of Service Node List
     command_line::add_arg(desc, arg_prune_blockchain);
 #endif
     command_line::add_arg(desc, arg_reorg_notify);
@@ -441,7 +441,7 @@ namespace cryptonote
 
         if (!epee::net_utils::is_ip_public(m_sn_public_ip)) {
           if (m_service_node_list.debug_allow_local_ips) {
-            MWARNING("Address given for public-ip is not public; allowing it because dev-allow-local-ips was specified. This service node WILL NOT WORK ON THE PUBLIC LOKI NETWORK!");
+            MWARNING("Address given for public-ip is not public; allowing it because dev-allow-local-ips was specified. This service node WILL NOT WORK ON THE PUBLIC sispop NETWORK!");
           } else {
             MERROR("Address given for public-ip is not public: " << epee::string_tools::get_ip_string_from_int32(m_sn_public_ip));
             storage_ok = false;
@@ -455,7 +455,7 @@ namespace cryptonote
       }
 
       if (!storage_ok) {
-        MERROR("IMPORTANT: All service node operators are now required to run the loki storage "
+        MERROR("IMPORTANT: All service node operators are now required to run the sispop storage "
                << "server and provide the public ip and ports on which it can be accessed on the internet.");
         return false;
       }
@@ -538,7 +538,7 @@ namespace cryptonote
   }
 
   // Returns a string for systemd status notifications such as:
-  // Height: 1234567, SN: active, proof: 55m12s, storage: 4m48s, lokinet: 47s
+  // Height: 1234567, SN: active, proof: 55m12s, storage: 4m48s, sispopnet: 47s
   static std::string get_systemd_status_string(const core &c)
   {
     std::string s;
@@ -572,7 +572,7 @@ namespace cryptonote
         s += time_ago_str(now, last_proof);
         s += ", storage: ";
         s += time_ago_str(now, c.m_last_storage_server_ping);
-        s += ", lokinet: ";
+        s += ", sispopnet: ";
         s += time_ago_str(now, c.m_last_lokinet_ping);
       }
     }
@@ -662,8 +662,8 @@ namespace cryptonote
       if (boost::filesystem::exists(old_files / "blockchain.bin"))
       {
         MWARNING("Found old-style blockchain.bin in " << old_files.string());
-        MWARNING("Loki now uses a new format. You can either remove blockchain.bin to start syncing");
-        MWARNING("the blockchain anew, or use loki-blockchain-export and loki-blockchain-import to");
+        MWARNING("sispop now uses a new format. You can either remove blockchain.bin to start syncing");
+        MWARNING("the blockchain anew, or use sispop-blockchain-export and sispop-blockchain-import to");
         MWARNING("convert your existing blockchain.bin to the new format. See README.md for instructions.");
         return false;
       }
@@ -1003,7 +1003,7 @@ namespace cryptonote
 
     // Secondary standard ed25519 key, usable in tools wanting standard ed25519 keys
     //
-    // TODO(loki) - eventually it would be nice to make this become the only key pair that gets used
+    // TODO(sispop) - eventually it would be nice to make this become the only key pair that gets used
     // for new registrations instead of the above.  We'd still need to keep the above for
     // compatibility with existing stakes registered before the relevant fork height, but we could
     // then avoid needing to include this secondary key in uptime proofs for new SN registrations.
@@ -1910,7 +1910,7 @@ namespace cryptonote
     bool result = m_blockchain_storage.add_new_block(b, bvc, checkpoint);
     if (result)
     {
-      // TODO(loki): PERF(loki): This causes perf problems in integration mode, so in real-time operation it may not be
+      // TODO(sispop): PERF(sispop): This causes perf problems in integration mode, so in real-time operation it may not be
       // noticeable but could bubble up and cause slowness if the runtime variables align up undesiredly.
       relay_service_node_votes(); // NOTE: nop if synchronising due to not accepting votes whilst syncing
     }
@@ -2063,24 +2063,24 @@ namespace cryptonote
         {
           MGINFO_RED(
               "Failed to submit uptime proof: have not heard from the storage server recently. Make sure that it "
-              "is running! It is required to run alongside the Loki daemon");
+              "is running! It is required to run alongside the sispop daemon");
           return;
         }
         uint8_t hf_version = get_blockchain_storage().get_current_hard_fork_version();
-        if (!check_external_ping(m_last_lokinet_ping, LOKINET_PING_LIFETIME, "Lokinet"))
+        if (!check_external_ping(m_last_lokinet_ping, LOKINET_PING_LIFETIME, "sispopnet"))
         {
           if (hf_version >= cryptonote::network_version_14_blink)
           {
             MGINFO_RED(
-                "Failed to submit uptime proof: have not heard from lokinet recently. Make sure that it "
-                "is running! It is required to run alongside the Loki daemon");
+                "Failed to submit uptime proof: have not heard from sispopnet recently. Make sure that it "
+                "is running! It is required to run alongside the sispop daemon");
             return;
           }
           else
           {
             MGINFO_RED(
-                "Have not heard from lokinet recently. Make sure that it is running! "
-                "It is required to run alongside the Loki daemon after hard fork 14");
+                "Have not heard from sispopnet recently. Make sure that it is running! "
+                "It is required to run alongside the sispop daemon after hard fork 14");
           }
         }
 
@@ -2100,7 +2100,7 @@ namespace cryptonote
     {
       std::string main_message;
       if (m_offline)
-        main_message = "The daemon is running offline and will not attempt to sync to the Loki network.";
+        main_message = "The daemon is running offline and will not attempt to sync to the sispop network.";
       else
         main_message = "The daemon will start synchronizing with the network. This may take a long time to complete.";
       MGINFO_YELLOW(ENDL << "**********************************************************************" << ENDL
@@ -2192,7 +2192,7 @@ namespace cryptonote
   //-----------------------------------------------------------------------------------------------
   bool core::check_updates()
   {
-    static const char software[] = "loki";
+    static const char software[] = "sispop";
 #ifdef BUILD_TAG
     static const char buildtag[] = BOOST_PP_STRINGIZE(BUILD_TAG);
     static const char subdir[] = "cli"; // because it can never be simple
@@ -2391,7 +2391,7 @@ namespace cryptonote
       MDEBUG("blocks in the last " << seconds[n] / 60 << " minutes: " << b << " (probability " << p << ")");
       if (p < threshold)
       {
-        MWARNING("There were " << b << " blocks in the last " << seconds[n] / 60 << " minutes, there might be large hash rate changes, or we might be partitioned, cut off from the Loki network or under attack. Or it could be just sheer bad luck.");
+        MWARNING("There were " << b << " blocks in the last " << seconds[n] / 60 << " minutes, there might be large hash rate changes, or we might be partitioned, cut off from the sispop network or under attack. Or it could be just sheer bad luck.");
 
         std::shared_ptr<tools::Notify> block_rate_notify = m_block_rate_notify;
         if (block_rate_notify)
