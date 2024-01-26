@@ -9,25 +9,26 @@ constexpr uint64_t EMISSION_SUPPLY_DIVISOR    = 10;
 constexpr uint64_t EMISSION_DIVISOR           = 2000000;
 
 // Transition (HF15) money supply parameters
-constexpr uint64_t BLOCK_REWARD_HF15      = 25 * COIN;
+constexpr uint64_t BLOCK_REWARD_HF15      = 2500 * COIN;
 constexpr uint64_t MINER_REWARD_HF15      = BLOCK_REWARD_HF15 * 24 / 100;
 constexpr uint64_t SN_REWARD_HF15         = BLOCK_REWARD_HF15 * 66 / 100;
 constexpr uint64_t FOUNDATION_REWARD_HF15 = BLOCK_REWARD_HF15 * 10 / 100;
 
 // New (HF16+) money supply parameters (tentative - HF16 not yet scheduled)
-constexpr uint64_t BLOCK_REWARD_HF16      = 21 * COIN + 1 /* TODO - see below */;
-constexpr uint64_t SN_REWARD_HF16         = BLOCK_REWARD_HF16 * 90 / 100;
+constexpr uint64_t BLOCK_REWARD_HF16      = 1250 * COIN;
+constexpr uint64_t MINER_REWARD_HF16      = BLOCK_REWARD_HF16 * 30 / 100;
+constexpr uint64_t SN_REWARD_HF16         = BLOCK_REWARD_HF16 * 60 / 100;
 constexpr uint64_t FOUNDATION_REWARD_HF16 = BLOCK_REWARD_HF16 * 10 / 100;
 
-// TODO: For now we add 1 extra atomic loki to the HF16 block reward, above; ultimately with pulse
-// we want to just drop the miner reward output entirely when a tx has no transactions, but we don't
-// support that yet in the current code and if we put an output of 0 it currently breaks the test
-// suite (which assumes an output of 0 means ringct, which this is not).  Thus this +1 hack for now,
-// to keep the current test suite happy until we actually implement this for HF16.
-constexpr uint64_t MINER_REWARD_HF16 = 1;
+// New (HF17+) money supply parameters
+constexpr uint64_t BLOCK_REWARD_HF17      = 40 * COIN;
+constexpr uint64_t MINER_REWARD_HF17      = BLOCK_REWARD_HF17 * 40 / 100;
+constexpr uint64_t SN_REWARD_HF17         = BLOCK_REWARD_HF17 * 50 / 100;
+constexpr uint64_t FOUNDATION_REWARD_HF17 = BLOCK_REWARD_HF17 * 10 / 100;
 
 static_assert(MINER_REWARD_HF15 + SN_REWARD_HF15 + FOUNDATION_REWARD_HF15 == BLOCK_REWARD_HF15, "math fail");
 static_assert(MINER_REWARD_HF16 + SN_REWARD_HF16 + FOUNDATION_REWARD_HF16 == BLOCK_REWARD_HF16, "math fail");
+static_assert(MINER_REWARD_HF17 + SN_REWARD_HF17 + FOUNDATION_REWARD_HF17 == BLOCK_REWARD_HF17, "math fail");
 
 // -------------------------------------------------------------------------------------------------
 //
@@ -81,12 +82,12 @@ constexpr uint64_t burn_needed(uint8_t /*hf_version*/, mapping_type type)
     case mapping_type::session: /* FALLTHRU */
     case mapping_type::wallet: /* FALLTHRU */
     default:
-      result = 20 * COIN;
+      result = 2000 * COIN;
       break;
 
-    case mapping_type::lokinet_2years: result = 40 * COIN; break;
-    case mapping_type::lokinet_5years: result = 80 * COIN; break;
-    case mapping_type::lokinet_10years: result = 120 * COIN; break;
+    case mapping_type::lokinet_2years: result = 4000 * COIN; break;
+    case mapping_type::lokinet_5years: result = 8000 * COIN; break;
+    case mapping_type::lokinet_10years: result = 12000 * COIN; break;
   }
   return result;
 }

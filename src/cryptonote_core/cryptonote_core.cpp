@@ -252,7 +252,7 @@ namespace cryptonote
   const command_line::arg_descriptor<uint64_t> arg_recalculate_difficulty = {
     "recalculate-difficulty",
     "Recalculate per-block difficulty starting from the height specified",
-    0};
+    1};
 
   static const command_line::arg_descriptor<uint64_t> arg_store_quorum_history = {
     "store-quorum-history",
