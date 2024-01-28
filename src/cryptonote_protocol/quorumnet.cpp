@@ -166,7 +166,7 @@ void *new_snnwrapper(cryptonote::core &core, const std::string &bind) {
     auto peer_lookup = [&sn_list = core.get_service_node_list()](string_view x25519_pub) {
         return get_connect_string(sn_list, x25519_from_string(x25519_pub));
     };
-    auto allow = [&sn_list = core.get_service_node_list()](string_view ip, string_view x25519_pubkey_str) -> Allow {
+    /*auto allow = [&sn_list = core.get_service_node_list()](string_view ip, string_view x25519_pubkey_str) -> allow {
         auto x25519_pubkey = x25519_from_string(x25519_pubkey_str);
         auto pubkey = sn_list.get_pubkey_from_x25519(x25519_pubkey);
         MINFO("Accepting incoming " << (pubkey ? "SN" : "non-SN") << " connection authentication from ip/x25519/pubkey: " << ip << "/" << x25519_pubkey << "/" << pubkey);
@@ -184,7 +184,7 @@ void *new_snnwrapper(cryptonote::core &core, const std::string &bind) {
         // connections when in or near a blink/checkpoint/obligations/pulse quorum, but that
         // would get messy fast and probably have little practical benefit).
         return {AuthLevel::none, false};
-    };
+    };*/
     SNNWrapper *obj;
     std::string pubkey, seckey;
     bool sn;
@@ -203,7 +203,7 @@ void *new_snnwrapper(cryptonote::core &core, const std::string &bind) {
     setup_endpoints(*obj);
 
     if (sn)
-        obj->lmq.listen_curve(bind, allow);
+        obj->lmq.listen_curve(bind);
 
     obj->lmq.start();
 
